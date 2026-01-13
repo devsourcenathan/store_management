@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { printer } from '@/services/printing';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/services/api';
 import { useStore } from '../stores/StoreProvider';
@@ -164,8 +165,15 @@ export function SalesPage() {
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                         <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium">{sale.status}</span>
                                     </td>
+
                                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                        <button className="text-blue-600 hover:text-blue-900">View</button>
+                                        <button
+                                            onClick={() => printer.printInvoice(sale, currentStore?.name)}
+                                            className="text-blue-600 hover:text-blue-900 mr-3"
+                                        >
+                                            Print
+                                        </button>
+                                        <button className="text-gray-600 hover:text-gray-900">View</button>
                                     </td>
                                 </tr>
                             ))

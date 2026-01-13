@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/services/api';
 import { useStore } from '../stores/StoreProvider';
-import { Search, ShoppingCart, Trash2, Plus, Minus, CreditCard, Banknote, Smartphone, LayoutGrid, List, User } from 'lucide-react';
+import { Search, ShoppingCart, Trash2, Plus, Minus, CreditCard, Banknote, Smartphone, LayoutGrid, List, User, Printer } from 'lucide-react';
 import {
     Dialog,
     DialogContent,
@@ -12,6 +12,7 @@ import {
     DialogFooter,
 } from "@/components/ui/Dialog";
 import { toast } from 'sonner';
+import { printer } from '@/services/printing';
 
 interface Product {
     id: string;
@@ -39,6 +40,10 @@ export function PosPage() {
     const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
     const [paymentMethod, setPaymentMethod] = useState<'CASH' | 'CARD' | 'MOBILE'>('CASH');
     const [selectedCustomerId, setSelectedCustomerId] = useState<string>('');
+
+    // Success Modal State
+    const [showSuccessModal, setShowSuccessModal] = useState(false);
+    const [lastSale, setLastSale] = useState<any>(null);
 
     // Fetch Customers
     const { data: customers } = useQuery<any[]>({
@@ -82,13 +87,19 @@ export function PosPage() {
         mutationFn: async (data: any) => {
             return api.post('/sales', data);
         },
-        onSuccess: () => {
-            toast.success('Sale completed successfully!');
-            setCart([]);
+        onSuccess: (response) => {
+            // Store the sale data for printing
+            setLastSale(response.data);
             setIsPaymentModalOpen(false);
+            setShowSuccessModal(true);
+
+            // Clear cart immediately
+            setCart([]);
+
+            // Refresh background data
             queryClient.invalidateQueries({ queryKey: ['stock-levels'] });
             queryClient.invalidateQueries({ queryKey: ['sales'] });
-            queryClient.invalidateQueries({ queryKey: ['stock-alerts'] }); // Refresh alerts immediately
+            queryClient.invalidateQueries({ queryKey: ['stock-alerts'] });
         },
         onError: (error) => {
             toast.error('Failed to process sale');
@@ -157,6 +168,17 @@ export function PosPage() {
             paymentMethod,
             notes: `POS Sale - ${paymentMethod}`
         });
+    };
+
+    const handlePrintInvoice = () => {
+        if (lastSale) {
+            printer.printInvoice(lastSale, currentStore?.name);
+        }
+    };
+
+    const handleCloseSuccess = () => {
+        setShowSuccessModal(false);
+        setLastSale(null);
     };
 
     const getStockLevel = (productId: string) => {
@@ -461,6 +483,38 @@ export function PosPage() {
                             {createSaleMutation.isPending ? 'Processing...' : 'Confirm Payment'}
                         </button>
                     </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* Success / Print Modal */}
+            <Dialog open={showSuccessModal} onOpenChange={handleCloseSuccess}>
+                <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                        <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100 mb-4">
+                            <svg className="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                        </div>
+                        <DialogTitle className="text-center">Sale Completed Successfully</DialogTitle>
+                        <DialogDescription className="text-center">
+                            Transaction has been recorded. Do you want to print the receipt?
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="flex flex-col space-y-3 py-4">
+                        <button
+                            onClick={handlePrintInvoice}
+                            className="w-full flex items-center justify-center px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium"
+                        >
+                            <Printer className="w-5 h-5 mr-2" />
+                            Print Receipt
+                        </button>
+                        <button
+                            onClick={handleCloseSuccess}
+                            className="w-full px-4 py-3 text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium"
+                        >
+                            Start New Sale
+                        </button>
+                    </div>
                 </DialogContent>
             </Dialog>
         </div >

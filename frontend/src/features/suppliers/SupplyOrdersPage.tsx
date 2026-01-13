@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
+import { printer } from '@/services/printing';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/services/api';
 import { CreateSupplyOrderSheet } from './CreateSupplyOrderSheet';
 import { ReceiveSupplySheet } from './ReceiveSupplySheet';
-import { Plus, Package, CheckCircle, Clock, Truck, MoreVertical, Calendar, Eye, Trash2 } from 'lucide-react';
+import { Plus, Package, CheckCircle, Clock, Truck, MoreVertical, Calendar, Eye, Trash2, Printer } from 'lucide-react';
 import { format } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
@@ -155,6 +156,17 @@ export function SupplyOrdersPage() {
                                             onClick={(e) => e.stopPropagation()}
                                         >
                                             <div className="py-1">
+
+                                                <button
+                                                    onClick={() => {
+                                                        printer.printSupplyOrder(order);
+                                                        setActiveMenuId(null);
+                                                    }}
+                                                    className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 flex items-center"
+                                                >
+                                                    <Printer className="w-4 h-4 mr-2" />
+                                                    Print Order
+                                                </button>
                                                 <button
                                                     onClick={() => handleView(order)}
                                                     className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 flex items-center"
@@ -182,8 +194,8 @@ export function SupplyOrdersPage() {
                                     <Package className="w-6 h-6 text-gray-700" />
                                 </div>
                                 <span className={`px-3 py-1 rounded-full text-xs font-semibold flex items-center ${order.status === 'PAID'
-                                        ? 'bg-green-50 text-green-700 ring-1 ring-green-600/20'
-                                        : 'bg-amber-50 text-amber-700 ring-1 ring-amber-600/20'
+                                    ? 'bg-green-50 text-green-700 ring-1 ring-green-600/20'
+                                    : 'bg-amber-50 text-amber-700 ring-1 ring-amber-600/20'
                                     }`}>
                                     {order.status === 'PAID' ? (
                                         <>

@@ -3,7 +3,8 @@ import { useQuery } from "@tanstack/react-query";
 import { api } from "@/services/api";
 import { useStore } from "../stores/StoreProvider";
 import { format } from "date-fns";
-import { ShoppingBag, Calendar, CreditCard } from "lucide-react";
+import { ShoppingBag, Calendar, CreditCard, Printer } from "lucide-react";
+import { printer } from "@/services/printing";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/Sheet";
 
 interface CustomerDetailsSheetProps {
@@ -90,11 +91,22 @@ export function CustomerDetailsSheet({ customerId, isOpen, onClose }: CustomerDe
                             <div className="space-y-3">
                                 {sales?.map((sale: any) => (
                                     <div key={sale.id} className="border border-gray-100 rounded-lg p-3 hover:bg-gray-50 transition-colors">
+
+                                        // ... inside map loop
                                         <div className="flex justify-between items-start mb-2">
                                             <div>
-                                                <p className="font-medium text-gray-900">
-                                                    {format(new Date(sale.createdAt), 'PPP')}
-                                                </p>
+                                                <div className="flex items-center gap-2">
+                                                    <p className="font-medium text-gray-900">
+                                                        {format(new Date(sale.createdAt), 'PPP')}
+                                                    </p>
+                                                    <button
+                                                        onClick={() => printer.printInvoice(sale, currentStore?.name)}
+                                                        className="p-1 hover:bg-gray-100 rounded-full text-gray-400 hover:text-blue-600 transition-colors"
+                                                        title="Print Invoice"
+                                                    >
+                                                        <Printer className="w-3.5 h-3.5" />
+                                                    </button>
+                                                </div>
                                                 <p className="text-xs text-gray-500">
                                                     {format(new Date(sale.createdAt), 'p')}
                                                 </p>
