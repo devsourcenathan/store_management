@@ -14,6 +14,7 @@ import { SuppliersPage } from '@/features/suppliers/SuppliersPage';
 import { SubscriptionsPage } from '@/features/subscriptions/SubscriptionsPage';
 import { BalanceManagementPage } from '@/features/subscriptions/BalanceManagementPage';
 import { OffersManagementPage } from '@/features/subscriptions/OffersManagementPage';
+import { SupplyOrdersPage } from '@/features/suppliers/SupplyOrdersPage';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
     const { user, isLoading } = useAuth();
@@ -51,6 +52,7 @@ export function AppRouter() {
                 <Route path="pos" element={<PosPage />} />
                 <Route path="customers" element={<CustomersPage />} />
                 <Route path="suppliers" element={<SuppliersPage />} />
+                <Route path="supplies" element={<SupplyOrdersPage />} />
                 <Route path="subscriptions" element={<SubscriptionsPage />} />
                 <Route path="subscriptions/balance" element={<BalanceManagementPage />} />
                 <Route path="subscriptions/offers" element={<OffersManagementPage />} />

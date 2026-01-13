@@ -35,9 +35,59 @@ export function SuppliersPage() {
         },
     });
 
+    const updateSupplierMutation = useMutation({
+        mutationFn: async (data: any) => {
+            return api.patch(`/suppliers/${data.id}`, data);
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['suppliers'] });
+            setIsModalOpen(false);
+            setFormData({ name: '', email: '', phone: '', address: '' });
+            setEditingId(null);
+        },
+    });
+
+    const deleteSupplierMutation = useMutation({
+        mutationFn: async (id: string) => {
+            return api.delete(`/suppliers/${id}`);
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['suppliers'] });
+        },
+    });
+
+    const [editingId, setEditingId] = useState<string | null>(null);
+
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        createSupplierMutation.mutate(formData);
+        if (editingId) {
+            updateSupplierMutation.mutate({ ...formData, id: editingId });
+        } else {
+            createSupplierMutation.mutate(formData);
+        }
+    };
+
+    const handleEdit = (supplier: Supplier) => {
+        setFormData({
+            name: supplier.name,
+            email: supplier.email || '',
+            phone: supplier.phone || '',
+            address: supplier.address || ''
+        });
+        setEditingId(supplier.id);
+        setIsModalOpen(true);
+    };
+
+    const handleDelete = (id: string) => {
+        if (window.confirm('Are you sure you want to delete this supplier?')) {
+            deleteSupplierMutation.mutate(id);
+        }
+    };
+
+    const openNewModal = () => {
+        setFormData({ name: '', email: '', phone: '', address: '' });
+        setEditingId(null);
+        setIsModalOpen(true);
     };
 
     return (
@@ -48,7 +98,7 @@ export function SuppliersPage() {
                     <p className="text-gray-600">Manage your product suppliers</p>
                 </div>
                 <button
-                    onClick={() => setIsModalOpen(true)}
+                    onClick={openNewModal}
                     className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                 >
                     <Plus className="w-4 h-4" />
@@ -67,7 +117,18 @@ export function SuppliersPage() {
                             <div className="flex justify-between items-start">
                                 <h3 className="text-lg font-bold text-gray-900">{supplier.name}</h3>
                                 <div className="flex space-x-2">
-                                    <button className="text-gray-400 hover:text-blue-600"><Pencil className="w-4 h-4" /></button>                                    <button className="text-gray-400 hover:text-red-600"><Trash2 className="w-4 h-4" /></button>
+                                    <button
+                                        onClick={() => handleEdit(supplier)}
+                                        className="text-gray-400 hover:text-blue-600"
+                                    >
+                                        <Pencil className="w-4 h-4" />
+                                    </button>
+                                    <button
+                                        onClick={() => handleDelete(supplier.id)}
+                                        className="text-gray-400 hover:text-red-600"
+                                    >
+                                        <Trash2 className="w-4 h-4" />
+                                    </button>
                                 </div>
                             </div>
                             <div className="space-y-2 text-sm text-gray-600">
@@ -98,7 +159,7 @@ export function SuppliersPage() {
             {isModalOpen && (
                 <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
                     <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
-                        <h3 className="text-xl font-bold mb-4">Add New Supplier</h3>
+                        <h3 className="text-xl font-bold mb-4">{editingId ? 'Edit Supplier' : 'Add New Supplier'}</h3>
                         <form onSubmit={handleSubmit} className="space-y-4">
                             <div>
                                 <label className="block text-sm font-medium text-gray-700">Company Name</label>
@@ -122,8 +183,8 @@ export function SuppliersPage() {
                             </div>
                             <div className="flex justify-end space-x-3 mt-6">
                                 <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 border border-gray-300 rounded-md">Cancel</button>
-                                <button type="submit" disabled={createSupplierMutation.isPending} className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
-                                    {createSupplierMutation.isPending ? 'Saving...' : 'Save Supplier'}
+                                <button type="submit" disabled={createSupplierMutation.isPending || updateSupplierMutation.isPending} className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                                    {createSupplierMutation.isPending || updateSupplierMutation.isPending ? 'Saving...' : 'Save Supplier'}
                                 </button>
                             </div>
                         </form>

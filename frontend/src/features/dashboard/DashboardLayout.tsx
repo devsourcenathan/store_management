@@ -33,6 +33,7 @@ export function DashboardLayout() {
         { name: 'Sales History', href: '/sales', icon: ShoppingCart },
         { name: 'Customers', href: '/customers', icon: Users },
         { name: 'Suppliers', href: '/suppliers', icon: Truck },
+        { name: 'Supply Orders', href: '/supplies', icon: Package },
         { name: 'Subscriptions', href: '/subscriptions', icon: CreditCard },
         { name: 'Offers & Services', href: '/subscriptions/offers', icon: Layers }, // Added this item
     ];
