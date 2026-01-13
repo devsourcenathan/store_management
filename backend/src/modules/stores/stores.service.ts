@@ -25,7 +25,12 @@ export class StoresService {
             // Create the store
             const store = await tx.store.create({
                 data: {
-                    ...data,
+                    name: data.name,
+                    address: data.address,
+                    phone: data.phone,
+                    email: data.email,
+                    logoUrl: data.logoUrl,
+                    receiptFooter: data.receiptFooter,
                     organizationId
                 }
             });
@@ -43,13 +48,15 @@ export class StoresService {
     }
 
     async update(id: string, data: any) {
-        const { name, address } = data;
-
         return this.prisma.store.update({
             where: { id },
             data: {
-                name,
-                address
+                name: data.name,
+                address: data.address,
+                phone: data.phone,
+                email: data.email,
+                logoUrl: data.logoUrl,
+                receiptFooter: data.receiptFooter,
             }
         });
     }

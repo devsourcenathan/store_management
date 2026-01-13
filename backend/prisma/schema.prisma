@@ -17,6 +17,13 @@ datasource db {
 model Organization {
   id        String   @id @default(uuid())
   name      String
+  address   String?
+  phone     String?
+  email     String?
+  website   String?
+  taxId     String? // NIF or equivalent
+  logoUrl   String?
+  footer    String? // Default footer for invoices
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -32,12 +39,16 @@ model Organization {
 }
 
 model Store {
-  id             String   @id @default(uuid())
-  name           String
-  address        String?
+  id            String   @id @default(uuid())
+  name          String
+  address       String?
+  phone         String?
+  email         String?
+  logoUrl       String? // Override org logo
+  receiptFooter String? // Custom footer for store receipts
   organizationId String
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   organization   Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   stockMovements StockMovement[]

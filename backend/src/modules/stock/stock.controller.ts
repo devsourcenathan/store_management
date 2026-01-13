@@ -3,6 +3,7 @@ import { StockService } from './stock.service';
 import { TransfersService } from './transfers.service';
 import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
 import { RolesGuard } from '@/common/guards/roles.guard';
+import { StoreAuthGuard } from '@/common/guards/store-auth.guard';
 import { Roles } from '@/common/decorators/roles.decorator';
 import { CurrentUser } from '@/common/decorators/user.decorator';
 import { UserRole } from '@prisma/client';
@@ -16,6 +17,7 @@ export class StockController {
     ) { }
 
     @Get('movements')
+    @UseGuards(StoreAuthGuard)
     async getMovements(
         @Query('storeId') storeId: string,
         @Query('productId') productId?: string,
@@ -24,13 +26,14 @@ export class StockController {
     }
 
     @Post('movements')
-    @UseGuards(RolesGuard)
+    @UseGuards(RolesGuard, StoreAuthGuard)
     @Roles(UserRole.OWNER, UserRole.MANAGER, UserRole.STAFF)
     async createMovement(@Body() data: any, @CurrentUser() user: any) {
         return this.stockService.createMovement(data, user.id);
     }
 
     @Get('current')
+    @UseGuards(StoreAuthGuard)
     async getCurrentStock(
         @Query('productId') productId: string,
         @Query('storeId') storeId: string,
@@ -39,11 +42,13 @@ export class StockController {
     }
 
     @Get('store/:storeId')
+    @UseGuards(StoreAuthGuard)
     async getAllStockInStore(@Param('storeId') storeId: string) {
         return this.stockService.getAllStockInStore(storeId);
     }
 
     @Get('history')
+    @UseGuards(StoreAuthGuard)
     async getStockHistory(
         @Query('productId') productId: string,
         @Query('storeId') storeId: string,
@@ -52,6 +57,7 @@ export class StockController {
     }
 
     @Get('alerts/:storeId')
+    @UseGuards(StoreAuthGuard)
     async getLowStockAlerts(@Param('storeId') storeId: string) {
         return this.stockService.getLowStockAlerts(storeId);
     }
@@ -65,7 +71,7 @@ export class StockController {
     }
 
     @Post('alerts/scan')
-    @UseGuards(RolesGuard)
+    @UseGuards(RolesGuard, StoreAuthGuard)
     @Roles(UserRole.OWNER, UserRole.MANAGER)
     async scanStockAlerts(@Body() data: { storeId: string }) {
         return this.stockService.scanStockAlerts(data.storeId);

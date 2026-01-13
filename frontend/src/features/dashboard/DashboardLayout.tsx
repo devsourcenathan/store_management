@@ -2,6 +2,7 @@ import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/features/auth/useAuth';
 import { useSync } from '@/offline/SyncProvider';
 import { StoreSelector } from '@/features/stores/StoreSelector';
+import { NoAccessPage } from '@/features/auth/NoAccessPage';
 import {
     LayoutDashboard,
     Package,
@@ -16,7 +17,8 @@ import {
     WifiOff,
     RefreshCw,
     LogOut,
-    Calculator
+    Calculator,
+    Settings
 } from 'lucide-react';
 
 export function DashboardLayout() {
@@ -35,7 +37,8 @@ export function DashboardLayout() {
         { name: 'Suppliers', href: '/suppliers', icon: Truck },
         { name: 'Supply Orders', href: '/supplies', icon: Package },
         { name: 'Subscriptions', href: '/subscriptions', icon: CreditCard },
-        { name: 'Offers & Services', href: '/subscriptions/offers', icon: Layers }, // Added this item
+        { name: 'Offers & Services', href: '/subscriptions/offers', icon: Layers },
+        { name: 'Settings', href: '/settings', icon: Settings },
     ];
 
     const isActive = (href: string) => {
@@ -44,6 +47,11 @@ export function DashboardLayout() {
         }
         return location.pathname.startsWith(href);
     };
+
+    // Redirect to No Access page if staff has no stores
+    if (user?.role === 'STAFF' && (!user.stores || user.stores.length === 0)) {
+        return <NoAccessPage />;
+    }
 
     return (
         <div className="min-h-screen bg-gray-50">

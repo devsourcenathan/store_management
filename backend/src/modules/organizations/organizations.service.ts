@@ -15,10 +15,19 @@ export class OrganizationsService {
         });
     }
 
-    async update(id: string, data: { name: string }) {
+    async update(id: string, data: any) {
         return this.prisma.organization.update({
             where: { id },
-            data,
+            data: {
+                name: data.name,
+                address: data.address,
+                phone: data.phone,
+                email: data.email,
+                website: data.website,
+                taxId: data.taxId,
+                logoUrl: data.logoUrl,
+                footer: data.footer,
+            },
         });
     }
 }
