@@ -1,0 +1,605 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// MULTI-TENANCY & USERS
+// ============================================
+
+model Organization {
+  id        String   @id @default(uuid())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  stores        Store[]
+  users         User[]
+  products      Product[]
+  customers     Customer[]
+  suppliers     Supplier[]
+  services      Service[]
+  auditLogs     AuditLog[]
+
+  @@map("organizations")
+}
+
+model Store {
+  id             String   @id @default(uuid())
+  name           String
+  address        String?
+  organizationId String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization   Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  stockMovements StockMovement[]
+  sales          Sale[]
+  userStores     UserStore[]
+  stockAlerts    StockAlert[]
+
+  @@map("stores")
+}
+
+model User {
+  id             String   @id @default(uuid())
+  email          String   @unique
+  passwordHash   String
+  firstName      String
+  lastName       String
+  role           UserRole
+  organizationId String
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  stores       UserStore[]
+  auditLogs    AuditLog[]
+  syncMetadata SyncMetadata[]
+
+  @@map("users")
+}
+
+enum UserRole {
+  OWNER
+  MANAGER
+  STAFF
+}
+
+model UserStore {
+  userId  String
+  storeId String
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  store Store @relation(fields: [storeId], references: [id], onDelete: Cascade)
+
+  @@id([userId, storeId])
+  @@map("user_stores")
+}
+
+// ============================================
+// PRODUCTS & CATEGORIES
+// ============================================
+
+model Product {
+  id             String   @id @default(uuid())
+  name           String
+  sku            String
+  description    String?
+  categoryId     String?
+  organizationId String
+  basePrice      Decimal  @db.Decimal(10, 2)
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization   Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  category       Category?       @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  images         ProductImage[]
+  stockMovements StockMovement[]
+  stockAlerts    StockAlert[]
+  saleItems      SaleItem[]
+  supplyItems    SupplyItem[]
+  pricingRules   PricingRule[]
+
+  @@unique([organizationId, sku])
+  @@map("products")
+}
+
+model ProductImage {
+  id        String   @id @default(uuid())
+  productId String
+  filename  String
+  url       String
+  isDefault Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("product_images")
+}
+
+model Category {
+  id             String   @id @default(uuid())
+  name           String
+  description    String?
+  parentId       String?
+  organizationId String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  parent   Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
+  children Category[] @relation("CategoryHierarchy")
+  products Product[]
+
+  @@map("categories")
+}
+
+model PricingRule {
+  id        String   @id @default(uuid())
+  productId String
+  name      String
+  rules     Json // Dynamic pricing rules in JSONB
+  priority  Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("pricing_rules")
+}
+
+// ============================================
+// STOCK MANAGEMENT (APPEND-ONLY)
+// ============================================
+
+model StockMovement {
+  id        String            @id @default(uuid())
+  productId String
+  storeId   String
+  type      StockMovementType
+  source    StockMovementSource
+  quantity  Int
+  reference String? // Reference to sale, supply, etc.
+  notes     String?
+  createdBy String
+  createdAt DateTime            @default(now())
+  syncedAt  DateTime?
+  clientId  String? // For offline sync tracking
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  store   Store   @relation(fields: [storeId], references: [id], onDelete: Cascade)
+
+  @@index([productId, storeId])
+  @@index([createdAt])
+  @@index([clientId])
+  @@map("stock_movements")
+}
+
+enum StockMovementSource {
+  SALE
+  SUPPLY
+  RETURN
+  MANUAL
+}
+
+enum StockMovementType {
+  IN
+  OUT
+  ADJUST
+  RETURN
+  SALE
+  SUPPLY
+  ADJUSTMENT
+  TRANSFER_OUT  // Product leaving source store
+  TRANSFER_IN   // Product arriving at destination store
+}
+
+model StockAlert {
+  id             String   @id @default(uuid())
+  productId      String
+  storeId        String
+  threshold      Int
+  currentLevel   Int
+  acknowledged   Boolean  @default(false)
+  acknowledgedBy String?
+  acknowledgedAt DateTime?
+  createdAt      DateTime @default(now())
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  store   Store   @relation(fields: [storeId], references: [id], onDelete: Cascade)
+
+  @@index([storeId, acknowledged])
+  @@map("stock_alerts")
+}
+
+// ============================================
+// SALES & PAYMENTS
+// ============================================
+
+model Sale {
+  id          String     @id @default(uuid())
+  storeId     String
+  customerId  String?
+  totalAmount Decimal    @db.Decimal(10, 2)
+  paidAmount  Decimal    @db.Decimal(10, 2) @default(0)
+  status      SaleStatus
+  notes       String?
+  createdBy   String
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  syncedAt    DateTime?
+  clientId    String? // For offline sync
+
+  store    Store     @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  customer Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  items    SaleItem[]
+  payments Payment[]
+
+  @@index([storeId, createdAt])
+  @@index([customerId])
+  @@index([clientId])
+  @@map("sales")
+}
+
+enum SaleStatus {
+  PENDING
+  PARTIAL
+  PAID
+  CANCELLED
+}
+
+model SaleItem {
+  id        String  @id @default(uuid())
+  saleId    String
+  productId String
+  quantity  Int
+  unitPrice Decimal @db.Decimal(10, 2)
+  discount  Decimal @db.Decimal(10, 2) @default(0)
+  total     Decimal @db.Decimal(10, 2)
+
+  sale    Sale    @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  @@map("sale_items")
+}
+
+model Payment {
+  id        String        @id @default(uuid())
+  saleId    String
+  amount    Decimal       @db.Decimal(10, 2)
+  method    PaymentMethod
+  reference String?
+  notes     String?
+  createdBy String
+  createdAt DateTime      @default(now())
+
+  sale Sale @relation(fields: [saleId], references: [id], onDelete: Cascade)
+
+  @@map("payments")
+}
+
+enum PaymentMethod {
+  CASH
+  CARD
+  MOBILE
+  CREDIT
+  BANK_TRANSFER
+}
+
+// ============================================
+// CUSTOMERS
+// ============================================
+
+model Customer {
+  id             String   @id @default(uuid())
+  name           String
+  email          String?
+  phone          String?
+  address        String?
+  creditLimit    Decimal  @db.Decimal(10, 2) @default(0)
+  currentCredit  Decimal  @db.Decimal(10, 2) @default(0)
+  organizationId String
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization  Organization           @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  sales         Sale[]
+  subscriptions CustomerSubscription[]
+
+  @@map("customers")
+}
+
+// ============================================
+// SUPPLIERS & SUPPLIES
+// ============================================
+
+model Supplier {
+  id             String   @id @default(uuid())
+  name           String
+  email          String?
+  phone          String?
+  address        String?
+  organizationId String
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization   Organization           @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  supplies       Supply[]
+  balanceEntries SupplierBalanceEntry[]
+
+  @@map("suppliers")
+}
+
+model Supply {
+  id          String       @id @default(uuid())
+  supplierId  String
+  totalAmount Decimal      @db.Decimal(10, 2)
+  paidAmount  Decimal      @db.Decimal(10, 2) @default(0)
+  status      SupplyStatus
+  notes       String?
+  createdBy   String
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  supplier Supplier     @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  items    SupplyItem[]
+
+  @@map("supplies")
+}
+
+enum SupplyStatus {
+  PENDING
+  PARTIAL
+  PAID
+  CANCELLED
+}
+
+model SupplyItem {
+  id        String  @id @default(uuid())
+  supplyId  String
+  productId String
+  quantity  Int
+  unitCost  Decimal @db.Decimal(10, 2)
+  total     Decimal @db.Decimal(10, 2)
+
+  supply  Supply  @relation(fields: [supplyId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  @@map("supply_items")
+}
+
+model SupplierBalanceEntry {
+  id         String                  @id @default(uuid())
+  supplierId String
+  type       BalanceEntryType
+  amount     Decimal                 @db.Decimal(10, 2)
+  reference  String? // Reference to supply, payment, etc.
+  notes      String?
+  createdBy  String
+  createdAt  DateTime                @default(now())
+
+  supplier Supplier @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+
+  @@index([supplierId, createdAt])
+  @@map("supplier_balance_entries")
+}
+
+// ============================================
+// SUBSCRIPTIONS
+// ============================================
+
+model Service {
+  id             String   @id @default(uuid())
+  name           String
+  description    String?
+  provider       String // Third-party service provider
+  organizationId String
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  offers       SubscriptionOffer[]
+  accounts     SubscriptionAccount[]
+
+  @@map("services")
+}
+
+model SubscriptionAccount {
+  id        String   @id @default(uuid())
+  serviceId String
+  storeId   String
+  balance   Decimal  @db.Decimal(10, 2) @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  service        Service                      @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  balanceEntries SubscriptionBalanceEntry[]
+  alerts         SubscriptionBalanceAlert[]
+
+  @@unique([serviceId, storeId])
+  @@map("subscription_accounts")
+}
+
+model SubscriptionOffer {
+  id           String   @id @default(uuid())
+  serviceId    String
+  name         String
+  description  String?
+  basePrice    Decimal  @db.Decimal(10, 2)
+  duration     Int      // Duration in days
+  billingCycle String   // MONTHLY, YEARLY, etc.
+  pricingRules Json?    // Dynamic pricing in JSONB
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  service       Service                @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  options       SubscriptionOption[]
+  subscriptions CustomerSubscription[]
+
+  @@map("subscription_offers")
+}
+
+model SubscriptionOption {
+  id          String  @id @default(uuid())
+  offerId     String
+  name        String
+  description String?
+  price       Decimal @db.Decimal(10, 2)
+  pricingRules Json?   // Dynamic pricing rules
+  isActive    Boolean @default(true)
+
+  offer SubscriptionOffer @relation(fields: [offerId], references: [id], onDelete: Cascade)
+  subscriptions CustomerSubscription[]
+
+  @@map("subscription_options")
+}
+
+model CustomerSubscription {
+  id         String               @id @default(uuid())
+  customerId String
+  offerId    String
+  status     SubscriptionStatus
+  startDate  DateTime
+  endDate    DateTime?
+  autoRenew  Boolean              @default(true)
+  createdAt  DateTime             @default(now())
+  updatedAt  DateTime             @updatedAt
+
+  customer Customer              @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  offer    SubscriptionOffer     @relation(fields: [offerId], references: [id], onDelete: Restrict)
+  options  SubscriptionOption[]  // Active options for this subscription
+  renewals SubscriptionRenewal[]
+
+  @@map("customer_subscriptions")
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  SUSPENDED
+  CANCELLED
+  EXPIRED
+}
+
+model SubscriptionBalanceEntry {
+  id        String                  @id @default(uuid())
+  accountId String
+  type      BalanceEntryType
+  source    SubscriptionBalanceSource
+  amount    Decimal                 @db.Decimal(10, 2)
+  reference String?
+  notes     String?
+  createdBy String
+  createdAt DateTime                @default(now())
+
+  account SubscriptionAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@index([accountId, createdAt])
+  @@map("subscription_balance_entries")
+}
+
+enum SubscriptionBalanceSource {
+  INJECTION
+  SUBSCRIPTION
+  REFUND
+  CORRECTION
+}
+
+enum BalanceEntryType {
+  DEBIT
+  CREDIT
+}
+
+model SubscriptionRenewal {
+  id             String   @id @default(uuid())
+  subscriptionId String
+  duration       Int      // Duration in days
+  price          Decimal  @db.Decimal(10, 2)
+  balanceUsed    Decimal  @db.Decimal(10, 2) // Amount deducted from balance account
+  createdBy      String
+  createdAt      DateTime @default(now())
+  syncedAt       DateTime?
+  clientId       String?  // For offline sync tracking
+
+  subscription CustomerSubscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+
+  @@index([subscriptionId, createdAt])
+  @@index([clientId])
+  @@map("subscription_renewals")
+}
+
+model SubscriptionBalanceAlert {
+  id             String           @id @default(uuid())
+  accountId      String
+  type           BalanceAlertType
+  threshold      Decimal?         @db.Decimal(10, 2)
+  currentBalance Decimal          @db.Decimal(10, 2)
+  resolved       Boolean          @default(false)
+  resolvedBy     String?
+  resolvedAt     DateTime?
+  createdAt      DateTime         @default(now())
+
+  account SubscriptionAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@index([accountId, resolved])
+  @@map("subscription_balance_alerts")
+}
+
+enum BalanceAlertType {
+  NEGATIVE
+  LOW_BALANCE
+}
+
+// ============================================
+// AUDIT & SYNC
+// ============================================
+
+model AuditLog {
+  id             String   @id @default(uuid())
+  organizationId String
+  userId         String
+  action         String
+  entity         String
+  entityId       String
+  changes        Json?
+  ipAddress      String?
+  userAgent      String?
+  createdAt      DateTime @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, createdAt])
+  @@index([userId])
+  @@index([entity, entityId])
+  @@map("audit_logs")
+}
+
+model SyncMetadata {
+  id         String    @id @default(uuid())
+  userId     String
+  deviceId   String
+  lastPullAt DateTime?
+  lastPushAt DateTime?
+  version    Int       @default(1)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, deviceId])
+  @@map("sync_metadata")
+}

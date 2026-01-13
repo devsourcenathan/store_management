@@ -1,0 +1,43 @@
+import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
+import { PrismaModule } from './common/prisma/prisma.module';
+import { AuthModule } from './modules/auth/auth.module';
+import { OrganizationsModule } from './modules/organizations/organizations.module';
+import { UsersModule } from './modules/users/users.module';
+import { StoresModule } from './modules/stores/stores.module';
+import { ProductsModule } from './modules/products/products.module';
+import { StockModule } from './modules/stock/stock.module';
+import { SalesModule } from './modules/sales/sales.module';
+import { CustomersModule } from './modules/customers/customers.module';
+import { SuppliersModule } from './modules/suppliers/suppliers.module';
+import { SuppliesModule } from './modules/supplies/supplies.module';
+import { SubscriptionsModule } from './modules/subscriptions/subscriptions.module';
+import { ServicesModule } from './modules/services/services.module';
+import { ImagesModule } from './modules/images/images.module';
+import { SyncModule } from './modules/sync/sync.module';
+import { AuditModule } from './modules/audit/audit.module';
+
+@Module({
+    imports: [
+        ConfigModule.forRoot({
+            isGlobal: true,
+        }),
+        PrismaModule,
+        AuthModule,
+        OrganizationsModule,
+        UsersModule,
+        StoresModule,
+        ProductsModule,
+        StockModule,
+        SalesModule,
+        CustomersModule,
+        SuppliersModule,
+        SuppliesModule,
+        SubscriptionsModule,
+        ServicesModule,
+        ImagesModule,
+        SyncModule,
+        AuditModule,
+    ],
+})
+export class AppModule { }

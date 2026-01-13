@@ -1,0 +1,208 @@
+import { useState, useEffect } from 'react';
+import { Plus, Trash2 } from 'lucide-react';
+
+interface PricingCondition {
+    offerPrice?: {
+        gte?: number;
+        lte?: number;
+        gt?: number;
+        lt?: number;
+        eq?: number;
+    };
+    offerId?: string | string[];
+    storeId?: string | string[];
+    duration?: {
+        gte?: number;
+        lte?: number;
+    };
+}
+
+interface PricingRule {
+    condition: PricingCondition;
+    price: number;
+    priority: number;
+}
+
+interface PricingRulesEditorProps {
+    rules: PricingRule[];
+    onChange: (rules: PricingRule[]) => void;
+}
+
+export function PricingRulesEditor({ rules, onChange }: PricingRulesEditorProps) {
+    const addRule = () => {
+        onChange([
+            ...rules,
+            {
+                price: 0,
+                priority: 0,
+                condition: {}
+            }
+        ]);
+    };
+
+    const removeRule = (index: number) => {
+        const newRules = [...rules];
+        newRules.splice(index, 1);
+        onChange(newRules);
+    };
+
+    const updateRule = (index: number, field: keyof PricingRule, value: any) => {
+        const newRules = [...rules];
+        newRules[index] = { ...newRules[index], [field]: value };
+        onChange(newRules);
+    };
+
+    const updateCondition = (index: number, field: keyof PricingCondition, value: any) => {
+        const newRules = [...rules];
+        const currentCondition = newRules[index].condition || {};
+
+        // If value is empty/null, remove the key to keep JSON clean
+        const newCondition = { ...currentCondition };
+        if (value === undefined || value === null || (typeof value === 'object' && Object.keys(value).length === 0)) {
+            delete (newCondition as any)[field];
+        } else {
+            (newCondition as any)[field] = value;
+        }
+
+        newRules[index] = { ...newRules[index], condition: newCondition };
+        onChange(newRules);
+    };
+
+    return (
+        <div className="space-y-4">
+            <div className="flex justify-between items-center">
+                <label className="block text-sm font-medium text-gray-700">Dynamic Pricing Rules</label>
+                <button
+                    type="button"
+                    onClick={addRule}
+                    className="text-sm text-blue-600 hover:text-blue-800 flex items-center"
+                >
+                    <Plus className="w-4 h-4 mr-1" /> Add Rule
+                </button>
+            </div>
+
+            {rules.length === 0 && (
+                <div className="text-sm text-gray-500 italic border border-dashed rounded p-4 text-center">
+                    No custom pricing rules defined. Base price will apply.
+                </div>
+            )}
+
+            {rules.map((rule, index) => (
+                <div key={index} className="border border-gray-200 rounded-lg p-3 bg-gray-50 space-y-3">
+                    <div className="flex justify-between items-start">
+                        <h5 className="text-xs font-bold uppercase text-gray-500">Rule #{index + 1}</h5>
+                        <button
+                            type="button"
+                            onClick={() => removeRule(index)}
+                            className="text-red-500 hover:text-red-700"
+                        >
+                            <Trash2 className="w-4 h-4" />
+                        </button>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                        <div>
+                            <label className="block text-xs font-medium text-gray-700 mb-1">Override Price (FCFA)</label>
+                            <input
+                                type="number"
+                                value={rule.price}
+                                onChange={(e) => updateRule(index, 'price', parseFloat(e.target.value))}
+                                className="block w-full border border-gray-300 rounded-md shadow-sm p-1.5 text-sm"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-xs font-medium text-gray-700 mb-1">Priority (Higher wins)</label>
+                            <input
+                                type="number"
+                                value={rule.priority}
+                                onChange={(e) => updateRule(index, 'priority', parseInt(e.target.value))}
+                                className="block w-full border border-gray-300 rounded-md shadow-sm p-1.5 text-sm"
+                            />
+                        </div>
+                    </div>
+
+                    {/* Conditions Section */}
+                    <div className="bg-white p-2 rounded border border-gray-100">
+                        <p className="text-xs font-medium text-gray-700 mb-2">Conditions (All must match)</p>
+
+                        {/* Duration Condition */}
+                        <div className="grid grid-cols-2 gap-2 mb-2">
+                            <div>
+                                <label className="block text-[10px] text-gray-500">Min Duration (Days)</label>
+                                <input
+                                    type="number"
+                                    placeholder="Any"
+                                    value={rule.condition.duration?.gte ?? ''}
+                                    onChange={(e) => {
+                                        const val = e.target.value ? parseInt(e.target.value) : undefined;
+                                        const currentDuration = rule.condition.duration || {};
+                                        updateCondition(index, 'duration', { ...currentDuration, gte: val });
+                                    }}
+                                    className="block w-full border border-gray-200 rounded p-1 text-xs"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-[10px] text-gray-500">Max Duration (Days)</label>
+                                <input
+                                    type="number"
+                                    placeholder="Any"
+                                    value={rule.condition.duration?.lte ?? ''}
+                                    onChange={(e) => {
+                                        const val = e.target.value ? parseInt(e.target.value) : undefined;
+                                        const currentDuration = rule.condition.duration || {};
+                                        updateCondition(index, 'duration', { ...currentDuration, lte: val });
+                                    }}
+                                    className="block w-full border border-gray-200 rounded p-1 text-xs"
+                                />
+                            </div>
+                        </div>
+
+                        {/* Offer Price Condition */}
+                        <div className="grid grid-cols-2 gap-2 mb-2">
+                            <div>
+                                <label className="block text-[10px] text-gray-500">Min Base Price (FCFA)</label>
+                                <input
+                                    type="number"
+                                    placeholder="Any"
+                                    value={rule.condition.offerPrice?.gte ?? ''}
+                                    onChange={(e) => {
+                                        const val = e.target.value ? parseFloat(e.target.value) : undefined;
+                                        const currentOfferPrice = rule.condition.offerPrice || {};
+                                        updateCondition(index, 'offerPrice', { ...currentOfferPrice, gte: val });
+                                    }}
+                                    className="block w-full border border-gray-200 rounded p-1 text-xs"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-[10px] text-gray-500">Max Base Price (FCFA)</label>
+                                <input
+                                    type="number"
+                                    placeholder="Any"
+                                    value={rule.condition.offerPrice?.lte ?? ''}
+                                    onChange={(e) => {
+                                        const val = e.target.value ? parseFloat(e.target.value) : undefined;
+                                        const currentOfferPrice = rule.condition.offerPrice || {};
+                                        updateCondition(index, 'offerPrice', { ...currentOfferPrice, lte: val });
+                                    }}
+                                    className="block w-full border border-gray-200 rounded p-1 text-xs"
+                                />
+                            </div>
+                        </div>
+
+                        {/* Store ID Condition - simplified as text input for now, could be multiselect */}
+                        <div>
+                            <label className="block text-[10px] text-gray-500">Store ID (Optional)</label>
+                            <input
+                                type="text"
+                                placeholder="Specific Store ID..."
+                                value={(rule.condition.storeId as string) || ''}
+                                onChange={(e) => updateCondition(index, 'storeId', e.target.value || undefined)}
+                                className="block w-full border border-gray-200 rounded p-1 text-xs"
+                            />
+                        </div>
+                    </div>
+                </div>
+            ))}
+        </div>
+    );
+}
