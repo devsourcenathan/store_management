@@ -109,20 +109,25 @@ export function StockPage() {
                 <div className="bg-white rounded-lg shadow p-6">
                     <p className="text-sm font-medium text-gray-600">Current Balance</p>
                     <p className="text-3xl font-bold text-gray-900 mt-2">
-                        {movements?.reduce((acc, m) => acc + (m.type === 'IN' || m.type === 'RETURN' ? m.quantity : -m.quantity), 0) || 0}
+                        {movements?.reduce((acc, m) => {
+                            const isInbound = ['IN', 'RETURN', 'ADJUST', 'SUPPLY', 'TRANSFER_IN'].includes(m.type);
+                            return acc + (isInbound ? m.quantity : -m.quantity);
+                        }, 0) || 0}
                     </p>
                     <p className="text-sm text-gray-500 mt-1">Total items in this store</p>
                 </div>
                 <div className="bg-white rounded-lg shadow p-6">
                     <p className="text-sm font-medium text-gray-600">Total Inbound</p>
                     <p className="text-3xl font-bold text-green-600 mt-2">
-                        {movements?.filter(m => m.type === 'IN' || m.type === 'RETURN').reduce((acc, m) => acc + m.quantity, 0) || 0}
+                        {movements?.filter(m => ['IN', 'RETURN', 'ADJUST', 'SUPPLY', 'TRANSFER_IN'].includes(m.type))
+                            .reduce((acc, m) => acc + m.quantity, 0) || 0}
                     </p>
                 </div>
                 <div className="bg-white rounded-lg shadow p-6">
                     <p className="text-sm font-medium text-gray-600">Total Outbound</p>
                     <p className="text-3xl font-bold text-red-600 mt-2">
-                        {movements?.filter(m => m.type === 'OUT' || m.type === 'ADJUST').reduce((acc, m) => acc + m.quantity, 0) || 0}
+                        {movements?.filter(m => ['OUT', 'SALE', 'TRANSFER_OUT', 'ADJUSTMENT'].includes(m.type))
+                            .reduce((acc, m) => acc + m.quantity, 0) || 0}
                     </p>
                 </div>
             </div>
@@ -158,7 +163,7 @@ export function StockPage() {
                                             {movement.product.name} ({movement.product.sku})
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            <span className={`px-2 py-1 rounded text-xs font-medium ${movement.type === 'IN' || movement.type === 'RETURN' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                                            <span className={`px-2 py-1 rounded text-xs font-medium ${['IN', 'RETURN', 'ADJUST', 'SUPPLY', 'TRANSFER_IN'].includes(movement.type) ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                                                 }`}>
                                                 {movement.type} ({movement.source})
                                             </span>
