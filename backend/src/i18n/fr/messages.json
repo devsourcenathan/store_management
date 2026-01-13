@@ -1,0 +1,7 @@
+{
+    "error": {
+        "store_access_denied": "Vous n'avez pas accès à ce magasin",
+        "store_id_required": "L'identifiant du magasin est requis pour le personnel",
+        "unauthorized": "Accès non autorisé"
+    }
+}

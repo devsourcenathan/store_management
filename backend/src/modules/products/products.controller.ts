@@ -2,17 +2,21 @@ import { Controller, Get, Post, Patch, Delete, Body, Param, UseGuards, Query } f
 import { ProductsService } from './products.service';
 import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
 import { RolesGuard } from '@/common/guards/roles.guard';
+import { StoreAuthGuard } from '@/common/guards/store-auth.guard';
 import { Roles } from '@/common/decorators/roles.decorator';
 import { CurrentOrganization } from '@/common/decorators/user.decorator';
 import { UserRole } from '@prisma/client';
 
 @Controller('products')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, StoreAuthGuard)
 export class ProductsController {
     constructor(private productsService: ProductsService) { }
 
     @Get()
-    async findAll(@CurrentOrganization() organizationId: string) {
+    async findAll(
+        @CurrentOrganization() organizationId: string,
+        @Query('storeId') storeId?: string,
+    ) {
         return this.productsService.findAll(organizationId);
     }
 

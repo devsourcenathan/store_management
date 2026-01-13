@@ -1,10 +1,14 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from './useAuth';
+import { useTranslation } from 'react-i18next';
+import { ThemeToggle } from '@/components/ThemeToggle';
+import { LanguageSelector } from '@/components/LanguageSelector';
 
 export function LoginPage() {
     const navigate = useNavigate();
     const { login } = useAuth();
+    const { t } = useTranslation();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
@@ -19,34 +23,39 @@ export function LoginPage() {
             await login(email, password);
             navigate('/');
         } catch (err: any) {
-            setError(err.response?.data?.message || 'Login failed. Please try again.');
+            setError(err.response?.data?.message || t('common.error'));
         } finally {
             setIsLoading(false);
         }
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 px-4">
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 px-4 transition-colors">
+            <div className="absolute top-4 right-4 flex gap-2">
+                <LanguageSelector />
+                <ThemeToggle />
+            </div>
+
             <div className="max-w-md w-full space-y-8">
-                <div className="bg-white rounded-2xl shadow-xl p-8">
+                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 transition-colors">
                     {/* Header */}
                     <div className="text-center mb-8">
-                        <h1 className="text-3xl font-bold text-gray-900">Stock Management</h1>
-                        <p className="mt-2 text-sm text-gray-600">Sign in to your account</p>
+                        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Stock Management</h1>
+                        <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">{t('auth.login_subtitle')}</p>
                     </div>
 
                     {/* Error Message */}
                     {error && (
-                        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-                            <p className="text-sm text-red-600">{error}</p>
+                        <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                            <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
                         </div>
                     )}
 
                     {/* Login Form */}
                     <form onSubmit={handleSubmit} className="space-y-6">
                         <div>
-                            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                                Email address
+                            <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                {t('auth.email')}
                             </label>
                             <input
                                 id="email"
@@ -54,14 +63,14 @@ export function LoginPage() {
                                 required
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                 placeholder="you@example.com"
                             />
                         </div>
 
                         <div>
-                            <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                                Password
+                            <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                {t('auth.password')}
                             </label>
                             <input
                                 id="password"
@@ -69,7 +78,7 @@ export function LoginPage() {
                                 required
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
-                                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                 placeholder="••••••••"
                             />
                         </div>
@@ -79,14 +88,14 @@ export function LoginPage() {
                             disabled={isLoading}
                             className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                         >
-                            {isLoading ? 'Signing in...' : 'Sign in'}
+                            {isLoading ? t('common.loading') : t('auth.sign_in')}
                         </button>
                     </form>
 
                     {/* Demo Credentials */}
-                    <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-                        <p className="text-xs font-semibold text-gray-700 mb-2">Demo Credentials:</p>
-                        <div className="space-y-1 text-xs text-gray-600">
+                    <div className="mt-6 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                        <p className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2">Demo Credentials:</p>
+                        <div className="space-y-1 text-xs text-gray-600 dark:text-gray-400">
                             <p>Owner: owner@demo.com / password123</p>
                             <p>Manager: manager@demo.com / password123</p>
                             <p>Staff: staff@demo.com / password123</p>
@@ -95,10 +104,10 @@ export function LoginPage() {
 
                     {/* Register Link */}
                     <div className="mt-6 text-center">
-                        <p className="text-sm text-gray-600">
-                            Don't have an account?{' '}
-                            <Link to="/register" className="font-medium text-blue-600 hover:text-blue-500">
-                                Register here
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                            {t('auth.no_account')}{' '}
+                            <Link to="/register" className="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300">
+                                {t('auth.register')}
                             </Link>
                         </p>
                     </div>

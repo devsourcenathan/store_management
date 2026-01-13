@@ -5,9 +5,11 @@ import { api } from '@/services/api';
 import { useStore } from '../stores/StoreProvider';
 import { SalesChart } from './components/SalesChart';
 import { TopProducts } from './components/TopProducts';
+import { useTranslation } from 'react-i18next';
 
 export function DashboardPage() {
     const { currentStore } = useStore();
+    const { t } = useTranslation();
     const [dateFilter, setDateFilter] = useState('this_month');
     const [customStart, setCustomStart] = useState('');
     const [customEnd, setCustomEnd] = useState('');
@@ -63,7 +65,7 @@ export function DashboardPage() {
     // Dynamic Title Generator
     const getPeriodLabel = () => {
         const options: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric', year: 'numeric' };
-        if (dateFilter === 'today') return "Today";
+        if (dateFilter === 'today') return t('dashboard.filters.today');
         if (dateFilter === 'custom' && customStart && customEnd) {
             return `${new Date(customStart).toLocaleDateString('en-US', options)} - ${new Date(customEnd).toLocaleDateString('en-US', options)}`;
         }
@@ -110,34 +112,34 @@ export function DashboardPage() {
             {/* Header: Title & Actions */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h2 className="text-2xl font-bold text-gray-900">Dashboard</h2>
-                    <p className="text-gray-600">Overview of your store performance</p>
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{t('dashboard.title')}</h2>
+                    <p className="text-gray-600 dark:text-gray-400">{t('dashboard.subtitle')}</p>
                 </div>
 
                 {/* Actions */}
                 <div className="flex flex-wrap items-center gap-3">
                     <ActionButton
                         to="/pos"
-                        label="Open POS"
+                        label={t('dashboard.actions.pos')}
                         icon={<CalculatorIcon className="w-4 h-4" />}
                         variant="primary-large"
                     />
-                    <div className="h-8 w-px bg-gray-200 mx-1 hidden md:block"></div>
+                    <div className="h-8 w-px bg-gray-200 dark:bg-gray-700 mx-1 hidden md:block"></div>
                     <ActionButton
                         to="/sales"
-                        label="History"
+                        label={t('dashboard.actions.history')}
                         icon={<DollarIcon className="w-4 h-4" />}
                         variant="outline"
                     />
                     <ActionButton
                         to="/products"
-                        label="Products"
+                        label={t('dashboard.actions.products')}
                         icon={<BoxIcon className="w-4 h-4" />}
                         variant="outline"
                     />
                     <ActionButton
                         to="/stock"
-                        label="Stock"
+                        label={t('dashboard.actions.stock')}
                         icon={<TruckIcon className="w-4 h-4" />}
                         variant="outline"
                     />
@@ -145,38 +147,39 @@ export function DashboardPage() {
             </div>
 
             {/* Filters Row - Separate Section */}
-            <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center bg-white p-2 rounded-xl shadow-sm border border-gray-100">
-                <span className="text-sm font-medium text-gray-500 pl-2">Period:</span>
+            <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center bg-white dark:bg-gray-800 p-2 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 transition-colors">
+                <span className="text-sm font-medium text-gray-500 dark:text-gray-400 pl-2">{t('dashboard.period')}</span>
                 <div className="flex overflow-x-auto pb-1 sm:pb-0 gap-1 w-full sm:w-auto">
                     {['today', 'this_week', 'this_month', 'this_quarter', 'this_year', 'custom'].map((filter) => (
                         <button
                             key={filter}
                             onClick={() => setDateFilter(filter)}
                             className={`px-3 py-1.5 text-sm font-medium rounded-lg whitespace-nowrap transition-all ${dateFilter === filter
-                                    ? 'bg-gray-900 text-white shadow-md'
-                                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                                ? 'bg-gray-900 text-white shadow-md dark:bg-gray-100 dark:text-gray-900'
+                                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-gray-200 dark:hover:bg-gray-700'
                                 }`}
                         >
-                            {filter === 'custom' ? 'Custom Range' : filter.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                            {/* @ts-ignore */}
+                            {t(`dashboard.filters.${filter}`)}
                         </button>
                     ))}
                 </div>
 
                 {/* Custom Date Inputs */}
                 {dateFilter === 'custom' && (
-                    <div className="flex items-center gap-2 bg-gray-50 p-1.5 rounded-lg border border-gray-200 animate-in fade-in slide-in-from-left-2 duration-200 sm:ml-auto">
+                    <div className="flex items-center gap-2 bg-gray-50 dark:bg-gray-900/50 p-1.5 rounded-lg border border-gray-200 dark:border-gray-700 animate-in fade-in slide-in-from-left-2 duration-200 sm:ml-auto">
                         <input
                             type="date"
                             value={customStart}
                             onChange={(e) => setCustomStart(e.target.value)}
-                            className="border-none text-sm focus:ring-0 p-0 bg-transparent text-gray-700 w-32"
+                            className="border-none text-sm focus:ring-0 p-0 bg-transparent text-gray-700 dark:text-gray-300 w-32"
                         />
                         <span className="text-gray-400">-</span>
                         <input
                             type="date"
                             value={customEnd}
                             onChange={(e) => setCustomEnd(e.target.value)}
-                            className="border-none text-sm focus:ring-0 p-0 bg-transparent text-gray-700 w-32"
+                            className="border-none text-sm focus:ring-0 p-0 bg-transparent text-gray-700 dark:text-gray-300 w-32"
                         />
                     </div>
                 )}
@@ -185,28 +188,28 @@ export function DashboardPage() {
             {/* Stats Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <StatCard
-                    title={`Revenue (${periodLabel})`}
+                    title={`${t('dashboard.today_revenue')} (${periodLabel})`}
                     value={stats?.todaysSales ? `${stats.todaysSales.toLocaleString()} F` : '0 F'}
                     icon={<DollarIcon />}
                     color="blue"
                     isLoading={isLoadingStats}
                 />
                 <StatCard
-                    title="Total Products"
+                    title={t('dashboard.total_products')}
                     value={stats?.totalProducts || 0}
                     icon={<BoxIcon />}
                     color="indigo"
                     isLoading={isLoadingStats}
                 />
                 <StatCard
-                    title="Low Stock Alerts"
+                    title={t('dashboard.low_stock')}
                     value={stats?.lowStockItems || 0}
                     icon={<AlertIcon />}
                     color="yellow"
                     isLoading={isLoadingStats}
                 />
                 <StatCard
-                    title="Pending Orders"
+                    title={t('dashboard.pending_orders')}
                     value={stats?.pendingOrders || 0}
                     icon={<TruckIcon />}
                     color="purple"
@@ -216,17 +219,18 @@ export function DashboardPage() {
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Main Chart */}
-                <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                <div className="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 transition-colors">
                     <div className="flex items-center justify-between mb-6">
-                        <h3 className="text-lg font-bold text-gray-900">Revenue Trend</h3>
-                        <span className="text-sm font-medium text-blue-600 bg-blue-50 px-3 py-1 rounded-full">{periodLabel}</span>
+                        <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">{t('dashboard.revenue_trend')}</h3>
+                        <span className="text-sm font-medium text-blue-600 bg-blue-50 dark:bg-blue-900/30 dark:text-blue-300 px-3 py-1 rounded-full">{periodLabel}</span>
                     </div>
+                    {/* Charts usually support dark mode via props or CSS variables, we might need to update SalesChart later */}
                     <SalesChart data={salesTrend} isLoading={isLoadingTrend} />
                 </div>
 
                 {/* Top Products */}
-                <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                    <h3 className="text-lg font-bold text-gray-900 mb-4">Top Selling Products</h3>
+                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 transition-colors">
+                    <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-4">{t('dashboard.top_selling')}</h3>
                     <TopProducts data={topProducts} isLoading={isLoadingTop} />
                 </div>
             </div>
@@ -237,9 +241,9 @@ export function DashboardPage() {
 function ActionButton({ to, label, icon, variant = 'primary' }: any) {
     const baseStyles = "flex items-center gap-2 rounded-lg font-medium transition-all duration-200 shadow-sm whitespace-nowrap";
     const variants = {
-        "primary-large": "bg-indigo-600 text-white hover:bg-indigo-700 hover:shadow-md px-5 py-2.5 text-base active:transform active:scale-95 ring-2 ring-indigo-100",
+        "primary-large": "bg-indigo-600 text-white hover:bg-indigo-700 hover:shadow-md px-5 py-2.5 text-base active:transform active:scale-95 ring-2 ring-indigo-100 dark:ring-indigo-900",
         primary: "bg-blue-600 text-white hover:bg-blue-700 hover:shadow-md px-4 py-2 text-sm active:transform active:scale-95",
-        outline: "bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 hover:border-gray-300 px-4 py-2 text-sm active:transform active:scale-95"
+        outline: "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300 px-4 py-2 text-sm active:transform active:scale-95"
     };
 
     return (
@@ -252,21 +256,21 @@ function ActionButton({ to, label, icon, variant = 'primary' }: any) {
 
 function StatCard({ title, value, icon, color, isLoading }: any) {
     const colors: any = {
-        blue: 'bg-blue-50 text-blue-600',
-        indigo: 'bg-indigo-50 text-indigo-600',
-        yellow: 'bg-yellow-50 text-yellow-600',
-        purple: 'bg-purple-50 text-purple-600',
+        blue: 'bg-blue-50 text-blue-600 dark:bg-blue-900/40 dark:text-blue-400',
+        indigo: 'bg-indigo-50 text-indigo-600 dark:bg-indigo-900/40 dark:text-indigo-400',
+        yellow: 'bg-yellow-50 text-yellow-600 dark:bg-yellow-900/40 dark:text-yellow-400',
+        purple: 'bg-purple-50 text-purple-600 dark:bg-purple-900/40 dark:text-purple-400',
     };
 
     return (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 transition-colors">
             <div className="flex items-center justify-between">
                 <div>
-                    <p className="text-sm font-medium text-gray-500">{title}</p>
+                    <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{title}</p>
                     {isLoading ? (
-                        <div className="h-8 w-24 bg-gray-100 rounded animate-pulse mt-1"></div>
+                        <div className="h-8 w-24 bg-gray-100 dark:bg-gray-700 rounded animate-pulse mt-1"></div>
                     ) : (
-                        <p className="text-2xl font-bold text-gray-900 mt-1">{value}</p>
+                        <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{value}</p>
                     )}
                 </div>
                 <div className={`p-3 rounded-lg ${colors[color]}`}>

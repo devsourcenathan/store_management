@@ -1,0 +1,15 @@
+{
+    "validation": {
+        "NOT_EMPTY": "La valeur ne peut pas être vide",
+        "EMAIL": "L'email doit être valide",
+        "MIN_LENGTH": "La longueur minimale est de {min} caractères"
+    },
+    "auth": {
+        "INVALID_CREDENTIALS": "Email ou mot de passe incorrect",
+        "USER_NOT_FOUND": "Utilisateur non trouvé"
+    },
+    "errors": {
+        "FORBIDDEN_STORE": "Vous n'avez pas accès à cette boutique",
+        "NOT_FOUND": "Ressource non trouvée"
+    }
+}

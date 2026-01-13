@@ -1,0 +1,89 @@
+{
+    "common": {
+        "loading": "Loading...",
+        "save": "Save",
+        "cancel": "Cancel",
+        "delete": "Delete",
+        "edit": "Edit",
+        "create": "Create",
+        "actions": "Actions",
+        "confirm": "Confirm",
+        "back": "Back",
+        "error": "An error occurred",
+        "success": "Success"
+    },
+    "nav": {
+        "dashboard": "Dashboard",
+        "products": "Products",
+        "categories": "Categories",
+        "stock": "Stock",
+        "pos": "Point of Sale",
+        "sales": "Sales History",
+        "sales_history": "Sales History",
+        "customers": "Customers",
+        "suppliers": "Suppliers",
+        "supply_orders": "Supply Orders",
+        "subscriptions": "Subscriptions",
+        "services": "Offers & Services",
+        "settings": "Settings",
+        "balance": "Balance",
+        "online": "Online",
+        "offline": "Offline",
+        "logout": "Logout"
+    },
+    "dashboard": {
+        "title": "Dashboard",
+        "subtitle": "Overview of your store performance",
+        "today_revenue": "Today's Revenue",
+        "total_products": "Total Products",
+        "low_stock": "Low Stock Alerts",
+        "pending_orders": "Pending Orders",
+        "sales_trend": "Sales Trend",
+        "revenue_trend": "Revenue Trend",
+        "top_products": "Top Products",
+        "top_selling": "Top Selling Products",
+        "period": "Period:",
+        "actions": {
+            "pos": "Open POS",
+            "history": "History",
+            "products": "Products",
+            "stock": "Stock"
+        },
+        "filters": {
+            "today": "Today",
+            "this_week": "This Week",
+            "this_month": "This Month",
+            "this_quarter": "This Quarter",
+            "this_year": "This Year",
+            "custom": "Custom Range"
+        }
+    },
+    "pos": {
+        "search_placeholder": "Search products...",
+        "all_categories": "All Categories",
+        "cart_empty": "Cart is empty",
+        "total": "Total",
+        "subtotal": "Subtotal",
+        "tax": "Tax",
+        "pay_now": "Pay Now",
+        "payment_method": "Payment Method",
+        "cash": "Cash",
+        "card": "Card",
+        "mobile": "Mobile",
+        "change": "Change",
+        "process_sale": "Process Sale",
+        "select_customer": "Select Customer",
+        "walk_in_customer": "Walk-in Customer",
+        "payment_success": "Payment Successful!"
+    },
+    "auth": {
+        "login": "Login",
+        "email": "Email",
+        "password": "Password",
+        "sign_in": "Sign In",
+        "no_account": "Don't have an account?",
+        "register": "Register",
+        "welcome_back": "Admin Interface",
+        "login_subtitle": "Enter your email below to login to your account"
+    }
+}

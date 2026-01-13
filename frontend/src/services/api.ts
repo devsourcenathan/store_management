@@ -23,6 +23,10 @@ api.interceptors.request.use(
     }
 );
 
+import { toast } from 'sonner';
+
+// ... (API instantiation)
+
 // Response interceptor for error handling
 api.interceptors.response.use(
     (response) => response,
@@ -30,16 +34,15 @@ api.interceptors.response.use(
         if (error.response?.status === 401) {
             // Clear token and redirect to login
             localStorage.removeItem('access_token');
-            window.location.href = '/login';
+            // Check if we are already on login page to avoid loop
+            if (!window.location.pathname.includes('/login')) {
+                window.location.href = '/login';
+            }
         } else if (error.response?.status === 403) {
             // Show forbidden error
-            // We need to import toast dynamically or use a custom event because we are outside React context
-            // But since this file is imported in React components, we can export an event emitter or just try to use sonner if it supports external calls
-            // For now, let's just reject, and components using useQuery will catch it.
-            // ACTUALLY, usually we want a global toast.
-            // Let's assume we can throw a specific error that the query client global error handler can catch, 
-            // or just use window.dispatchEvent if we want to be decoupled
-            console.error('Access verification failed', error);
+            toast.error('Access Denied: You do not have permission to perform this action.');
+        } else if (error.response?.status >= 500) {
+            toast.error('Server Error: Something went wrong. Please try again later.');
         }
         return Promise.reject(error);
     }

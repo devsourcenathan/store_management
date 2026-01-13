@@ -1,0 +1,15 @@
+{
+    "validation": {
+        "NOT_EMPTY": "Value cannot be empty",
+        "EMAIL": "Email must be valid",
+        "MIN_LENGTH": "Minimum length is {min} characters"
+    },
+    "auth": {
+        "INVALID_CREDENTIALS": "Invalid email or password",
+        "USER_NOT_FOUND": "User not found"
+    },
+    "errors": {
+        "FORBIDDEN_STORE": "You do not have access to this store",
+        "NOT_FOUND": "Resource not found"
+    }
+}

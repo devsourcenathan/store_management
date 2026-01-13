@@ -4,8 +4,10 @@ import { api } from '@/services/api';
 import { Plus, Pencil, Trash2, Mail, Lock, User, Briefcase, Check, Store } from 'lucide-react';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/Sheet';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 
 export function UserList() {
+    const { t } = useTranslation();
     const [isSheetOpen, setIsSheetOpen] = useState(false);
     const [editingUser, setEditingUser] = useState<any>(null);
 
@@ -33,10 +35,10 @@ export function UserList() {
             queryClient.invalidateQueries({ queryKey: ['users'] });
             setIsSheetOpen(false);
             setEditingUser(null);
-            toast.success('User invited successfully');
+            toast.success(t('settings.team.messages.invite_success'));
         },
         onError: (err: any) => {
-            toast.error(err.response?.data?.message || 'Failed to create user');
+            toast.error(err.response?.data?.message || t('settings.team.messages.invite_error'));
         }
     });
 
@@ -46,7 +48,7 @@ export function UserList() {
             queryClient.invalidateQueries({ queryKey: ['users'] });
             setIsSheetOpen(false);
             setEditingUser(null);
-            toast.success('User updated successfully');
+            toast.success(t('settings.team.messages.update_success'));
         }
     });
 
@@ -54,7 +56,7 @@ export function UserList() {
         mutationFn: async (id: string) => api.delete(`/users/${id}`),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['users'] });
-            toast.success('User removed');
+            toast.success(t('settings.team.messages.delete_success'));
         }
     });
 
@@ -89,76 +91,76 @@ export function UserList() {
         setIsSheetOpen(true);
     }
 
-    if (isLoading) return <div className="p-8 text-center text-gray-500">Loading users...</div>;
+    if (isLoading) return <div className="p-8 text-center text-gray-500 dark:text-gray-400">{t('common.loading')}...</div>;
 
     return (
         <div className="space-y-6">
-            <div className="flex justify-between items-center bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+            <div className="flex justify-between items-center bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm transition-colors">
                 <div>
-                    <h3 className="text-lg font-semibold text-gray-900">Team Members</h3>
-                    <p className="text-sm text-gray-500">Manage access and roles for your organization</p>
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{t('settings.team.title')}</h3>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">{t('settings.team.subtitle')}</p>
                 </div>
                 <button
                     onClick={() => handleOpenSheet(null)}
                     className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
                 >
                     <Plus className="w-4 h-4" />
-                    Invite User
+                    {t('settings.team.invite_user')}
                 </button>
             </div>
 
-            <div className="bg-white border text-left rounded-lg overflow-hidden shadow-sm">
-                <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
+            <div className="bg-white dark:bg-gray-800 border dark:border-gray-700 text-left rounded-lg overflow-hidden shadow-sm transition-colors">
+                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                    <thead className="bg-gray-50 dark:bg-gray-700/50">
                         <tr>
-                            <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">User</th>
-                            <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Role</th>
-                            <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Stores</th>
-                            <th className="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
+                            <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('settings.team.list.user')}</th>
+                            <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('settings.team.list.role')}</th>
+                            <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('settings.team.list.stores')}</th>
+                            <th className="px-6 py-3 text-right text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('settings.team.list.actions')}</th>
                         </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
+                    <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                         {users?.map((user: any) => (
-                            <tr key={user.id} className="hover:bg-gray-50 transition-colors">
+                            <tr key={user.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
                                 <td className="px-6 py-4 whitespace-nowrap">
                                     <div className="flex items-center">
-                                        <div className="h-10 w-10 flex-shrink-0 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-full flex items-center justify-center text-blue-700 font-bold border border-blue-200 shadow-sm">
+                                        <div className="h-10 w-10 flex-shrink-0 bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-blue-900 dark:to-indigo-900 rounded-full flex items-center justify-center text-blue-700 dark:text-blue-300 font-bold border border-blue-200 dark:border-blue-800 shadow-sm">
                                             {user.firstName[0]}{user.lastName[0]}
                                         </div>
                                         <div className="ml-4">
-                                            <div className="text-sm font-medium text-gray-900">{user.firstName} {user.lastName}</div>
-                                            <div className="text-sm text-gray-500">{user.email}</div>
+                                            <div className="text-sm font-medium text-gray-900 dark:text-gray-100">{user.firstName} {user.lastName}</div>
+                                            <div className="text-sm text-gray-500 dark:text-gray-400">{user.email}</div>
                                         </div>
                                     </div>
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap">
                                     <span className={`px-2.5 py-0.5 inline-flex items-center gap-1 text-xs font-medium rounded-full border
-                                        ${user.role === 'OWNER' ? 'bg-purple-50 text-purple-700 border-purple-200' :
-                                            user.role === 'MANAGER' ? 'bg-blue-50 text-blue-700 border-blue-200' :
-                                                'bg-green-50 text-green-700 border-green-200'}`}>
+                                        ${user.role === 'OWNER' ? 'bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800' :
+                                            user.role === 'MANAGER' ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800' :
+                                                'bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300 border-green-200 dark:border-green-800'}`}>
                                         {user.role === 'OWNER' && <Check className="w-3 h-3" />}
                                         {user.role}
                                     </span>
                                 </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    {user.stores?.length || 0} stores
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                    {t('settings.team.list.stores_count', { count: user.stores?.length || 0 })}
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                     <div className="flex justify-end gap-2">
                                         <button
                                             onClick={() => handleOpenSheet(user)}
-                                            className="p-1 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
+                                            className="p-1 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/40 rounded-md transition-colors"
                                         >
                                             <Pencil className="w-4 h-4" />
                                         </button>
                                         {user.role !== 'OWNER' && (
                                             <button
                                                 onClick={() => {
-                                                    if (confirm('Are you sure you want to remove this user?')) {
+                                                    if (confirm(t('settings.team.delete_confirm'))) {
                                                         deleteMutation.mutate(user.id);
                                                     }
                                                 }}
-                                                className="p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
+                                                className="p-1 text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/40 rounded-md transition-colors"
                                             >
                                                 <Trash2 className="w-4 h-4" />
                                             </button>
@@ -172,11 +174,11 @@ export function UserList() {
             </div>
 
             <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-                <SheetContent className="w-[400px] sm:w-[540px]">
+                <SheetContent className="w-[400px] sm:w-[540px] dark:bg-gray-800 dark:text-gray-100">
                     <SheetHeader>
-                        <SheetTitle className="text-2xl">{editingUser ? 'Edit Team Member' : 'Invite New Member'}</SheetTitle>
-                        <SheetDescription>
-                            {editingUser ? 'Update user details and access rights.' : 'Send an invitation to join your organization.'}
+                        <SheetTitle className="text-2xl dark:text-gray-100">{editingUser ? t('settings.team.form.edit_title') : t('settings.team.form.invite_title')}</SheetTitle>
+                        <SheetDescription className="dark:text-gray-400">
+                            {editingUser ? t('settings.team.form.edit_desc') : t('settings.team.form.invite_desc')}
                         </SheetDescription>
                     </SheetHeader>
 
@@ -185,24 +187,24 @@ export function UserList() {
                         {/* Name Section */}
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                                <label className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
                                     <User className="w-4 h-4 text-gray-400" />
-                                    First Name
+                                    {t('settings.team.form.first_name')}
                                 </label>
                                 <input
                                     name="firstName"
                                     defaultValue={editingUser?.firstName}
-                                    className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                                    className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
                                     placeholder="John"
                                     required
                                 />
                             </div>
                             <div className="space-y-2">
-                                <label className="text-sm font-medium text-gray-700">Last Name</label>
+                                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('settings.team.form.last_name')}</label>
                                 <input
                                     name="lastName"
                                     defaultValue={editingUser?.lastName}
-                                    className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                                    className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
                                     placeholder="Doe"
                                     required
                                 />
@@ -211,113 +213,108 @@ export function UserList() {
 
                         {/* Email */}
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
                                 <Mail className="w-4 h-4 text-gray-400" />
-                                Email Address
+                                {t('settings.team.form.email')}
                             </label>
                             <input
                                 name="email"
                                 type="email"
                                 defaultValue={editingUser?.email}
                                 disabled={!!editingUser}
-                                className={`w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 outline-none transition-all ${editingUser ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : ''}`}
+                                className={`w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 outline-none transition-all ${editingUser ? 'bg-gray-100 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed' : 'dark:bg-gray-700 dark:text-white'}`}
                                 placeholder="john@example.com"
                                 required
                             />
-                            {editingUser && <p className="text-xs text-gray-400">Email cannot be changed after creation.</p>}
+                            {editingUser && <p className="text-xs text-gray-400">{t('settings.team.form.email_hint')}</p>}
                         </div>
 
                         {/* Password (Only for new users) */}
                         {!editingUser && (
                             <div className="space-y-2">
-                                <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                                <label className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
                                     <Lock className="w-4 h-4 text-gray-400" />
-                                    Initial Password
+                                    {t('settings.team.form.password')}
                                 </label>
                                 <input
                                     name="password"
                                     type="password"
-                                    className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                                    className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none transition-all"
                                     placeholder="••••••••"
                                     required
                                     minLength={6}
                                 />
-                                <p className="text-xs text-gray-500">Must be at least 6 characters long.</p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400">{t('settings.team.form.password_hint')}</p>
                             </div>
                         )}
 
                         {/* Role Selection */}
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
                                 <Briefcase className="w-4 h-4 text-gray-400" />
-                                Role
+                                {t('settings.team.form.role')}
                             </label>
                             <div className="grid grid-cols-3 gap-3">
-                                {['STAFF', 'MANAGER', 'OWNER'].map((role) => (
+                                {[].map((role) => (
                                     <label key={role} className={`
                                         relative flex flex-col items-center justify-center p-3 rounded-xl border-2 cursor-pointer transition-all
-                                        ${(editingUser?.role || 'STAFF') === role // This simple check won't work perfectly with controlled/uncontrolled mix, but relying on default value:
-                                        // To make this visually toggleable properly without state, we rely on the radio input logic + CSS peer-checked or similar, 
-                                        // OR we just use a select. But user asked for "improved style".
-                                        // Let's stick to a styled Select for simplicity and robustness in this uncontrolled form, 
-                                        // OR use a radio group. Let's use a Select but styled better.
+                                        ${(editingUser?.role || 'STAFF') === role
                                         } 
                                     `}>
-                                        {/* Actually, let's just use a nice select dropdown for now to ensure form data capture works easily with native FormData */}
                                     </label>
                                 ))}
                                 <select
                                     name="role"
                                     defaultValue={editingUser?.role || 'STAFF'}
-                                    className="col-span-3 w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 outline-none bg-white"
+                                    className="col-span-3 w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
                                 >
-                                    <option value="STAFF">Staff (Limited Access)</option>
-                                    <option value="MANAGER">Manager (Store Admin)</option>
-                                    <option value="OWNER">Owner (Full Access)</option>
+                                    <option value="STAFF">{t('settings.team.form.roles.staff')}</option>
+                                    <option value="MANAGER">{t('settings.team.form.roles.manager')}</option>
+                                    <option value="OWNER">{t('settings.team.form.roles.owner')}</option>
                                 </select>
                             </div>
-                            <p className="text-xs text-gray-500">
-                                Staff members can process sales. Managers can manage stock. Owners have full access.
+                            <p className="text-xs text-gray-500 dark:text-gray-400">
+                                {t('settings.team.form.role_hint')}
                             </p>
                         </div>
 
                         {/* Store Selection */}
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
                                 <Store className="w-4 h-4 text-gray-400" />
-                                Assigned Stores
+                                {t('settings.team.form.stores')}
                             </label>
                             {isLoadingStores ? (
-                                <div className="text-sm text-gray-500">Loading stores...</div>
+                                <div className="text-sm text-gray-500 dark:text-gray-400">{t('settings.team.form.loading_stores')}</div>
                             ) : (
-                                <div className="grid grid-cols-1 gap-2 border rounded-lg p-3 max-h-40 overflow-y-auto">
+                                <div className="grid grid-cols-1 gap-2 border border-gray-300 dark:border-gray-600 rounded-lg p-3 max-h-40 overflow-y-auto">
                                     {stores?.map((store: any) => {
                                         const isAssigned = editingUser?.stores?.some((s: any) => s.storeId === store.id);
                                         return (
-                                            <label key={store.id} className="flex items-center space-x-3 p-2 hover:bg-gray-50 rounded cursor-pointer transition-colors">
+                                            <label key={store.id} className="flex items-center space-x-3 p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded cursor-pointer transition-colors">
                                                 <input
                                                     type="checkbox"
                                                     name="storeIds"
                                                     value={store.id}
                                                     defaultChecked={isAssigned}
-                                                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-500 rounded bg-white dark:bg-gray-600"
                                                 />
-                                                <span className="text-sm text-gray-700 font-medium">{store.name}</span>
+                                                <span className="text-sm text-gray-700 dark:text-gray-300 font-medium">{store.name}</span>
                                             </label>
                                         );
                                     })}
                                 </div>
                             )}
-                            <p className="text-xs text-gray-500">Select which stores this user can access.</p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">{t('settings.team.form.stores_hint')}</p>
                         </div>
 
                         <div className="pt-6 flex justify-end gap-3">
                             <button
                                 type="button"
                                 onClick={() => setIsSheetOpen(false)}
-                                className="px-4 py-2 text-gray-700 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors font-medium"
+                                className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-lg transition-colors font-medium"
                             >
-                                Cancel
+                                {t('common.cancel')}
                             </button>
                             <button
                                 type="submit"
@@ -325,11 +322,11 @@ export function UserList() {
                             >
                                 {editingUser ? (
                                     <>
-                                        <Check className="w-4 h-4" /> Save Changes
+                                        <Check className="w-4 h-4" /> {t('settings.team.form.save')}
                                     </>
                                 ) : (
                                     <>
-                                        <Plus className="w-4 h-4" /> Send Invitation
+                                        <Plus className="w-4 h-4" /> {t('settings.team.form.send_invite')}
                                     </>
                                 )}
                             </button>

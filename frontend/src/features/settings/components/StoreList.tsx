@@ -4,8 +4,10 @@ import { api } from '@/services/api';
 import { Plus, Pencil, Trash2, MapPin, Phone } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/Dialog';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 
 export function StoreList() {
+    const { t } = useTranslation();
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [editingStore, setEditingStore] = useState<any>(null);
 
@@ -25,7 +27,7 @@ export function StoreList() {
             queryClient.invalidateQueries({ queryKey: ['stores'] });
             setIsDialogOpen(false);
             setEditingStore(null);
-            toast.success('Store created successfully');
+            toast.success(t('settings.stores.messages.create_success'));
         }
     });
 
@@ -35,7 +37,7 @@ export function StoreList() {
             queryClient.invalidateQueries({ queryKey: ['stores'] });
             setIsDialogOpen(false);
             setEditingStore(null);
-            toast.success('Store updated successfully');
+            toast.success(t('settings.stores.messages.update_success'));
         }
     });
 
@@ -43,7 +45,7 @@ export function StoreList() {
         mutationFn: async (id: string) => api.delete(`/stores/${id}`),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['stores'] });
-            toast.success('Store deleted');
+            toast.success(t('settings.stores.messages.delete_success'));
         }
     });
 
@@ -59,38 +61,38 @@ export function StoreList() {
         }
     };
 
-    if (isLoading) return <div>Loading...</div>;
+    if (isLoading) return <div>{t('common.loading')}...</div>;
 
     return (
         <div className="space-y-6">
-            <div className="flex justify-between items-center">
+            <div className="flex justify-between items-center bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm transition-colors">
                 <div>
-                    <h3 className="text-lg font-medium text-gray-900">Stores</h3>
-                    <p className="text-sm text-gray-500">Manage your business locations</p>
+                    <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">{t('settings.stores.title')}</h3>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">{t('settings.stores.subtitle')}</p>
                 </div>
                 <button
                     onClick={() => { setEditingStore(null); setIsDialogOpen(true); }}
                     className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
                 >
                     <Plus className="w-4 h-4" />
-                    Add Store
+                    {t('settings.stores.add_store')}
                 </button>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {stores?.map((store: any) => (
-                    <div key={store.id} className="bg-white border rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow">
+                    <div key={store.id} className="bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow">
                         <div className="flex justify-between items-start mb-4">
                             <div>
-                                <h4 className="font-semibold text-lg text-gray-900">{store.name}</h4>
+                                <h4 className="font-semibold text-lg text-gray-900 dark:text-gray-100">{store.name}</h4>
                                 {store.address && (
-                                    <div className="flex items-center gap-2 text-gray-500 text-sm mt-1">
+                                    <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-sm mt-1">
                                         <MapPin className="w-3 h-3" />
                                         {store.address}
                                     </div>
                                 )}
                                 {store.phone && (
-                                    <div className="flex items-center gap-2 text-gray-500 text-sm mt-1">
+                                    <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-sm mt-1">
                                         <Phone className="w-3 h-3" />
                                         {store.phone}
                                     </div>
@@ -99,17 +101,17 @@ export function StoreList() {
                             <div className="flex gap-2">
                                 <button
                                     onClick={() => { setEditingStore(store); setIsDialogOpen(true); }}
-                                    className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded"
+                                    className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:text-blue-400 dark:hover:bg-blue-900/40 rounded"
                                 >
                                     <Pencil className="w-4 h-4" />
                                 </button>
                                 <button
                                     onClick={() => {
-                                        if (confirm('Are you sure? This cannot be undone.')) {
+                                        if (confirm(t('settings.stores.delete_confirm'))) {
                                             deleteMutation.mutate(store.id);
                                         }
                                     }}
-                                    className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded"
+                                    className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 dark:hover:text-red-400 dark:hover:bg-red-900/40 rounded"
                                 >
                                     <Trash2 className="w-4 h-4" />
                                 </button>
@@ -120,52 +122,52 @@ export function StoreList() {
             </div>
 
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                <DialogContent>
+                <DialogContent className="dark:bg-gray-800 dark:text-gray-100 dark:border-gray-700">
                     <DialogHeader>
-                        <DialogTitle>{editingStore ? 'Edit Store' : 'New Store'}</DialogTitle>
+                        <DialogTitle>{editingStore ? t('settings.stores.edit_store') : t('settings.stores.new_store')}</DialogTitle>
                     </DialogHeader>
                     <form onSubmit={handleSubmit} className="space-y-4">
                         <div>
-                            <label className="block text-sm font-medium mb-1">Store Name</label>
+                            <label className="block text-sm font-medium mb-1 dark:text-gray-300">{t('settings.stores.form.name')}</label>
                             <input
                                 name="name"
                                 defaultValue={editingStore?.name}
-                                className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500"
                                 required
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium mb-1">Address</label>
+                            <label className="block text-sm font-medium mb-1 dark:text-gray-300">{t('settings.stores.form.address')}</label>
                             <input
                                 name="address"
                                 defaultValue={editingStore?.address}
-                                className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500"
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium mb-1">Phone</label>
+                            <label className="block text-sm font-medium mb-1 dark:text-gray-300">{t('settings.stores.form.phone')}</label>
                             <input
                                 name="phone"
                                 defaultValue={editingStore?.phone}
-                                className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500"
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium mb-1">Email</label>
+                            <label className="block text-sm font-medium mb-1 dark:text-gray-300">{t('settings.stores.form.email')}</label>
                             <input
                                 name="email"
                                 type="email"
                                 defaultValue={editingStore?.email}
-                                className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500"
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium mb-1">Receipt Footer</label>
+                            <label className="block text-sm font-medium mb-1 dark:text-gray-300">{t('settings.stores.form.receipt_footer')}</label>
                             <textarea
                                 name="receiptFooter"
                                 defaultValue={editingStore?.receiptFooter}
                                 rows={2}
-                                className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500"
                                 placeholder="Thank you for your visit!"
                             />
                         </div>
@@ -173,15 +175,15 @@ export function StoreList() {
                             <button
                                 type="button"
                                 onClick={() => setIsDialogOpen(false)}
-                                className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-md"
+                                className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md"
                             >
-                                Cancel
+                                {t('common.cancel')}
                             </button>
                             <button
                                 type="submit"
                                 className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
                             >
-                                {editingStore ? 'Save Changes' : 'Create Store'}
+                                {editingStore ? t('settings.stores.form.save') : t('settings.stores.form.create')}
                             </button>
                         </div>
                     </form>

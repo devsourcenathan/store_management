@@ -1,0 +1,89 @@
+{
+    "common": {
+        "loading": "Chargement...",
+        "save": "Enregistrer",
+        "cancel": "Annuler",
+        "delete": "Supprimer",
+        "edit": "Modifier",
+        "create": "Créer",
+        "actions": "Actions",
+        "confirm": "Confirmer",
+        "back": "Retour",
+        "error": "Une erreur est survenue",
+        "success": "Succès"
+    },
+    "nav": {
+        "dashboard": "Tableau de bord",
+        "products": "Produits",
+        "categories": "Catégories",
+        "stock": "Stock",
+        "pos": "Point de Vente",
+        "sales": "Ventes",
+        "sales_history": "Historique Ventes",
+        "customers": "Clients",
+        "suppliers": "Fournisseurs",
+        "supply_orders": "Commandes Fourn.",
+        "subscriptions": "Abonnements",
+        "services": "Offres & Services",
+        "settings": "Paramètres",
+        "balance": "Solde",
+        "online": "En ligne",
+        "offline": "Hors ligne",
+        "logout": "Déconnexion"
+    },
+    "dashboard": {
+        "title": "Tableau de bord",
+        "subtitle": "Aperçu des performances de votre boutique",
+        "today_revenue": "Revenu Auj.",
+        "total_products": "Total Produits",
+        "low_stock": "Alertes Stock",
+        "pending_orders": "Commandes en cours",
+        "sales_trend": "Tendance des ventes",
+        "revenue_trend": "Évolution du Revenu",
+        "top_products": "Top Produits",
+        "top_selling": "Produits les plus vendus",
+        "period": "Période :",
+        "actions": {
+            "pos": "Ouvrir Caisse",
+            "history": "Historique",
+            "products": "Produits",
+            "stock": "Stock"
+        },
+        "filters": {
+            "today": "Aujourd'hui",
+            "this_week": "Cette Semaine",
+            "this_month": "Ce Mois",
+            "this_quarter": "Ce Trimestre",
+            "this_year": "Cette Année",
+            "custom": "Personnalisé"
+        }
+    },
+    "pos": {
+        "search_placeholder": "Rechercher un produit...",
+        "all_categories": "Toutes Catégories",
+        "cart_empty": "Le panier est vide",
+        "total": "Total",
+        "subtotal": "Sous-total",
+        "tax": "Taxe",
+        "pay_now": "Payer maintenant",
+        "payment_method": "Méthode de paiement",
+        "cash": "Espèces",
+        "card": "Carte",
+        "mobile": "Mobile",
+        "change": "Monnaie",
+        "process_sale": "Valider la vente",
+        "select_customer": "Sélectionner un client",
+        "walk_in_customer": "Client de passage",
+        "payment_success": "Paiement réussi !"
+    },
+    "auth": {
+        "login": "Connexion",
+        "email": "Email",
+        "password": "Mot de passe",
+        "sign_in": "Se connecter",
+        "no_account": "Pas de compte ?",
+        "register": "S'inscrire",
+        "welcome_back": "L'interface d'administration",
+        "login_subtitle": "Entrez vos identifiants pour accéder à votre compte"
+    }
+}

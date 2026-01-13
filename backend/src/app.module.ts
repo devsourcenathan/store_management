@@ -1,5 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { AcceptLanguageResolver, I18nModule, QueryResolver } from 'nestjs-i18n';
+import * as path from 'path';
 import { PrismaModule } from './common/prisma/prisma.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { OrganizationsModule } from './modules/organizations/organizations.module';
@@ -22,6 +24,17 @@ import { AnalyticsModule } from './modules/analytics/analytics.module';
     imports: [
         ConfigModule.forRoot({
             isGlobal: true,
+        }),
+        I18nModule.forRoot({
+            fallbackLanguage: 'fr',
+            loaderOptions: {
+                path: path.join(__dirname, '/i18n/'),
+                watch: true,
+            },
+            resolvers: [
+                { use: QueryResolver, options: ['lang'] },
+                AcceptLanguageResolver,
+            ],
         }),
         PrismaModule,
         AuthModule,

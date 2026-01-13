@@ -1,0 +1,7 @@
+{
+    "error": {
+        "store_access_denied": "You do not have access to this store",
+        "store_id_required": "Store ID is required for staff members",
+        "unauthorized": "Unauthorized access"
+    }
+}
