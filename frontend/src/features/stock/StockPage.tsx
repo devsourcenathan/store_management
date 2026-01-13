@@ -4,6 +4,13 @@ import { api } from '@/services/api';
 import { useAuth } from '../auth/useAuth';
 import { useStore } from '../stores/StoreProvider';
 import { TransferModal } from './TransferModal';
+import {
+    Sheet,
+    SheetContent,
+    SheetHeader,
+    SheetTitle,
+    SheetDescription,
+} from "@/components/ui/Sheet";
 
 interface StockMovement {
     id: string;
@@ -178,102 +185,98 @@ export function StockPage() {
                 </div>
             </div>
 
-            {/* New Movement Modal */}
-            {isModalOpen && (
-                <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
-                    <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
-                        <div className="flex justify-between items-center mb-4">
-                            <h3 className="text-xl font-bold">New Stock Movement</h3>
-                            <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-gray-600">
-                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                </svg>
-                            </button>
+            {/* New Movement Sheet */}
+            <Sheet open={isModalOpen} onOpenChange={setIsModalOpen}>
+                <SheetContent side="right" className="sm:max-w-md overflow-y-auto">
+                    <SheetHeader className="mb-6">
+                        <SheetTitle>New Stock Movement</SheetTitle>
+                        <SheetDescription>
+                            Record a manual entry, supply, or return.
+                        </SheetDescription>
+                    </SheetHeader>
+                    <form onSubmit={handleSubmit} className="space-y-6">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">Product</label>
+                            <select
+                                required
+                                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                                value={formData.productId}
+                                onChange={(e) => setFormData({ ...formData, productId: e.target.value })}
+                            >
+                                <option value="">Select a product</option>
+                                {products?.map(p => <option key={p.id} value={p.id}>{p.name} ({p.sku})</option>)}
+                            </select>
                         </div>
-                        <form onSubmit={handleSubmit} className="space-y-4">
+                        <div className="grid grid-cols-1 gap-4">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700">Product</label>
+                                <label className="block text-sm font-medium text-gray-700">Movement Type</label>
                                 <select
                                     required
                                     className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
-                                    value={formData.productId}
-                                    onChange={(e) => setFormData({ ...formData, productId: e.target.value })}
+                                    value={formData.type}
+                                    onChange={(e) => setFormData({ ...formData, type: e.target.value as any })}
                                 >
-                                    <option value="">Select a product</option>
-                                    {products?.map(p => <option key={p.id} value={p.id}>{p.name} ({p.sku})</option>)}
+                                    <option value="IN">Inbound (IN)</option>
+                                    <option value="OUT">Outbound (OUT)</option>
+                                    <option value="ADJUST">Adjustment (ADJUST)</option>
+                                    <option value="RETURN">Return (RETURN)</option>
                                 </select>
                             </div>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700">Movement Type</label>
-                                    <select
-                                        required
-                                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
-                                        value={formData.type}
-                                        onChange={(e) => setFormData({ ...formData, type: e.target.value as any })}
-                                    >
-                                        <option value="IN">Inbound (IN)</option>
-                                        <option value="OUT">Outbound (OUT)</option>
-                                        <option value="ADJUST">Adjustment (ADJUST)</option>
-                                        <option value="RETURN">Return (RETURN)</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700">Source</label>
-                                    <select
-                                        required
-                                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
-                                        value={formData.source}
-                                        onChange={(e) => setFormData({ ...formData, source: e.target.value as any })}
-                                    >
-                                        <option value="MANUAL">Manual (MANUAL)</option>
-                                        <option value="SUPPLY">Supply (SUPPLY)</option>
-                                        <option value="SALE">Sale (SALE)</option>
-                                        <option value="RETURN">Return (RETURN)</option>
-                                    </select>
-                                </div>
-                            </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700">Quantity</label>
-                                <input
-                                    type="number"
+                                <label className="block text-sm font-medium text-gray-700">Source</label>
+                                <select
                                     required
-                                    min="1"
                                     className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
-                                    value={formData.quantity}
-                                    onChange={(e) => setFormData({ ...formData, quantity: parseInt(e.target.value) })}
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">Reference (Optional)</label>
-                                <input
-                                    type="text"
-                                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
-                                    value={formData.reference}
-                                    onChange={(e) => setFormData({ ...formData, reference: e.target.value })}
-                                    placeholder="e.g. INV-001"
-                                />
-                            </div>
-                            <div className="flex justify-end space-x-3 mt-6">
-                                <button
-                                    type="button"
-                                    onClick={() => setIsModalOpen(false)}
-                                    className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+                                    value={formData.source}
+                                    onChange={(e) => setFormData({ ...formData, source: e.target.value as any })}
                                 >
-                                    Cancel
-                                </button>
-                                <button
-                                    type="submit"
-                                    disabled={createMovementMutation.isPending || !formData.productId || !currentStore}
-                                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
-                                >
-                                    {createMovementMutation.isPending ? 'Saving...' : 'Save Movement'}
-                                </button>
+                                    <option value="MANUAL">Manual (MANUAL)</option>
+                                    <option value="SUPPLY">Supply (SUPPLY)</option>
+                                    <option value="SALE">Sale (SALE)</option>
+                                    <option value="RETURN">Return (RETURN)</option>
+                                </select>
                             </div>
-                        </form>
-                    </div>
-                </div>
-            )}
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">Quantity</label>
+                            <input
+                                type="number"
+                                required
+                                min="1"
+                                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                                value={formData.quantity}
+                                onChange={(e) => setFormData({ ...formData, quantity: parseInt(e.target.value) })}
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">Reference (Optional)</label>
+                            <input
+                                type="text"
+                                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                                value={formData.reference}
+                                onChange={(e) => setFormData({ ...formData, reference: e.target.value })}
+                                placeholder="e.g. INV-001"
+                            />
+                        </div>
+                        <div className="flex flex-col gap-3 pt-4">
+                            <button
+                                type="submit"
+                                disabled={createMovementMutation.isPending || !formData.productId || !currentStore}
+                                className="w-full px-4 py-3 bg-blue-600 text-white rounded-md font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors"
+                            >
+                                {createMovementMutation.isPending ? 'Saving...' : 'Save Movement'}
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setIsModalOpen(false)}
+                                className="w-full px-4 py-3 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 font-medium transition-colors"
+                            >
+                                Cancel
+                            </button>
+                        </div>
+                    </form>
+                </SheetContent>
+            </Sheet>
 
             {/* Transfer Modal */}
             {isTransferModalOpen && (
