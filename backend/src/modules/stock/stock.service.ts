@@ -208,4 +208,53 @@ export class StockService {
 
         return { count: alertsCreated };
     }
+
+    async checkStockAndAlert(productId: string, storeId: string) {
+        // Calculate current stock
+        const currentStock = await this.stockCalculation.calculateCurrentStock(productId, storeId);
+
+        // Get product to check minStock
+        const product = await this.prisma.product.findUnique({
+            where: { id: productId },
+            select: { minStock: true },
+        });
+
+        if (!product) return;
+
+        if (currentStock <= product.minStock) {
+            // Check if active alert already exists
+            const existingAlert = await this.prisma.stockAlert.findFirst({
+                where: {
+                    storeId,
+                    productId,
+                    acknowledged: false,
+                },
+            });
+
+            if (!existingAlert) {
+                await this.prisma.stockAlert.create({
+                    data: {
+                        productId,
+                        storeId,
+                        threshold: product.minStock,
+                        currentLevel: currentStock,
+                    },
+                });
+            }
+        } else {
+            // Auto-resolve existing alerts if stock is healthy
+            await this.prisma.stockAlert.updateMany({
+                where: {
+                    storeId,
+                    productId,
+                    acknowledged: false,
+                },
+                data: {
+                    acknowledged: true,
+                    acknowledgedBy: 'SYSTEM',
+                    acknowledgedAt: new Date(),
+                },
+            });
+        }
+    }
 }

@@ -7,6 +7,7 @@ import { DashboardPage } from '@/features/dashboard/DashboardPage';
 import { ProductsPage } from '@/features/products/ProductsPage';
 import { StockPage } from '@/features/stock/StockPage';
 import { SalesPage } from '@/features/sales/SalesPage';
+import { PosPage } from '@/features/sales/PosPage';
 import { CustomersPage } from '@/features/customers/CustomersPage';
 import { CategoriesPage } from '@/features/products/CategoriesPage';
 import { SuppliersPage } from '@/features/suppliers/SuppliersPage';
@@ -47,6 +48,7 @@ export function AppRouter() {
                 <Route path="categories" element={<CategoriesPage />} />
                 <Route path="stock" element={<StockPage />} />
                 <Route path="sales" element={<SalesPage />} />
+                <Route path="pos" element={<PosPage />} />
                 <Route path="customers" element={<CustomersPage />} />
                 <Route path="suppliers" element={<SuppliersPage />} />
                 <Route path="subscriptions" element={<SubscriptionsPage />} />

@@ -30,15 +30,16 @@ export class SalesService {
             return acc + (item.quantity * item.unitPrice) - (item.discount || 0);
         }, 0);
 
-        // Use a transaction to create sale and stock movements
-        return this.prisma.$transaction(async (tx) => {
+        // Use a transaction to create sale, payment, and stock movements
+        const sale = await this.prisma.$transaction(async (tx) => {
             // 1. Create the sale
             const sale = await tx.sale.create({
                 data: {
                     storeId,
                     customerId,
                     totalAmount,
-                    status: 'PAID', // Simplified
+                    paidAmount: totalAmount, // Assuming full payment for now
+                    status: 'PAID',
                     notes,
                     createdBy: userId,
                     items: {
@@ -53,7 +54,19 @@ export class SalesService {
                 },
             });
 
-            // 2. Create stock movements for each item
+            // 2. Create Payment Record (if payment method is provided)
+            if (data.paymentMethod) {
+                await tx.payment.create({
+                    data: {
+                        saleId: sale.id,
+                        amount: totalAmount,
+                        method: data.paymentMethod,
+                        createdBy: userId,
+                    },
+                });
+            }
+
+            // 3. Create stock movements for each item
             for (const item of items) {
                 await tx.stockMovement.create({
                     data: {
@@ -70,5 +83,14 @@ export class SalesService {
 
             return sale;
         });
+
+        // 4. Trigger Stock Alerts (After transaction commit)
+        // We do this outside the transaction to avoid locking implementation issues with Prisma
+        // and because alerts are "side effects" that can be eventually consistent.
+        for (const item of items) {
+            await this.stockService.checkStockAndAlert(item.productId, storeId);
+        }
+
+        return sale;
     }
 }

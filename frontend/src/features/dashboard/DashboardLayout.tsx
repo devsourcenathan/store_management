@@ -15,7 +15,8 @@ import {
     Wifi,
     WifiOff,
     RefreshCw,
-    LogOut
+    LogOut,
+    Calculator
 } from 'lucide-react';
 
 export function DashboardLayout() {
@@ -28,7 +29,8 @@ export function DashboardLayout() {
         { name: 'Products', href: '/products', icon: Package },
         { name: 'Categories', href: '/categories', icon: Tags },
         { name: 'Stock', href: '/stock', icon: Warehouse },
-        { name: 'Sales', href: '/sales', icon: ShoppingCart },
+        { name: 'Point of Sale', href: '/pos', icon: Calculator },
+        { name: 'Sales History', href: '/sales', icon: ShoppingCart },
         { name: 'Customers', href: '/customers', icon: Users },
         { name: 'Suppliers', href: '/suppliers', icon: Truck },
         { name: 'Subscriptions', href: '/subscriptions', icon: CreditCard },

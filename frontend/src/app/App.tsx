@@ -4,6 +4,7 @@ import { AppRouter } from './router';
 import { AuthProvider } from '@/features/auth/AuthProvider';
 import { SyncProvider } from '@/offline/SyncProvider';
 import { StoreProvider } from '@/features/stores/StoreProvider';
+import { Toaster } from 'sonner';
 
 const queryClient = new QueryClient({
     defaultOptions: {
@@ -22,6 +23,7 @@ function App() {
                     <StoreProvider>
                         <SyncProvider>
                             <AppRouter />
+                            <Toaster richColors position="top-center" />
                         </SyncProvider>
                     </StoreProvider>
                 </AuthProvider>
