@@ -9,8 +9,8 @@ export class SalesController {
     constructor(private salesService: SalesService) { }
 
     @Get()
-    async findAll(@Query('storeId') storeId: string) {
-        return this.salesService.findAll(storeId);
+    async findAll(@Query('storeId') storeId: string, @Query('customerId') customerId?: string) {
+        return this.salesService.findAll(storeId, customerId);
     }
 
     @Post()

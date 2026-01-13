@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/services/api';
+import { CustomerDetailsSheet } from './CustomerDetailsSheet';
 
 interface Customer {
     id: string;
@@ -40,6 +41,16 @@ export function CustomersPage() {
         createCustomerMutation.mutate(formData);
     };
 
+    const [searchQuery, setSearchQuery] = useState('');
+    const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(null);
+
+    // Filter customers
+    const filteredCustomers = customers?.filter(customer =>
+        customer.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        customer.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        customer.phone?.includes(searchQuery)
+    );
+
     return (
         <div className="space-y-6">
             <div className="flex justify-between items-center">
@@ -53,6 +64,17 @@ export function CustomersPage() {
                 >
                     Add Customer
                 </button>
+            </div>
+
+            {/* Search Bar */}
+            <div className="relative">
+                <input
+                    type="text"
+                    placeholder="Search customers by name, email or phone..."
+                    className="w-full pl-4 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                />
             </div>
 
             <div className="bg-white rounded-lg shadow overflow-hidden">
@@ -69,11 +91,15 @@ export function CustomersPage() {
                     <tbody className="bg-white divide-y divide-gray-200">
                         {isLoading ? (
                             <tr><td colSpan={5} className="px-6 py-4 text-center">Loading...</td></tr>
-                        ) : customers?.length === 0 ? (
-                            <tr><td colSpan={5} className="px-6 py-12 text-center text-gray-500">No customers found.</td></tr>
+                        ) : filteredCustomers?.length === 0 ? (
+                            <tr><td colSpan={5} className="px-6 py-12 text-center text-gray-500">No customers found matching your search.</td></tr>
                         ) : (
-                            customers?.map((customer) => (
-                                <tr key={customer.id}>
+                            filteredCustomers?.map((customer) => (
+                                <tr
+                                    key={customer.id}
+                                    className="hover:bg-gray-50 cursor-pointer transition-colors"
+                                    onClick={() => setSelectedCustomerId(customer.id)}
+                                >
                                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{customer.name}</td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                         {customer.email && <div>{customer.email}</div>}
@@ -82,8 +108,24 @@ export function CustomersPage() {
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{customer.creditLimit} FCFA</td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{customer.currentCredit} FCFA</td>
                                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                        <button className="text-blue-600 hover:text-blue-900 mr-3">Edit</button>
-                                        <button className="text-red-600 hover:text-red-900">Delete</button>
+                                        <button
+                                            className="text-blue-600 hover:text-blue-900 mr-3 z-10 relative"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                // Handle Edit
+                                            }}
+                                        >
+                                            Edit
+                                        </button>
+                                        <button
+                                            className="text-red-600 hover:text-red-900 z-10 relative"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                // Handle Delete
+                                            }}
+                                        >
+                                            Delete
+                                        </button>
                                     </td>
                                 </tr>
                             ))
@@ -91,6 +133,13 @@ export function CustomersPage() {
                     </tbody>
                 </table>
             </div>
+
+            {/* Customer Details Sheet */}
+            <CustomerDetailsSheet
+                customerId={selectedCustomerId}
+                isOpen={!!selectedCustomerId}
+                onClose={() => setSelectedCustomerId(null)}
+            />
 
             {isModalOpen && (
                 <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">

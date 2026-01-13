@@ -9,14 +9,18 @@ export class SalesService {
         private stockService: StockService,
     ) { }
 
-    async findAll(storeId: string) {
+    async findAll(storeId: string, customerId?: string) {
         return this.prisma.sale.findMany({
-            where: { storeId },
+            where: {
+                storeId,
+                ...(customerId && { customerId }),
+            },
             include: {
                 customer: true,
                 items: {
                     include: { product: true },
                 },
+                payments: true,
             },
             orderBy: { createdAt: 'desc' },
         });

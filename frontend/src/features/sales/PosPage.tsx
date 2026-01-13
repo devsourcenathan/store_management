@@ -153,6 +153,7 @@ export function PosPage() {
                 quantity: item.quantity,
                 unitPrice: item.unitPrice
             })),
+            customerId: selectedCustomerId || undefined,
             paymentMethod,
             notes: `POS Sale - ${paymentMethod}`
         });
