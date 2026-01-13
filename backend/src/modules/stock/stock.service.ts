@@ -21,6 +21,7 @@ export class StockService {
                         id: true,
                         name: true,
                         sku: true,
+                        minStock: true,
                     },
                 },
             },
@@ -61,14 +62,30 @@ export class StockService {
             data.storeId,
         );
 
-        // Create alert if stock is low (threshold: 10)
-        if (currentStock <= 10) {
+        const minStock = movement.product.minStock;
+
+        if (currentStock <= minStock) {
+            // Create alert if stock is low
             await this.prisma.stockAlert.create({
                 data: {
                     productId: data.productId,
                     storeId: data.storeId,
-                    threshold: 10,
+                    threshold: minStock,
                     currentLevel: currentStock,
+                },
+            });
+        } else {
+            // Auto-resolve existing alerts if stock is healthy
+            await this.prisma.stockAlert.updateMany({
+                where: {
+                    storeId: data.storeId,
+                    productId: data.productId,
+                    acknowledged: false,
+                },
+                data: {
+                    acknowledged: true,
+                    acknowledgedBy: 'SYSTEM', // Auto-resolved
+                    acknowledgedAt: new Date(),
                 },
             });
         }
@@ -141,5 +158,54 @@ export class StockService {
                 acknowledgedAt: new Date(),
             },
         });
+    }
+
+    async scanStockAlerts(storeId: string) {
+        // Get store to find organization
+        const store = await this.prisma.store.findUnique({ where: { id: storeId } });
+        if (!store) throw new Error('Store not found');
+
+        // Get all active products
+        const products = await this.prisma.product.findMany({
+            where: {
+                organizationId: store.organizationId,
+                isActive: true,
+            },
+            select: { id: true, minStock: true },
+        });
+
+        // Calculate current stock for all products in one go
+        const stockMap = await this.stockCalculation.calculateAllStockInStore(storeId);
+
+        let alertsCreated = 0;
+
+        for (const product of products) {
+            const currentStock = stockMap.get(product.id) || 0;
+
+            if (currentStock <= product.minStock) {
+                // Check if active alert already exists
+                const existingAlert = await this.prisma.stockAlert.findFirst({
+                    where: {
+                        storeId,
+                        productId: product.id,
+                        acknowledged: false,
+                    },
+                });
+
+                if (!existingAlert) {
+                    await this.prisma.stockAlert.create({
+                        data: {
+                            productId: product.id,
+                            storeId,
+                            threshold: product.minStock,
+                            currentLevel: currentStock,
+                        },
+                    });
+                    alertsCreated++;
+                }
+            }
+        }
+
+        return { count: alertsCreated };
     }
 }

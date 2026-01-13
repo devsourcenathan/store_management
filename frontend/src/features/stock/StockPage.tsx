@@ -4,6 +4,7 @@ import { api } from '@/services/api';
 import { useAuth } from '../auth/useAuth';
 import { useStore } from '../stores/StoreProvider';
 import { TransferModal } from './TransferModal';
+import { StockAlertsList } from './components/StockAlertsList';
 import {
     Sheet,
     SheetContent,
@@ -110,6 +111,9 @@ export function StockPage() {
                     </button>
                 </div>
             </div>
+
+            {/* Alerts Section */}
+            {currentStore && <StockAlertsList storeId={currentStore.id} />}
 
             {/* Stock Overview Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

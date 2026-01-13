@@ -64,6 +64,13 @@ export class StockController {
         return this.stockService.acknowledgeAlert(alertId, user.id);
     }
 
+    @Post('alerts/scan')
+    @UseGuards(RolesGuard)
+    @Roles(UserRole.OWNER, UserRole.MANAGER)
+    async scanStockAlerts(@Body() data: { storeId: string }) {
+        return this.stockService.scanStockAlerts(data.storeId);
+    }
+
     @Post('transfer')
     @UseGuards(RolesGuard)
     @Roles(UserRole.OWNER, UserRole.MANAGER)

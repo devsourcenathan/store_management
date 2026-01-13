@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/services/api';
-import { Package, Image as ImageIcon } from 'lucide-react';
+import { Package, Image as ImageIcon, Edit, Trash2 } from 'lucide-react';
 
 interface Product {
     id: string;
@@ -9,7 +9,9 @@ interface Product {
     sku: string;
     description?: string;
     basePrice: number;
+    minStock: number;
     isActive: boolean;
+    categoryId?: string;
     category?: {
         id: string;
         name: string;
@@ -18,11 +20,13 @@ interface Product {
         storeId: string;
         quantity: number;
     }>;
+    time: number; // For forcing re-render if needed
 }
 
 export function ProductsPage() {
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [formData, setFormData] = useState({ name: '', sku: '', basePrice: 0, categoryId: '' });
+    const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+    const [formData, setFormData] = useState({ name: '', sku: '', basePrice: 0, minStock: 10, categoryId: '' });
     const [selectedStoreId, setSelectedStoreId] = useState<string>('');
     const queryClient = useQueryClient();
 
@@ -36,7 +40,7 @@ export function ProductsPage() {
         },
     });
 
-    const { data: products, isLoading } = useQuery<Product[]>({
+    const { data: products, isLoading } = useQuery<any[]>({
         queryKey: ['products', selectedStoreId],
         queryFn: async () => {
             const response = await api.get('/products');
@@ -74,13 +78,64 @@ export function ProductsPage() {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['products'] });
             setIsModalOpen(false);
-            setFormData({ name: '', sku: '', basePrice: 0, categoryId: '' });
+            resetForm();
         },
     });
 
+    const updateProductMutation = useMutation({
+        mutationFn: async ({ id, data }: { id: string; data: any }) => {
+            return api.patch(`/products/${id}`, data);
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['products'] });
+            setIsModalOpen(false);
+            resetForm();
+        },
+    });
+
+    const deleteProductMutation = useMutation({
+        mutationFn: async (id: string) => {
+            if (!confirm('Are you sure you want to delete this product?')) throw new Error('Cancelled');
+            return api.delete(`/products/${id}`);
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['products'] });
+        },
+        onError: (error) => {
+            if (error.message !== 'Cancelled') {
+                alert('Failed to delete product');
+            }
+        }
+    });
+
+    const resetForm = () => {
+        setFormData({ name: '', sku: '', basePrice: 0, minStock: 10, categoryId: '' });
+        setEditingProduct(null);
+    };
+
+    const handleEdit = (product: Product) => {
+        setEditingProduct(product);
+        setFormData({
+            name: product.name,
+            sku: product.sku,
+            basePrice: Number(product.basePrice),
+            minStock: product.minStock || 10,
+            categoryId: product.categoryId || product.category?.id || '',
+        });
+        setIsModalOpen(true);
+    };
+
+    const handleDelete = (id: string) => {
+        deleteProductMutation.mutate(id);
+    };
+
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        createProductMutation.mutate(formData);
+        if (editingProduct) {
+            updateProductMutation.mutate({ id: editingProduct.id, data: formData });
+        } else {
+            createProductMutation.mutate(formData);
+        }
     };
 
     if (isLoading) return <div className="p-8 text-center">Loading products...</div>;
@@ -103,7 +158,7 @@ export function ProductsPage() {
                         </select>
                     )}
                     <button
-                        onClick={() => setIsModalOpen(true)}
+                        onClick={() => { resetForm(); setIsModalOpen(true); }}
                         className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                     >
                         Add Product
@@ -155,8 +210,18 @@ export function ProductsPage() {
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{product.basePrice} FCFA</td>
                                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                        <button className="text-blue-600 hover:text-blue-900 mr-3">Edit</button>
-                                        <button className="text-red-600 hover:text-red-900">Delete</button>
+                                        <button
+                                            onClick={() => handleEdit(product)}
+                                            className="text-blue-600 hover:text-blue-900 mr-3"
+                                        >
+                                            <Edit className="w-4 h-4" />
+                                        </button>
+                                        <button
+                                            onClick={() => handleDelete(product.id)}
+                                            className="text-red-600 hover:text-red-900"
+                                        >
+                                            <Trash2 className="w-4 h-4" />
+                                        </button>
                                     </td>
                                 </tr>
                             ))
@@ -165,12 +230,12 @@ export function ProductsPage() {
                 </table>
             </div>
 
-            {/* Add Product Modal */}
+            {/* Add/Edit Product Modal */}
             {isModalOpen && (
                 <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
                     <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
                         <div className="flex justify-between items-center mb-4">
-                            <h3 className="text-xl font-bold">Add New Product</h3>
+                            <h3 className="text-xl font-bold">{editingProduct ? 'Edit Product' : 'Add New Product'}</h3>
                             <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-gray-600">
                                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -209,6 +274,17 @@ export function ProductsPage() {
                                 />
                             </div>
                             <div>
+                                <label className="block text-sm font-medium text-gray-700">Minimum Stock Alert</label>
+                                <input
+                                    type="number"
+                                    required
+                                    min="0"
+                                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                                    value={formData.minStock}
+                                    onChange={(e) => setFormData({ ...formData, minStock: parseInt(e.target.value) })}
+                                />
+                            </div>
+                            <div>
                                 <label className="block text-sm font-medium text-gray-700">Category</label>
                                 <select
                                     className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
@@ -231,10 +307,10 @@ export function ProductsPage() {
                                 </button>
                                 <button
                                     type="submit"
-                                    disabled={createProductMutation.isPending}
+                                    disabled={createProductMutation.isPending || updateProductMutation.isPending}
                                     className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
                                 >
-                                    {createProductMutation.isPending ? 'Creating...' : 'Create Product'}
+                                    {createProductMutation.isPending || updateProductMutation.isPending ? 'Saving...' : (editingProduct ? 'Update Product' : 'Create Product')}
                                 </button>
                             </div>
                         </form>

@@ -97,6 +97,7 @@ model Product {
   categoryId     String?
   organizationId String
   basePrice      Decimal  @db.Decimal(10, 2)
+  minStock       Int      @default(10)
   isActive       Boolean  @default(true)
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
