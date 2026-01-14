@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/services/api';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/Sheet";
@@ -19,6 +20,7 @@ interface OrderItem {
 }
 
 export function CreateSupplyOrderSheet({ isOpen, onClose, initialData, mode = 'create' }: CreateSupplyOrderSheetProps) {
+    const { t } = useTranslation();
     const queryClient = useQueryClient();
     const [supplierId, setSupplierId] = useState('');
     const [notes, setNotes] = useState('');
@@ -120,16 +122,16 @@ export function CreateSupplyOrderSheet({ isOpen, onClose, initialData, mode = 'c
         <Sheet open={isOpen} onOpenChange={onClose}>
             <SheetContent className="w-[400px] sm:w-[640px] overflow-y-auto bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
                 <SheetHeader className="mb-6">
-                    <SheetTitle className="text-gray-900 dark:text-gray-100">{mode === 'view' ? 'Order Details' : 'New Supply Order'}</SheetTitle>
+                    <SheetTitle className="text-gray-900 dark:text-gray-100">{mode === 'view' ? t('common.order_details', 'Order Details') : t('suppliers.new_order')}</SheetTitle>
                     <SheetDescription className="text-gray-500 dark:text-gray-400">
-                        {mode === 'view' ? 'View details of existing order' : 'Create a new order for a supplier'}
+                        {mode === 'view' ? t('suppliers.view_details_desc', 'View details of existing order') : t('suppliers.create_desc', 'Create a new order for a supplier')}
                     </SheetDescription>
                 </SheetHeader>
 
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <div className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm space-y-4">
                         <div>
-                            <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Supplier</label>
+                            <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">{t('suppliers.supplier')}</label>
                             <select
                                 className="block w-full rounded-lg border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:border-blue-500 focus:ring-blue-500 disabled:opacity-70"
                                 value={supplierId}
@@ -137,7 +139,7 @@ export function CreateSupplyOrderSheet({ isOpen, onClose, initialData, mode = 'c
                                 required
                                 disabled={isReadOnly}
                             >
-                                <option value="">Select Supplier</option>
+                                <option value="">{t('suppliers.select_supplier', 'Select Supplier')}</option>
                                 {suppliers?.map((s: any) => (
                                     <option key={s.id} value={s.id}>{s.name}</option>
                                 ))}
@@ -145,21 +147,21 @@ export function CreateSupplyOrderSheet({ isOpen, onClose, initialData, mode = 'c
                         </div>
 
                         <div>
-                            <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Notes</label>
+                            <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">{t('common.notes', 'Notes')}</label>
                             <textarea
                                 className="block w-full rounded-lg border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:border-blue-500 focus:ring-blue-500 disabled:opacity-70"
                                 value={notes}
                                 onChange={(e) => setNotes(e.target.value)}
                                 rows={2}
                                 disabled={isReadOnly}
-                                placeholder="Optional notes..."
+                                placeholder={t('suppliers.notes_placeholder', 'Optional notes...')}
                             />
                         </div>
                     </div>
 
                     <div className="space-y-4">
                         <div className="flex justify-between items-center">
-                            <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100 uppercase tracking-wider">Order Items</h3>
+                            <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100 uppercase tracking-wider">{t('common.items', 'Items')}</h3>
                             {!isReadOnly && (
                                 <button
                                     type="button"
@@ -167,7 +169,7 @@ export function CreateSupplyOrderSheet({ isOpen, onClose, initialData, mode = 'c
                                     className="flex items-center text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-bold bg-blue-50 dark:bg-blue-900/20 px-3 py-1.5 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors"
                                 >
                                     <Plus className="w-3 h-3 mr-1" />
-                                    ADD ITEM
+                                    {t('suppliers.add_item', 'ADD ITEM')}
                                 </button>
                             )}
                         </div>
@@ -176,7 +178,7 @@ export function CreateSupplyOrderSheet({ isOpen, onClose, initialData, mode = 'c
                             {items.map((item, index) => (
                                 <div key={index} className="flex gap-3 items-start bg-gray-50 dark:bg-gray-700/50 p-3 rounded-xl border border-gray-100 dark:border-gray-700 transition-all hover:border-blue-200 dark:hover:border-blue-600 hover:shadow-sm">
                                     <div className="flex-1">
-                                        <label className="block text-[10px] uppercase text-gray-400 font-bold mb-1">Product</label>
+                                        <label className="block text-[10px] uppercase text-gray-400 font-bold mb-1">{t('common.product', 'Product')}</label>
                                         <select
                                             className="block w-full rounded-md border-gray-200 dark:border-gray-600 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-blue-500 focus:ring-blue-500 disabled:bg-gray-100 dark:disabled:bg-gray-800"
                                             value={item.productId}
@@ -184,14 +186,14 @@ export function CreateSupplyOrderSheet({ isOpen, onClose, initialData, mode = 'c
                                             required
                                             disabled={isReadOnly}
                                         >
-                                            <option value="">Select Product</option>
+                                            <option value="">{t('suppliers.select_product', 'Select Product')}</option>
                                             {products?.map((p: any) => (
                                                 <option key={p.id} value={p.id}>{p.name} ({p.sku})</option>
                                             ))}
                                         </select>
                                     </div>
                                     <div className="w-20">
-                                        <label className="block text-[10px] uppercase text-gray-400 font-bold mb-1">Qty</label>
+                                        <label className="block text-[10px] uppercase text-gray-400 font-bold mb-1">{t('common.qty', 'Qty')}</label>
                                         <input
                                             type="number"
                                             min="1"
@@ -203,7 +205,7 @@ export function CreateSupplyOrderSheet({ isOpen, onClose, initialData, mode = 'c
                                         />
                                     </div>
                                     <div className="w-28">
-                                        <label className="block text-[10px] uppercase text-gray-400 font-bold mb-1">Cost / Unit</label>
+                                        <label className="block text-[10px] uppercase text-gray-400 font-bold mb-1">{t('common.cost_unit', 'Cost / Unit')}</label>
                                         <input
                                             type="number"
                                             min="0"
@@ -228,7 +230,7 @@ export function CreateSupplyOrderSheet({ isOpen, onClose, initialData, mode = 'c
 
                             {items.length === 0 && (
                                 <div className="text-center py-8 text-gray-400 dark:text-gray-500 bg-gray-50 dark:bg-gray-700/50 rounded-xl border border-dashed border-gray-200 dark:border-gray-700">
-                                    No items added yet.
+                                    {t('suppliers.no_items_added', 'No items added yet.')}
                                 </div>
                             )}
                         </div>
@@ -236,7 +238,7 @@ export function CreateSupplyOrderSheet({ isOpen, onClose, initialData, mode = 'c
 
                     <div className="pt-4 border-t border-gray-100 dark:border-gray-700">
                         <div className="bg-gray-900 dark:bg-gray-700 text-white p-4 rounded-xl flex justify-between items-center shadow-lg">
-                            <span className="font-medium">Total Amount</span>
+                            <span className="font-medium">{t('common.total_amount', 'Total Amount')}</span>
                             <span className="font-bold text-2xl">{totalAmount.toLocaleString()} FCFA</span>
                         </div>
                     </div>
@@ -248,7 +250,7 @@ export function CreateSupplyOrderSheet({ isOpen, onClose, initialData, mode = 'c
                                 disabled={createMutation.isPending}
                                 className="w-full sm:w-auto px-8 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 disabled:opacity-50 transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
                             >
-                                {createMutation.isPending ? 'Processing...' : 'Create Order'}
+                                {createMutation.isPending ? t('common.processing', 'Processing...') : t('suppliers.create_order', 'Create Order')}
                             </button>
                         </div>
                     )}

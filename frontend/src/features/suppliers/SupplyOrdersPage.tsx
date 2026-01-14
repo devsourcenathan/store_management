@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { printer } from '@/services/printing';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/services/api';
@@ -10,6 +11,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 
 export function SupplyOrdersPage() {
+    const { t } = useTranslation();
     const queryClient = useQueryClient();
     const [isSheetOpen, setIsSheetOpen] = useState(false);
     const [sheetMode, setSheetMode] = useState<'create' | 'view'>('create');
@@ -94,15 +96,15 @@ export function SupplyOrdersPage() {
         <div className="space-y-8 p-1">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100 tracking-tight">Supply Management</h2>
-                    <p className="text-gray-500 dark:text-gray-400 mt-1">Track orders and manage inventory replenishment</p>
+                    <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100 tracking-tight">{t('suppliers.management_title')}</h2>
+                    <p className="text-gray-500 dark:text-gray-400 mt-1">{t('suppliers.management_subtitle')}</p>
                 </div>
                 <button
                     onClick={handleCreate}
                     className="flex items-center justify-center space-x-2 px-6 py-3 bg-gray-900 dark:bg-gray-700 text-white rounded-xl hover:bg-gray-800 dark:hover:bg-gray-600 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                 >
                     <Plus className="w-5 h-5" />
-                    <span className="font-medium">New Order</span>
+                    <span className="font-medium">{t('suppliers.new_order')}</span>
                 </button>
             </div>
 
@@ -119,8 +121,8 @@ export function SupplyOrdersPage() {
                     <div className="bg-blue-50 dark:bg-blue-900/20 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
                         <Truck className="w-10 h-10 text-blue-600 dark:text-blue-400" />
                     </div>
-                    <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">No orders yet</h3>
-                    <p className="text-gray-500 dark:text-gray-400 max-w-sm mx-auto">Start by creating a supply order to replenish your stock.</p>
+                    <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">{t('suppliers.no_orders')}</h3>
+                    <p className="text-gray-500 dark:text-gray-400 max-w-sm mx-auto">{t('suppliers.start_creating')}</p>
                 </motion.div>
             ) : (
                 <motion.div
@@ -165,14 +167,14 @@ export function SupplyOrdersPage() {
                                                     className="w-full text-left px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center"
                                                 >
                                                     <Printer className="w-4 h-4 mr-2" />
-                                                    Print Order
+                                                    {t('suppliers.print_order')}
                                                 </button>
                                                 <button
                                                     onClick={() => handleView(order)}
                                                     className="w-full text-left px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center"
                                                 >
                                                     <Eye className="w-4 h-4 mr-2" />
-                                                    View Details
+                                                    {t('common.view_details', 'View Details')}
                                                 </button>
                                                 {order.status !== 'PAID' && (
                                                     <button
@@ -180,7 +182,7 @@ export function SupplyOrdersPage() {
                                                         className="w-full text-left px-4 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center"
                                                     >
                                                         <Trash2 className="w-4 h-4 mr-2" />
-                                                        Delete Order
+                                                        {t('common.delete', 'Delete Order')}
                                                     </button>
                                                 )}
                                             </div>
@@ -211,7 +213,7 @@ export function SupplyOrdersPage() {
 
                             <div className="space-y-4">
                                 <div>
-                                    <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider font-medium mb-1">Supplier</p>
+                                    <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider font-medium mb-1">{t('suppliers.supplier')}</p>
                                     <h3 className="font-bold text-gray-900 dark:text-gray-100 text-lg">{order.supplier.name}</h3>
                                 </div>
 
@@ -231,7 +233,7 @@ export function SupplyOrdersPage() {
                                             onClick={() => handleReceiveClick(order)}
                                             className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors shadow-sm hover:shadow"
                                         >
-                                            Receive
+                                            {t('suppliers.receive')}
                                         </button>
                                     )}
                                 </div>

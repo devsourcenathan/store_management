@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/services/api';
 import { Plus, Edit2, Trash2, Layers, Settings, ChevronDown, ChevronRight } from 'lucide-react';
@@ -24,6 +25,7 @@ interface SubscriptionOffer {
 }
 
 export function OffersManagementPage() {
+    const { t } = useTranslation();
     const [expandedServiceId, setExpandedServiceId] = useState<string | null>(null);
     const [isServiceModalOpen, setIsServiceModalOpen] = useState(false);
     const [isOfferModalOpen, setIsOfferModalOpen] = useState(false);
@@ -59,26 +61,26 @@ export function OffersManagementPage() {
         <div className="space-y-6">
             <div className="flex justify-between items-center">
                 <div>
-                    <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Offers & Services</h2>
-                    <p className="text-gray-600 dark:text-gray-400">Configure subscription services and their pricing offers</p>
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{t('offers.title')}</h2>
+                    <p className="text-gray-600 dark:text-gray-400">{t('offers.subtitle')}</p>
                 </div>
                 <button
                     onClick={() => { setEditingService(null); setIsServiceModalOpen(true); }}
                     className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center"
                 >
                     <Plus className="w-4 h-4 mr-2" />
-                    New Service
+                    {t('offers.new_service')}
                 </button>
             </div>
 
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden border border-gray-100 dark:border-gray-700">
                 {isLoadingServices ? (
-                    <div className="p-8 text-center text-gray-500 dark:text-gray-400">Loading services...</div>
+                    <div className="p-8 text-center text-gray-500 dark:text-gray-400">{t('common.loading')}</div>
                 ) : services?.length === 0 ? (
                     <div className="p-12 text-center text-gray-500 dark:text-gray-400">
                         <Layers className="w-12 h-12 mx-auto text-gray-400 mb-4" />
-                        <p className="text-lg font-medium">No services configured</p>
-                        <p className="text-sm">Create a service (e.g., "Netflix") to start adding offers.</p>
+                        <p className="text-lg font-medium">{t('offers.no_services')}</p>
+                        <p className="text-sm">Create a service to start adding offers.</p>
                     </div>
                 ) : (
                     <div className="divide-y divide-gray-200 dark:divide-gray-700">
@@ -123,6 +125,7 @@ export function OffersManagementPage() {
 
 // Helper component for the row to handle its own offers query
 function ServiceRow({ service, isExpanded, onToggleExpand, onEdit, onDelete, onAddOffer, onEditOffer, onToggleStatus }: any) {
+    const { t } = useTranslation();
     const { data: offers, isLoading } = useQuery<SubscriptionOffer[]>({
         queryKey: ['subscription-offers', service.id],
         queryFn: async () => (await api.get(`/services/${service.id}/offers`)).data,
@@ -142,7 +145,7 @@ function ServiceRow({ service, isExpanded, onToggleExpand, onEdit, onDelete, onA
                         <Layers className="w-5 h-5" />
                     </div>
                     <div className={service.isActive ? '' : 'opacity-60'}>
-                        <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100">{service.name} {service.isActive ? '' : '(Inactive)'}</h3>
+                        <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100">{service.name} {service.isActive ? '' : `(${t('common.inactive', 'Inactive')})`}</h3>
                         <p className="text-sm text-gray-500 dark:text-gray-400">{service.provider}</p>
                     </div>
                 </div>
@@ -176,17 +179,17 @@ function ServiceRow({ service, isExpanded, onToggleExpand, onEdit, onDelete, onA
                 <div className="bg-gray-50 dark:bg-gray-900/30 px-4 pb-4 pl-14">
                     <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
                         <div className="flex justify-between items-center mb-3">
-                            <h4 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Available Offers</h4>
+                            <h4 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('offers.available_offers')}</h4>
                             <button
                                 onClick={onAddOffer}
                                 className="text-xs font-medium text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 flex items-center"
                             >
-                                <Plus className="w-3 h-3 mr-1" /> Add Offer
+                                <Plus className="w-3 h-3 mr-1" /> {t('offers.add_offer')}
                             </button>
                         </div>
 
                         {isLoading ? (
-                            <div className="text-sm text-gray-500">Loading offers...</div>
+                            <div className="text-sm text-gray-500">{t('common.loading')}</div>
                         ) : offers?.length === 0 ? (
                             <div className="text-sm text-gray-500 italic">No offers found. Add one to get started.</div>
                         ) : (

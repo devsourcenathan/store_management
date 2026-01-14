@@ -1,4 +1,5 @@
 
+import { useTranslation } from 'react-i18next';
 import { Plus, Trash2 } from 'lucide-react';
 
 interface PricingCondition {
@@ -29,6 +30,7 @@ interface PricingRulesEditorProps {
 }
 
 export function PricingRulesEditor({ rules, onChange }: PricingRulesEditorProps) {
+    const { t } = useTranslation();
     const addRule = () => {
         onChange([
             ...rules,
@@ -71,26 +73,26 @@ export function PricingRulesEditor({ rules, onChange }: PricingRulesEditorProps)
     return (
         <div className="space-y-4">
             <div className="flex justify-between items-center">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Dynamic Pricing Rules</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('pricing_rules.title')}</label>
                 <button
                     type="button"
                     onClick={addRule}
                     className="text-sm text-blue-600 hover:text-blue-800 flex items-center"
                 >
-                    <Plus className="w-4 h-4 mr-1" /> Add Rule
+                    <Plus className="w-4 h-4 mr-1" /> {t('pricing_rules.add_rule')}
                 </button>
             </div>
 
             {rules.length === 0 && (
                 <div className="text-sm text-gray-500 dark:text-gray-400 italic border border-dashed border-gray-300 dark:border-gray-600 rounded p-4 text-center">
-                    No custom pricing rules defined. Base price will apply.
+                    {t('pricing_rules.no_rules')}
                 </div>
             )}
 
             {rules.map((rule, index) => (
                 <div key={index} className="border border-gray-200 dark:border-gray-700 rounded-lg p-3 bg-gray-50 dark:bg-gray-800/50 space-y-3">
                     <div className="flex justify-between items-start">
-                        <h5 className="text-xs font-bold uppercase text-gray-500 dark:text-gray-400">Rule #{index + 1}</h5>
+                        <h5 className="text-xs font-bold uppercase text-gray-500 dark:text-gray-400">{t('pricing_rules.rule_n', { n: index + 1 })}</h5>
                         <button
                             type="button"
                             onClick={() => removeRule(index)}
@@ -102,7 +104,7 @@ export function PricingRulesEditor({ rules, onChange }: PricingRulesEditorProps)
 
                     <div className="grid grid-cols-2 gap-3">
                         <div>
-                            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Override Price (FCFA)</label>
+                            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">{t('pricing_rules.override_price')}</label>
                             <input
                                 type="number"
                                 value={rule.price}
@@ -111,7 +113,7 @@ export function PricingRulesEditor({ rules, onChange }: PricingRulesEditorProps)
                             />
                         </div>
                         <div>
-                            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Priority (Higher wins)</label>
+                            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">{t('pricing_rules.priority')}</label>
                             <input
                                 type="number"
                                 value={rule.priority}
@@ -123,15 +125,15 @@ export function PricingRulesEditor({ rules, onChange }: PricingRulesEditorProps)
 
                     {/* Conditions Section */}
                     <div className="bg-white dark:bg-gray-900/50 p-2 rounded border border-gray-100 dark:border-gray-700">
-                        <p className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">Conditions (All must match)</p>
+                        <p className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">{t('pricing_rules.conditions')}</p>
 
                         {/* Duration Condition */}
                         <div className="grid grid-cols-2 gap-2 mb-2">
                             <div>
-                                <label className="block text-[10px] text-gray-500 dark:text-gray-400">Min Duration (Days)</label>
+                                <label className="block text-[10px] text-gray-500 dark:text-gray-400">{t('pricing_rules.min_duration')}</label>
                                 <input
                                     type="number"
-                                    placeholder="Any"
+                                    placeholder={t('pricing_rules.any')}
                                     value={rule.condition.duration?.gte ?? ''}
                                     onChange={(e) => {
                                         const val = e.target.value ? parseInt(e.target.value) : undefined;
@@ -142,10 +144,10 @@ export function PricingRulesEditor({ rules, onChange }: PricingRulesEditorProps)
                                 />
                             </div>
                             <div>
-                                <label className="block text-[10px] text-gray-500 dark:text-gray-400">Max Duration (Days)</label>
+                                <label className="block text-[10px] text-gray-500 dark:text-gray-400">{t('pricing_rules.max_duration')}</label>
                                 <input
                                     type="number"
-                                    placeholder="Any"
+                                    placeholder={t('pricing_rules.any')}
                                     value={rule.condition.duration?.lte ?? ''}
                                     onChange={(e) => {
                                         const val = e.target.value ? parseInt(e.target.value) : undefined;
@@ -160,10 +162,10 @@ export function PricingRulesEditor({ rules, onChange }: PricingRulesEditorProps)
                         {/* Offer Price Condition */}
                         <div className="grid grid-cols-2 gap-2 mb-2">
                             <div>
-                                <label className="block text-[10px] text-gray-500 dark:text-gray-400">Min Base Price (FCFA)</label>
+                                <label className="block text-[10px] text-gray-500 dark:text-gray-400">{t('pricing_rules.min_price')}</label>
                                 <input
                                     type="number"
-                                    placeholder="Any"
+                                    placeholder={t('pricing_rules.any')}
                                     value={rule.condition.offerPrice?.gte ?? ''}
                                     onChange={(e) => {
                                         const val = e.target.value ? parseFloat(e.target.value) : undefined;
@@ -174,10 +176,10 @@ export function PricingRulesEditor({ rules, onChange }: PricingRulesEditorProps)
                                 />
                             </div>
                             <div>
-                                <label className="block text-[10px] text-gray-500 dark:text-gray-400">Max Base Price (FCFA)</label>
+                                <label className="block text-[10px] text-gray-500 dark:text-gray-400">{t('pricing_rules.max_price')}</label>
                                 <input
                                     type="number"
-                                    placeholder="Any"
+                                    placeholder={t('pricing_rules.any')}
                                     value={rule.condition.offerPrice?.lte ?? ''}
                                     onChange={(e) => {
                                         const val = e.target.value ? parseFloat(e.target.value) : undefined;
@@ -191,10 +193,10 @@ export function PricingRulesEditor({ rules, onChange }: PricingRulesEditorProps)
 
                         {/* Store ID Condition - simplified as text input for now, could be multiselect */}
                         <div>
-                            <label className="block text-[10px] text-gray-500 dark:text-gray-400">Store ID (Optional)</label>
+                            <label className="block text-[10px] text-gray-500 dark:text-gray-400">{t('pricing_rules.store_id')}</label>
                             <input
                                 type="text"
-                                placeholder="Specific Store ID..."
+                                placeholder={t('pricing_rules.store_placeholder')}
                                 value={(rule.condition.storeId as string) || ''}
                                 onChange={(e) => updateCondition(index, 'storeId', e.target.value || undefined)}
                                 className="block w-full border border-gray-200 dark:border-gray-600 rounded p-1 text-xs dark:bg-gray-700 dark:text-white"

@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/services/api';
 import { AlertTriangle, CheckCircle, RefreshCw, Archive } from 'lucide-react';
@@ -22,6 +23,7 @@ interface StockAlertsListProps {
 }
 
 export function StockAlertsList({ storeId }: StockAlertsListProps) {
+    const { t } = useTranslation();
     const queryClient = useQueryClient();
 
     const { data: alerts, isLoading } = useQuery<StockAlert[]>({
@@ -78,12 +80,12 @@ export function StockAlertsList({ storeId }: StockAlertsListProps) {
                     </div>
                     <div>
                         <h3 className={`text-lg font-semibold ${hasAlerts ? 'text-gray-900 dark:text-gray-100' : 'text-gray-700 dark:text-gray-300'}`}>
-                            Stock Alerts
+                            {t('stock.alerts_title')}
                         </h3>
                         <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                             {hasAlerts
-                                ? `${alerts.length} product${alerts.length > 1 ? 's' : ''} below minimum threshold`
-                                : 'Inventory levels are healthy'}
+                                ? t('stock.alerts_warning', { count: alerts.length })
+                                : t('stock.alerts_healthy')}
                         </p>
                     </div>
                 </div>
@@ -96,7 +98,7 @@ export function StockAlertsList({ storeId }: StockAlertsListProps) {
                         }`}
                 >
                     <RefreshCw className={`w-4 h-4 mr-2 ${scanAlertsMutation.isPending ? 'animate-spin' : ''}`} />
-                    {scanAlertsMutation.isPending ? 'Scanning...' : 'Check Levels'}
+                    {scanAlertsMutation.isPending ? t('stock.scanning') : t('stock.check_levels')}
                 </button>
             </div>
 
@@ -123,15 +125,15 @@ export function StockAlertsList({ storeId }: StockAlertsListProps) {
                                         </div>
                                         <div className="flex items-center mt-1 text-sm text-red-600 dark:text-red-400 font-medium">
                                             <span className="flex items-center bg-red-100 dark:bg-red-900/30 px-2 py-0.5 rounded text-red-700 dark:text-red-300">
-                                                In Stock: {alert.currentLevel}
+                                                {t('stock.in_stock')}: {alert.currentLevel}
                                             </span>
                                             <span className="mx-2 text-gray-300 dark:text-gray-600">|</span>
                                             <span className="text-gray-500 dark:text-gray-400">
-                                                Required: {alert.threshold}
+                                                {t('stock.required')}: {alert.threshold}
                                             </span>
                                         </div>
                                         <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-                                            Detected: {new Date(alert.createdAt).toLocaleString()}
+                                            {t('stock.detected')}: {new Date(alert.createdAt).toLocaleString()}
                                         </p>
                                     </div>
                                 </div>
@@ -143,7 +145,7 @@ export function StockAlertsList({ storeId }: StockAlertsListProps) {
                                         active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
                                 >
                                     <CheckCircle className="w-4 h-4 mr-2" />
-                                    Mark Resolved
+                                    {t('stock.mark_resolved')}
                                 </button>
                             </motion.div>
                         ))}

@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { useStore } from './StoreProvider';
+import { useTranslation } from 'react-i18next';
 import { Store, Plus, Check, ChevronDown, Settings } from 'lucide-react';
 import { NewStoreModal } from './NewStoreModal';
 import { EditStoreModal } from './EditStoreModal';
 
 export function StoreSelector() {
+    const { t } = useTranslation();
     const { currentStore, setCurrentStore, stores } = useStore();
     const [isOpen, setIsOpen] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -23,9 +25,9 @@ export function StoreSelector() {
                     <Store className="w-4 h-4" />
                 </div>
                 <div className="flex-1 text-left">
-                    <p className="text-xs text-gray-500">Current Store</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">{t('stores.current_store', 'Current Store')}</p>
                     <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
-                        {currentStore ? currentStore.name : 'Select Store'}
+                        {currentStore ? currentStore.name : t('stores.select_store', 'Select Store')}
                     </p>
                 </div>
                 <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
@@ -40,7 +42,7 @@ export function StoreSelector() {
                     />
                     <div className="absolute top-full right-0 mt-2 w-64 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-20 py-1">
                         <div className="px-3 py-2 border-b border-gray-100 dark:border-gray-700">
-                            <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">My Stores</h3>
+                            <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('stores.my_stores', 'My Stores')}</h3>
                         </div>
 
                         <div className="max-h-60 overflow-y-auto">
@@ -95,7 +97,7 @@ export function StoreSelector() {
                                 className="w-full flex items-center justify-center space-x-2 px-3 py-2 text-sm text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
                             >
                                 <Plus className="w-4 h-4" />
-                                <span>Add New Store</span>
+                                <span>{t('stores.add_store')}</span>
                             </button>
                         </div>
                     </div>
