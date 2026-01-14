@@ -93,21 +93,21 @@ export function StockPage() {
 
     return (
         <div className="space-y-6">
-            <div className="flex justify-between items-center">
+            <div className="flex flex-col gap-4">
                 <div>
-                    <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{t('stock.title')}</h2>
-                    <p className="text-gray-600 dark:text-gray-400">{t('stock.subtitle')}</p>
+                    <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100">{t('stock.title')}</h2>
+                    <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">{t('stock.subtitle')}</p>
                 </div>
-                <div className="flex space-x-3">
+                <div className="flex flex-col xs:flex-row gap-2 sm:gap-3">
                     <button
                         onClick={() => setIsTransferModalOpen(true)}
-                        className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                        className="w-full xs:w-auto px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
                     >
                         {t('stock.transfer_stock')}
                     </button>
                     <button
                         onClick={() => setIsModalOpen(true)}
-                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                        className="w-full xs:w-auto px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                     >
                         {t('stock.new_movement')}
                     </button>

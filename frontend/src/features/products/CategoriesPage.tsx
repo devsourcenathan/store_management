@@ -45,54 +45,90 @@ export function CategoriesPage() {
 
     return (
         <div className="space-y-6">
-            <div className="flex justify-between items-center">
+            <div className="flex flex-col gap-4">
                 <div>
-                    <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{t('products.categories_title')}</h2>
-                    <p className="text-gray-600 dark:text-gray-400">{t('products.categories_subtitle')}</p>
+                    <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100">{t('products.categories_title')}</h2>
+                    <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">{t('products.categories_subtitle')}</p>
                 </div>
                 <button
                     onClick={() => setIsModalOpen(true)}
-                    className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                    className="w-full sm:w-auto flex items-center justify-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                 >
                     <Plus className="w-4 h-4" />
                     <span>{t('products.add_category')}</span>
                 </button>
             </div>
 
+            {/* Categories Display - Cards on Mobile, Table on Desktop */}
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden border border-gray-100 dark:border-gray-700">
-                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                    <thead className="bg-gray-50 dark:bg-gray-700/50">
-                        <tr>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('products.category_name')}</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('products.description')}</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('products.title')}</th>
-                            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.actions')}</th>
-                        </tr>
-                    </thead>
-                    <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                        {isLoading ? (
-                            <tr><td colSpan={4} className="px-6 py-4 text-center dark:text-gray-400">{t('common.loading')}</td></tr>
-                        ) : categories?.length === 0 ? (
-                            <tr><td colSpan={4} className="px-6 py-12 text-center text-gray-500 dark:text-gray-400">{t('products.no_categories')}</td></tr>
-                        ) : (
-                            categories?.map((category) => (
-                                <tr key={category.id}>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">{category.name}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{category.description || '-'}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{category._count?.products || 0}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                        <button className="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 mr-3">
+                {/* Mobile Card View */}
+                <div className="md:hidden p-4 space-y-4">
+                    {isLoading ? (
+                        <div className="px-4 py-12 text-center text-gray-500 dark:text-gray-400">{t('common.loading')}</div>
+                    ) : categories?.length === 0 ? (
+                        <div className="px-4 py-12 text-center text-gray-500 dark:text-gray-400">{t('products.no_categories')}</div>
+                    ) : (
+                        categories?.map((category) => (
+                            <div key={category.id} className="bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-xl p-4 shadow-sm hover:shadow-md hover:border-blue-300 dark:hover:border-blue-600 transition-all">
+                                <div className="flex items-start justify-between mb-3">
+                                    <div className="flex-1">
+                                        <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">{category.name}</h3>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{category.description || '-'}</p>
+                                    </div>
+                                    <div className="flex items-center space-x-2 ml-2">
+                                        <button className="p-2 text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/30 rounded-lg transition-colors">
                                             <Pencil className="w-4 h-4" />
                                         </button>
-                                        <button className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300">
+                                        <button className="p-2 text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/30 rounded-lg transition-colors">
                                             <Trash2 className="w-4 h-4" />
                                         </button>
-                                    </td>
-                                </tr>
-                            ))
-                        )}
-                    </tbody>
-                </table>
+                                    </div>
+                                </div>
+                                <div className="mt-3 pt-3 border-t-2 border-gray-200 dark:border-gray-700">
+                                    <p className="text-xs text-gray-500 dark:text-gray-400 mb-1 font-medium">Products</p>
+                                    <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">{category._count?.products || 0}</p>
+                                </div>
+                            </div>
+                        ))
+                    )}
+                </div>
+
+                {/* Desktop Table View */}
+                <div className="hidden md:block">
+                    <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                        <thead className="bg-gray-50 dark:bg-gray-700/50">
+                            <tr>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('products.category_name')}</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('products.description')}</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('products.title')}</th>
+                                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.actions')}</th>
+                            </tr>
+                        </thead>
+                        <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                            {isLoading ? (
+                                <tr><td colSpan={4} className="px-6 py-4 text-center dark:text-gray-400">{t('common.loading')}</td></tr>
+                            ) : categories?.length === 0 ? (
+                                <tr><td colSpan={4} className="px-6 py-12 text-center text-gray-500 dark:text-gray-400">{t('products.no_categories')}</td></tr>
+                            ) : (
+                                categories?.map((category) => (
+                                    <tr key={category.id}>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">{category.name}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{category.description || '-'}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{category._count?.products || 0}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                            <button className="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 mr-3">
+                                                <Pencil className="w-4 h-4" />
+                                            </button>
+                                            <button className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300">
+                                                <Trash2 className="w-4 h-4" />
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))
+                            )}
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
             {isModalOpen && (

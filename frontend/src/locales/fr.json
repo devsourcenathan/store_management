@@ -19,8 +19,11 @@
         "status": "Statut",
         "date": "Date",
         "all": "Tout",
+        "add": "Ajouter",
+        "close": "Fermer",
         "active": "Actif",
         "inactive": "Inactif",
+        "saving": "Enregistrement...",
         "processing": "Traitement..."
     },
     "nav": {
@@ -85,7 +88,30 @@
         "process_sale": "Valider la vente",
         "select_customer": "Sélectionner un client",
         "walk_in_customer": "Client de passage",
-        "payment_success": "Paiement réussi !"
+        "payment_success": "Paiement réussi !",
+        "items": "article(s)",
+        "current_sale": "Vente en cours",
+        "stock": "Stock",
+        "view_cart": "Voir Panier",
+        "proceed_payment": "Procéder au Paiement",
+        "payment": {
+            "title": "Confirmer le Paiement",
+            "description": "Sélectionnez la méthode de paiement pour",
+            "cash": "Espèces",
+            "card": "Carte",
+            "mobile": "Mobile Money",
+            "processing": "Traitement...",
+            "confirm": "Confirmer le Paiement"
+        },
+        "success": {
+            "title": "Vente Réussie !",
+            "description": "La transaction a été complétée avec succès",
+            "print": "Imprimer le Reçu",
+            "new_sale": "Nouvelle Vente"
+        },
+        "error": {
+            "process_sale": "Erreur lors du traitement de la vente"
+        }
     },
     "auth": {
         "login": "Connexion",

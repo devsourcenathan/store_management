@@ -129,59 +129,113 @@ export function SalesPage() {
 
     return (
         <div className="space-y-6">
-            <div className="flex justify-between items-center">
+            <div className="flex flex-col gap-4">
                 <div>
-                    <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{t('sales.title')}</h2>
-                    <p className="text-gray-600 dark:text-gray-400">{t('sales.subtitle')}</p>
+                    <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100">{t('sales.title')}</h2>
+                    <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">{t('sales.subtitle')}</p>
                 </div>
                 <button
                     onClick={() => setIsModalOpen(true)}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                    className="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                 >
                     {t('sales.new_sale')}
                 </button>
             </div>
 
+            {/* Sales Display - Cards on Mobile, Table on Desktop */}
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden border border-gray-100 dark:border-gray-700">
-                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                    <thead className="bg-gray-50 dark:bg-gray-700/50">
-                        <tr>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.date', 'Date')}</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.customer', 'Customer')}</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.total', 'Total')}</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.status', 'Status')}</th>
-                            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.actions', 'Actions')}</th>
-                        </tr>
-                    </thead>
-                    <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                        {isLoading ? (
-                            <tr><td colSpan={5} className="px-6 py-4 text-center dark:text-gray-400">Loading...</td></tr>
-                        ) : sales?.length === 0 ? (
-                            <tr><td colSpan={5} className="px-6 py-12 text-center text-gray-500 dark:text-gray-400">No sales found.</td></tr>
-                        ) : (
-                            sales?.map((sale) => (
-                                <tr key={sale.id}>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{new Date(sale.createdAt).toLocaleDateString()}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">{sale.customer?.name || 'Walk-in'}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{sale.totalAmount} FCFA</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                                        <span className="px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 rounded-full text-xs font-medium">{sale.status}</span>
-                                    </td>
+                {/* Mobile Card View */}
+                <div className="md:hidden p-4 space-y-4">
+                    {isLoading ? (
+                        <div className="px-4 py-12 text-center text-gray-500 dark:text-gray-400">Loading...</div>
+                    ) : sales?.length === 0 ? (
+                        <div className="px-4 py-12 text-center text-gray-500 dark:text-gray-400">No sales found.</div>
+                    ) : (
+                        sales?.map((sale) => (
+                            <div key={sale.id} className="bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-xl p-4 shadow-sm hover:shadow-md hover:border-blue-300 dark:hover:border-blue-600 transition-all">
+                                {/* Sale Header */}
+                                <div className="flex items-start justify-between mb-3">
+                                    <div className="flex-1">
+                                        <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                                            {sale.customer?.name || 'Walk-in'}
+                                        </h3>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                                            {new Date(sale.createdAt).toLocaleDateString()}
+                                        </p>
+                                    </div>
+                                    <span className="px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 rounded-full text-xs font-medium">
+                                        {sale.status}
+                                    </span>
+                                </div>
 
-                                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                {/* Sale Details */}
+                                <div className="grid grid-cols-2 gap-3 mt-3 pt-3 border-t-2 border-gray-200 dark:border-gray-700">
+                                    <div>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400 mb-1 font-medium">
+                                            Total
+                                        </p>
+                                        <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                                            {sale.totalAmount} FCFA
+                                        </p>
+                                    </div>
+                                    <div className="flex items-end justify-end space-x-2">
                                         <button
                                             onClick={() => printer.printInvoice(sale, currentStore?.name)}
-                                            className="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 mr-3"
+                                            className="px-3 py-1.5 text-xs bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors"
                                         >
-                                            {t('suppliers.print_order', 'Print')}
+                                            Print
                                         </button>
-                                        <button className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-300">{t('common.view_details', 'View')}</button>
-                                    </td>
-                                </tr>
-                            ))
-                        )}
-                    </tbody>
-                </table>
+                                        <button className="px-3 py-1.5 text-xs bg-gray-50 text-gray-600 dark:bg-gray-700 dark:text-gray-400 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors">
+                                            View
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        ))
+                    )}
+                </div>
+
+                {/* Desktop Table View */}
+                <div className="hidden md:block">
+                    <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                        <thead className="bg-gray-50 dark:bg-gray-700/50">
+                            <tr>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.date', 'Date')}</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.customer', 'Customer')}</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.total', 'Total')}</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.status', 'Status')}</th>
+                                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.actions', 'Actions')}</th>
+                            </tr>
+                        </thead>
+                        <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                            {isLoading ? (
+                                <tr><td colSpan={5} className="px-6 py-4 text-center dark:text-gray-400">Loading...</td></tr>
+                            ) : sales?.length === 0 ? (
+                                <tr><td colSpan={5} className="px-6 py-12 text-center text-gray-500 dark:text-gray-400">No sales found.</td></tr>
+                            ) : (
+                                sales?.map((sale) => (
+                                    <tr key={sale.id}>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{new Date(sale.createdAt).toLocaleDateString()}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">{sale.customer?.name || 'Walk-in'}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{sale.totalAmount} FCFA</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                            <span className="px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 rounded-full text-xs font-medium">{sale.status}</span>
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                            <button
+                                                onClick={() => printer.printInvoice(sale, currentStore?.name)}
+                                                className="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 mr-3"
+                                            >
+                                                {t('suppliers.print_order', 'Print')}
+                                            </button>
+                                            <button className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-300">{t('common.view_details', 'View')}</button>
+                                        </td>
+                                    </tr>
+                                ))
+                            )}
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
             {/* New Sale Sheet */}

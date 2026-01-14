@@ -94,14 +94,14 @@ export function SuppliersPage() {
 
     return (
         <div className="space-y-6">
-            <div className="flex justify-between items-center">
+            <div className="flex flex-col gap-4">
                 <div>
-                    <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{t('suppliers.management_title')}</h2>
-                    <p className="text-gray-600 dark:text-gray-400">{t('suppliers.management_subtitle')}</p>
+                    <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100">{t('suppliers.management_title')}</h2>
+                    <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">{t('suppliers.management_subtitle')}</p>
                 </div>
                 <button
                     onClick={openNewModal}
-                    className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                    className="w-full sm:w-auto flex items-center justify-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                 >
                     <Plus className="w-4 h-4" />
                     <span>{t('common.create', 'Create')} {t('suppliers.supplier')}</span>

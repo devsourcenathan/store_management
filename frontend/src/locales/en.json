@@ -19,8 +19,11 @@
         "status": "Status",
         "date": "Date",
         "all": "All",
+        "add": "Add",
+        "close": "Close",
         "active": "Active",
         "inactive": "Inactive",
+        "saving": "Saving...",
         "processing": "Processing..."
     },
     "nav": {
@@ -85,7 +88,30 @@
         "process_sale": "Process Sale",
         "select_customer": "Select Customer",
         "walk_in_customer": "Walk-in Customer",
-        "payment_success": "Payment Successful!"
+        "payment_success": "Payment Successful!",
+        "items": "item(s)",
+        "current_sale": "Current Sale",
+        "stock": "Stock",
+        "view_cart": "View Cart",
+        "proceed_payment": "Proceed to Payment",
+        "payment": {
+            "title": "Confirm Payment",
+            "description": "Select payment method for",
+            "cash": "Cash",
+            "card": "Card",
+            "mobile": "Mobile Money",
+            "processing": "Processing...",
+            "confirm": "Confirm Payment"
+        },
+        "success": {
+            "title": "Sale Successful!",
+            "description": "Transaction completed successfully",
+            "print": "Print Receipt",
+            "new_sale": "New Sale"
+        },
+        "error": {
+            "process_sale": "Error processing sale"
+        }
     },
     "auth": {
         "login": "Login",

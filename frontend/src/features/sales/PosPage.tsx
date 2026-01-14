@@ -195,28 +195,29 @@ export function PosPage() {
     };
 
     return (
-        <div className="h-[calc(100vh-6rem)] flex gap-6">
+        <div className="h-[calc(100vh-8rem)] sm:h-[calc(100vh-6rem)] flex flex-col lg:flex-row gap-4 lg:gap-6">
             {/* Left: Product Grid */}
             <div className="flex-1 flex flex-col bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden transition-colors">
                 {/* Search & Filter Header */}
-                <div className="p-4 border-b border-gray-100 dark:border-gray-700 space-y-4">
+                <div className="p-3 sm:p-4 border-b border-gray-100 dark:border-gray-700 space-y-3 sm:space-y-4">
                     <div className="relative">
-                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 sm:w-5 sm:h-5" />
                         <input
                             type="text"
                             placeholder={t('pos.search_placeholder')}
-                            className="w-full pl-10 pr-4 py-2 border border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            className="w-full pl-9 sm:pl-10 pr-4 py-2 text-sm sm:text-base border border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
                     </div>
                 </div>
 
-                <div className="flex justify-between items-center pt-2 px-4">
-                    <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide flex-1 mr-4">
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 pt-2 px-3 sm:px-4">
+                    {/* Categories - Scrollable */}
+                    <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide flex-1 smooth-scroll">
                         <button
                             onClick={() => setSelectedCategory('all')}
-                            className={`px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${selectedCategory === 'all'
+                            className={`px-3 sm:px-4 py-1.5 rounded-full text-xs sm:text-sm font-medium whitespace-nowrap transition-colors flex-shrink-0 ${selectedCategory === 'all'
                                 ? 'bg-blue-600 text-white'
                                 : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                                 }`}
@@ -227,7 +228,7 @@ export function PosPage() {
                             <button
                                 key={cat.id}
                                 onClick={() => setSelectedCategory(cat.id)}
-                                className={`px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${selectedCategory === cat.id
+                                className={`px-3 sm:px-4 py-1.5 rounded-full text-xs sm:text-sm font-medium whitespace-nowrap transition-colors flex-shrink-0 ${selectedCategory === cat.id
                                     ? 'bg-blue-600 text-white'
                                     : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                                     }`}
@@ -237,8 +238,8 @@ export function PosPage() {
                         ))}
                     </div>
 
-                    {/* View Toggles */}
-                    <div className="flex bg-gray-100 dark:bg-gray-700 p-1 rounded-lg">
+                    {/* View Toggles - Always visible */}
+                    <div className="flex bg-gray-100 dark:bg-gray-700 p-1 rounded-lg flex-shrink-0">
                         <button
                             onClick={() => setViewMode('grid')}
                             className={`p-1.5 rounded-md transition-all ${viewMode === 'grid'
@@ -264,9 +265,9 @@ export function PosPage() {
 
 
                 {/* Product Grid */}
-                <div className="flex-1 overflow-y-auto p-4 bg-gray-50 dark:bg-gray-900/50">
+                <div className="flex-1 overflow-y-auto p-3 sm:p-4 bg-gray-50 dark:bg-gray-900/50">
                     <div className={viewMode === 'grid'
-                        ? "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
+                        ? "grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-3 sm:gap-4"
                         : "flex flex-col gap-2"
                     }>
                         {filteredProducts.map(product => {
@@ -344,8 +345,8 @@ export function PosPage() {
                 </div>
             </div>
 
-            {/* Right: Cart */}
-            <div className="w-96 flex flex-col bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden transition-colors">
+            {/* Right: Cart - Hidden on mobile, shown on desktop */}
+            <div className="hidden lg:flex w-96 flex-col bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden transition-colors">
                 <div className="p-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50 space-y-3">
                     <div className="flex justify-between items-center">
                         <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100 flex items-center">
@@ -433,9 +434,34 @@ export function PosPage() {
                 </div>
             </div>
 
+            {/* Mobile Cart Button - Fixed at bottom on mobile */}
+            <div className="lg:hidden fixed bottom-0 left-0 right-0 z-20 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 shadow-lg">
+                {cart.length > 0 && (
+                    <button
+                        onClick={() => setIsPaymentModalOpen(true)}
+                        className="w-full px-4 py-3 flex items-center justify-between touch-target"
+                    >
+                        <div className="flex items-center space-x-3">
+                            <ShoppingCart className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                            <div className="text-left">
+                                <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                                    {totalItems} {t('pos.items')}
+                                </p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400">
+                                    {cartTotal.toLocaleString()} FCFA
+                                </p>
+                            </div>
+                        </div>
+                        <div className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium">
+                            {t('pos.proceed_payment')}
+                        </div>
+                    </button>
+                )}
+            </div>
+
             {/* Payment Modal */}
             <Dialog open={isPaymentModalOpen} onOpenChange={setIsPaymentModalOpen}>
-                <DialogContent className="dark:bg-gray-800 dark:text-gray-100">
+                <DialogContent className="w-[95vw] max-w-md sm:max-w-lg dark:bg-gray-800 dark:text-gray-100">
                     <DialogHeader>
                         <DialogTitle>{t('pos.payment.title')}</DialogTitle>
                         <DialogDescription className="dark:text-gray-400">
@@ -443,36 +469,36 @@ export function PosPage() {
                         </DialogDescription>
                     </DialogHeader>
 
-                    <div className="grid grid-cols-3 gap-4 py-4">
+                    <div className="grid grid-cols-1 xs:grid-cols-3 gap-3 sm:gap-4 py-4">
                         <button
                             onClick={() => setPaymentMethod('CASH')}
-                            className={`flex flex-col items-center justify-center p-4 border-2 rounded-xl transition-all ${paymentMethod === 'CASH'
+                            className={`flex flex-col items-center justify-center p-3 sm:p-4 border-2 rounded-xl transition-all touch-target ${paymentMethod === 'CASH'
                                 ? 'border-blue-600 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
                                 : 'border-gray-200 dark:border-gray-600 hover:border-blue-200 dark:hover:border-blue-700 hover:bg-gray-50 dark:hover:bg-gray-700'
                                 }`}
                         >
-                            <Banknote className="w-8 h-8 mb-2" />
-                            <span className="font-medium">{t('pos.payment.cash')}</span>
+                            <Banknote className="w-6 h-6 sm:w-8 sm:h-8 mb-2" />
+                            <span className="text-xs sm:text-sm font-medium">{t('pos.payment.cash')}</span>
                         </button>
                         <button
                             onClick={() => setPaymentMethod('CARD')}
-                            className={`flex flex-col items-center justify-center p-4 border-2 rounded-xl transition-all ${paymentMethod === 'CARD'
+                            className={`flex flex-col items-center justify-center p-3 sm:p-4 border-2 rounded-xl transition-all touch-target ${paymentMethod === 'CARD'
                                 ? 'border-blue-600 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
                                 : 'border-gray-200 dark:border-gray-600 hover:border-blue-200 dark:hover:border-blue-700 hover:bg-gray-50 dark:hover:bg-gray-700'
                                 }`}
                         >
-                            <CreditCard className="w-8 h-8 mb-2" />
-                            <span className="font-medium">{t('pos.payment.card')}</span>
+                            <CreditCard className="w-6 h-6 sm:w-8 sm:h-8 mb-2" />
+                            <span className="text-xs sm:text-sm font-medium">{t('pos.payment.card')}</span>
                         </button>
                         <button
                             onClick={() => setPaymentMethod('MOBILE')}
-                            className={`flex flex-col items-center justify-center p-4 border-2 rounded-xl transition-all ${paymentMethod === 'MOBILE'
+                            className={`flex flex-col items-center justify-center p-3 sm:p-4 border-2 rounded-xl transition-all touch-target ${paymentMethod === 'MOBILE'
                                 ? 'border-blue-600 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
                                 : 'border-gray-200 dark:border-gray-600 hover:border-blue-200 dark:hover:border-blue-700 hover:bg-gray-50 dark:hover:bg-gray-700'
                                 }`}
                         >
-                            <Smartphone className="w-8 h-8 mb-2" />
-                            <span className="font-medium">{t('pos.payment.mobile')}</span>
+                            <Smartphone className="w-6 h-6 sm:w-8 sm:h-8 mb-2" />
+                            <span className="text-xs sm:text-sm font-medium">{t('pos.payment.mobile')}</span>
                         </button>
                     </div>
 
@@ -496,7 +522,7 @@ export function PosPage() {
 
             {/* Success / Print Modal */}
             <Dialog open={showSuccessModal} onOpenChange={handleCloseSuccess}>
-                <DialogContent className="sm:max-w-md dark:bg-gray-800 dark:text-gray-100">
+                <DialogContent className="w-[95vw] max-w-md sm:max-w-lg dark:bg-gray-800 dark:text-gray-100">
                     <DialogHeader>
                         <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100 dark:bg-green-900/30 mb-4">
                             <svg className="h-6 w-6 text-green-600 dark:text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">

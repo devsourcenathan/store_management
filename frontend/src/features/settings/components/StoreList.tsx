@@ -65,14 +65,14 @@ export function StoreList() {
 
     return (
         <div className="space-y-6">
-            <div className="flex justify-between items-center bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm transition-colors">
+            <div className="flex flex-col gap-3 bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm transition-colors">
                 <div>
-                    <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">{t('settings.stores.title')}</h3>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">{t('settings.stores.subtitle')}</p>
+                    <h3 className="text-base sm:text-lg font-medium text-gray-900 dark:text-gray-100">{t('settings.stores.title')}</h3>
+                    <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">{t('settings.stores.subtitle')}</p>
                 </div>
                 <button
                     onClick={() => { setEditingStore(null); setIsDialogOpen(true); }}
-                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                    className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
                 >
                     <Plus className="w-4 h-4" />
                     {t('settings.stores.add_store')}

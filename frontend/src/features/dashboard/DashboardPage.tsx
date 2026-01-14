@@ -110,21 +110,21 @@ export function DashboardPage() {
     return (
         <div className="space-y-6 pb-12">
             {/* Header: Title & Actions */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col gap-4">
                 <div>
-                    <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{t('dashboard.title')}</h2>
-                    <p className="text-gray-600 dark:text-gray-400">{t('dashboard.subtitle')}</p>
+                    <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100">{t('dashboard.title')}</h2>
+                    <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">{t('dashboard.subtitle')}</p>
                 </div>
 
                 {/* Actions */}
-                <div className="flex flex-wrap items-center gap-3">
+                <div className="flex flex-wrap items-center gap-2 sm:gap-3">
                     <ActionButton
                         to="/pos"
                         label={t('dashboard.actions.pos')}
                         icon={<CalculatorIcon className="w-4 h-4" />}
                         variant="primary-large"
                     />
-                    <div className="h-8 w-px bg-gray-200 dark:bg-gray-700 mx-1 hidden md:block"></div>
+                    <div className="h-8 w-px bg-gray-200 dark:bg-gray-700 mx-1 hidden lg:block"></div>
                     <ActionButton
                         to="/sales"
                         label={t('dashboard.actions.history')}
@@ -147,14 +147,16 @@ export function DashboardPage() {
             </div>
 
             {/* Filters Row - Separate Section */}
-            <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center bg-white dark:bg-gray-800 p-2 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 transition-colors">
-                <span className="text-sm font-medium text-gray-500 dark:text-gray-400 pl-2">{t('dashboard.period')}</span>
-                <div className="flex overflow-x-auto pb-1 sm:pb-0 gap-1 w-full sm:w-auto">
+            <div className="flex flex-col gap-3 sm:gap-4 bg-white dark:bg-gray-800 p-3 sm:p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 transition-colors">
+                <div className="flex items-center justify-between">
+                    <span className="text-xs sm:text-sm font-medium text-gray-500 dark:text-gray-400">{t('dashboard.period')}</span>
+                </div>
+                <div className="flex overflow-x-auto pb-1 scrollbar-hide smooth-scroll gap-2 w-full -mx-1 px-1">
                     {['today', 'this_week', 'this_month', 'this_quarter', 'this_year', 'custom'].map((filter) => (
                         <button
                             key={filter}
                             onClick={() => setDateFilter(filter)}
-                            className={`px-3 py-1.5 text-sm font-medium rounded-lg whitespace-nowrap transition-all ${dateFilter === filter
+                            className={`px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium rounded-lg whitespace-nowrap transition-all flex-shrink-0 ${dateFilter === filter
                                 ? 'bg-gray-900 text-white shadow-md dark:bg-gray-100 dark:text-gray-900'
                                 : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-gray-200 dark:hover:bg-gray-700'
                                 }`}
@@ -167,26 +169,26 @@ export function DashboardPage() {
 
                 {/* Custom Date Inputs */}
                 {dateFilter === 'custom' && (
-                    <div className="flex items-center gap-2 bg-gray-50 dark:bg-gray-900/50 p-1.5 rounded-lg border border-gray-200 dark:border-gray-700 animate-in fade-in slide-in-from-left-2 duration-200 sm:ml-auto">
+                    <div className="flex items-center gap-2 bg-gray-50 dark:bg-gray-900/50 p-1.5 rounded-lg border border-gray-200 dark:border-gray-700 animate-in fade-in slide-in-from-left-2 duration-200 w-full sm:w-auto">
                         <input
                             type="date"
                             value={customStart}
                             onChange={(e) => setCustomStart(e.target.value)}
-                            className="border-none text-sm focus:ring-0 p-0 bg-transparent text-gray-700 dark:text-gray-300 w-32"
+                            className="border-none text-xs sm:text-sm focus:ring-0 p-0 bg-transparent text-gray-700 dark:text-gray-300 w-28 sm:w-32"
                         />
                         <span className="text-gray-400">-</span>
                         <input
                             type="date"
                             value={customEnd}
                             onChange={(e) => setCustomEnd(e.target.value)}
-                            className="border-none text-sm focus:ring-0 p-0 bg-transparent text-gray-700 dark:text-gray-300 w-32"
+                            className="border-none text-xs sm:text-sm focus:ring-0 p-0 bg-transparent text-gray-700 dark:text-gray-300 w-28 sm:w-32"
                         />
                     </div>
                 )}
             </div>
 
             {/* Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
                 <StatCard
                     title={`${t('dashboard.today_revenue')} (${periodLabel})`}
                     value={stats?.todaysSales ? `${stats.todaysSales.toLocaleString()} F` : '0 F'}
@@ -217,7 +219,7 @@ export function DashboardPage() {
                 />
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
                 {/* Main Chart */}
                 <div className="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 transition-colors">
                     <div className="flex items-center justify-between mb-6">

@@ -145,15 +145,15 @@ export function ProductsPage() {
 
     return (
         <div className="space-y-6">
-            <div className="flex justify-between items-center">
+            <div className="flex flex-col gap-4">
                 <div>
-                    <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{t('products.title')}</h2>
-                    <p className="text-gray-600 dark:text-gray-400">{t('products.subtitle')}</p>
+                    <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100">{t('products.title')}</h2>
+                    <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">{t('products.subtitle')}</p>
                 </div>
-                <div className="flex space-x-3">
+                <div className="flex flex-col xs:flex-row gap-2 sm:gap-3">
                     {stores && (
                         <select
-                            className="border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg px-2 sm:px-3 py-2 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-full xs:w-auto"
                             value={selectedStoreId}
                             onChange={(e) => setSelectedStoreId(e.target.value)}
                         >
@@ -163,85 +163,165 @@ export function ProductsPage() {
 
                     <button
                         onClick={() => { resetForm(); setIsModalOpen(true); }}
-                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                        className="px-3 sm:px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm sm:text-base touch-target w-full xs:w-auto flex items-center justify-center"
                     >
-                        <Plus className="w-4 h-4 inline-block mr-2" />
-                        {t('products.add_product')}
+                        <Plus className="w-4 h-4 sm:inline-block mr-0 sm:mr-2" />
+                        <span className="hidden xs:inline">{t('products.add_product')}</span>
+                        <span className="xs:hidden">{t('common.add')}</span>
                     </button>
                 </div>
             </div>
 
-            {/* Products Table */}
+            {/* Products Display - Cards on Mobile, Table on Desktop */}
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden transition-colors">
-                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                    <thead className="bg-gray-50 dark:bg-gray-700/50">
-                        <tr>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('products.fields.product')}</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('products.fields.category')}</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('products.fields.stock')}</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('products.fields.price')}</th>
-                            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('products.fields.actions')}</th>
-                        </tr>
-                    </thead>
-                    <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                        {products?.length === 0 ? (
-                            <tr>
-                                <td colSpan={6} className="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
-                                    {t('products.no_products')}
-                                </td>
-                            </tr>
-                        ) : (
-                            products?.map((product: any) => (
-                                <tr key={product.id}>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="flex items-center">
-                                            <div className="flex-shrink-0 h-10 w-10 bg-gray-100 dark:bg-gray-700 rounded flex items-center justify-center text-gray-400 dark:text-gray-500">
-                                                <ImageIcon className="w-6 h-6" />
-                                            </div>
-                                            <div className="ml-4">
-                                                <div className="text-sm font-medium text-gray-900 dark:text-gray-100">{product.name}</div>
-                                                <div className="text-sm text-gray-500 dark:text-gray-400">{product.sku}</div>
-                                            </div>
+                {/* Mobile Card View */}
+                <div className="md:hidden p-4 space-y-4">
+                    {products?.length === 0 ? (
+                        <div className="px-4 py-12 text-center text-gray-500 dark:text-gray-400">
+                            {t('products.no_products')}
+                        </div>
+                    ) : (
+                        products?.map((product: any) => (
+                            <div key={product.id} className="bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-xl p-4 shadow-sm hover:shadow-md hover:border-blue-300 dark:hover:border-blue-600 transition-all">
+                                {/* Product Header */}
+                                <div className="flex items-start justify-between mb-3">
+                                    <div className="flex items-center flex-1 min-w-0">
+                                        <div className="flex-shrink-0 h-12 w-12 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center text-gray-400 dark:text-gray-500 border border-gray-200 dark:border-gray-600">
+                                            <ImageIcon className="w-6 h-6" />
                                         </div>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{product.category?.name || 'N/A'}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                                        <div className="flex items-center space-x-1 outline-none">
-                                            <Package className={`w-4 h-4 ${product.quantity <= 10 ? 'text-red-500' : 'text-green-500'}`} />
-                                            <span className={product.quantity <= 10 ? 'text-red-600 dark:text-red-400 font-bold' : 'dark:text-gray-300'}>
-                                                {product.quantity ?? 0}
-                                            </span>
+                                        <div className="ml-3 flex-1 min-w-0">
+                                            <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">
+                                                {product.name}
+                                            </h3>
+                                            <p className="text-xs text-gray-500 dark:text-gray-400">
+                                                SKU: {product.sku}
+                                            </p>
                                         </div>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{product.basePrice} FCFA</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                    </div>
+                                    {/* Actions */}
+                                    <div className="flex items-center space-x-2 ml-2">
                                         <button
                                             onClick={() => handleEdit(product)}
-                                            className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 mr-3"
+                                            className="p-2 text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
                                         >
                                             <Edit className="w-4 h-4" />
                                         </button>
                                         <button
                                             onClick={() => handleDelete(product.id)}
-                                            className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
+                                            className="p-2 text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/30 rounded-lg transition-colors"
                                         >
                                             <Trash2 className="w-4 h-4" />
                                         </button>
+                                    </div>
+                                </div>
+
+                                {/* Product Details Grid */}
+                                <div className="grid grid-cols-3 gap-3 mt-3 pt-3 border-t-2 border-gray-200 dark:border-gray-700">
+                                    <div>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400 mb-1 font-medium">
+                                            {t('products.fields.category')}
+                                        </p>
+                                        <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                            {product.category?.name || 'N/A'}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400 mb-1 font-medium">
+                                            {t('products.fields.stock')}
+                                        </p>
+                                        <div className="flex items-center space-x-1">
+                                            <Package className={`w-4 h-4 ${product.quantity <= 10 ? 'text-red-500' : 'text-green-500'}`} />
+                                            <span className={`text-sm font-semibold ${product.quantity <= 10 ? 'text-red-600 dark:text-red-400' : 'text-gray-900 dark:text-gray-100'}`}>
+                                                {product.quantity ?? 0}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400 mb-1 font-medium">
+                                            {t('products.fields.price')}
+                                        </p>
+                                        <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                                            {product.basePrice} F
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        ))
+                    )}
+                </div>
+
+                {/* Desktop Table View */}
+                <div className="hidden md:block overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                        <thead className="bg-gray-50 dark:bg-gray-700/50">
+                            <tr>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('products.fields.product')}</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('products.fields.category')}</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('products.fields.stock')}</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('products.fields.price')}</th>
+                                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('products.fields.actions')}</th>
+                            </tr>
+                        </thead>
+                        <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                            {products?.length === 0 ? (
+                                <tr>
+                                    <td colSpan={6} className="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
+                                        {t('products.no_products')}
                                     </td>
                                 </tr>
-                            ))
-                        )}
-                    </tbody>
-                </table>
+                            ) : (
+                                products?.map((product: any) => (
+                                    <tr key={product.id}>
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <div className="flex items-center">
+                                                <div className="flex-shrink-0 h-10 w-10 bg-gray-100 dark:bg-gray-700 rounded flex items-center justify-center text-gray-400 dark:text-gray-500">
+                                                    <ImageIcon className="w-6 h-6" />
+                                                </div>
+                                                <div className="ml-4">
+                                                    <div className="text-sm font-medium text-gray-900 dark:text-gray-100">{product.name}</div>
+                                                    <div className="text-sm text-gray-500 dark:text-gray-400">{product.sku}</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{product.category?.name || 'N/A'}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                            <div className="flex items-center space-x-1 outline-none">
+                                                <Package className={`w-4 h-4 ${product.quantity <= 10 ? 'text-red-500' : 'text-green-500'}`} />
+                                                <span className={product.quantity <= 10 ? 'text-red-600 dark:text-red-400 font-bold' : 'dark:text-gray-300'}>
+                                                    {product.quantity ?? 0}
+                                                </span>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{product.basePrice} FCFA</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                            <button
+                                                onClick={() => handleEdit(product)}
+                                                className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 mr-3"
+                                            >
+                                                <Edit className="w-4 h-4" />
+                                            </button>
+                                            <button
+                                                onClick={() => handleDelete(product.id)}
+                                                className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
+                                            >
+                                                <Trash2 className="w-4 h-4" />
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))
+                            )}
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
             {/* Add/Edit Product Modal */}
             {
                 isModalOpen && (
                     <div className="fixed inset-0 bg-gray-600 bg-opacity-50 dark:bg-gray-900 dark:bg-opacity-80 flex items-center justify-center z-50 transition-opacity">
-                        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md transition-colors border border-gray-200 dark:border-gray-700">
+                        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-4 sm:p-6 w-[95vw] max-w-md sm:max-w-lg transition-colors border border-gray-200 dark:border-gray-700">
                             <div className="flex justify-between items-center mb-4">
-                                <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100">{editingProduct ? t('products.edit_product') : t('products.add_product')}</h3>
+                                <h3 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-gray-100">{editingProduct ? t('products.edit_product') : t('products.add_product')}</h3>
                                 <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
                                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
