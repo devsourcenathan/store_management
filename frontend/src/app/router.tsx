@@ -31,21 +31,37 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
     return <>{children}</>;
 }
 
+import { LandingPage } from '@/features/landing/LandingPage';
+import { RegisterOrgPage } from '@/features/landing/RegisterOrgPage';
+import { OrgLandingPage } from '@/features/org-landing/OrgLandingPage';
+import { OrgLandingEditor } from '@/features/org-landing/OrgLandingEditor';
+
+import { AdminLayout } from '@/features/admin/AdminLayout';
+import { AdminDashboard } from '@/features/admin/AdminDashboard';
+import { OrgList } from '@/features/admin/OrgList';
+
 export function AppRouter() {
     return (
         <Routes>
+            <Route path="/admin" element={<AdminLayout />}>
+                <Route index element={<AdminDashboard />} />
+                <Route path="organizations" element={<OrgList />} />
+            </Route>
+
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/register-org" element={<RegisterOrgPage />} />
+            <Route path="/org/:subdomain" element={<OrgLandingPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
 
             <Route
-                path="/"
                 element={
                     <ProtectedRoute>
                         <DashboardLayout />
                     </ProtectedRoute>
                 }
             >
-                <Route index element={<DashboardPage />} />
+                <Route path="/dashboard" element={<DashboardPage />} />
                 <Route path="products" element={<ProductsPage />} />
                 <Route path="categories" element={<CategoriesPage />} />
                 <Route path="stock" element={<StockPage />} />
@@ -58,6 +74,7 @@ export function AppRouter() {
                 <Route path="subscriptions/balance" element={<BalanceManagementPage />} />
                 <Route path="subscriptions/offers" element={<OffersManagementPage />} />
                 <Route path="settings" element={<SettingsPage />} />
+                <Route path="settings/landing" element={<OrgLandingEditor />} />
             </Route>
         </Routes>
     );

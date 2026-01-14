@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { OrganizationSettings } from './components/OrganizationSettings';
 import { StoreList } from './components/StoreList';
 import { UserList } from './components/UserList';
-import { Building, Store as StoreIcon, Users } from 'lucide-react';
+import { OrgLandingEditor } from '@/features/org-landing/OrgLandingEditor';
+import { Building, Store as StoreIcon, Users, Globe } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 type Tab = 'organization' | 'stores' | 'team';
@@ -15,6 +16,7 @@ export function SettingsPage() {
         { id: 'organization', label: t('settings.tabs.organization'), icon: Building, component: OrganizationSettings },
         { id: 'stores', label: t('settings.tabs.stores'), icon: StoreIcon, component: StoreList },
         { id: 'team', label: t('settings.tabs.team'), icon: Users, component: UserList },
+        { id: 'landing', label: 'Landing Page', icon: Globe, component: OrgLandingEditor },
     ];
 
     return (

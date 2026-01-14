@@ -57,6 +57,9 @@
         "top_products": "Top Produits",
         "top_selling": "Produits les plus vendus",
         "period": "Période :",
+        "welcome_title": "Bienvenue sur Stock Management",
+        "welcome_subtitle": "Pour commencer, vous devez créer votre premier magasin. Un magasin vous aide à suivre l'inventaire, les ventes et les commandes.",
+        "create_first_store": "Créer votre premier magasin",
         "actions": {
             "pos": "Ouvrir Caisse",
             "history": "Historique",
@@ -290,8 +293,11 @@
                 "phone": "Téléphone",
                 "email": "Email",
                 "receipt_footer": "Pied de page ticket",
+                "receipt_footer_placeholder": "Merci de votre visite !",
                 "save": "Enregistrer",
-                "create": "Créer Magasin"
+                "create": "Créer Magasin",
+                "edit_desc": "Mettre à jour les détails de votre magasin.",
+                "create_desc": "Entrez les détails de votre nouveau magasin."
             },
             "messages": {
                 "create_success": "Magasin créé avec succès",

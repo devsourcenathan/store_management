@@ -8,10 +8,15 @@ interface NavigationItem {
     icon: React.ComponentType<{ className?: string }>;
 }
 
+export interface NavigationGroup {
+    title?: string;
+    items: NavigationItem[];
+}
+
 interface MobileMenuProps {
     isOpen: boolean;
     onClose: () => void;
-    navigation: NavigationItem[];
+    navigation: NavigationGroup[];
 }
 
 export function MobileMenu({ isOpen, onClose, navigation }: MobileMenuProps) {
@@ -48,17 +53,17 @@ export function MobileMenu({ isOpen, onClose, navigation }: MobileMenuProps) {
 
     return (
         <>
-            {/* Overlay */}
+            {/* Overlay - Z-index fixed to be very high */}
             <div
-                className="fixed inset-0 bg-black/50 z-40 md:hidden transition-opacity"
+                className="fixed inset-0 bg-black/50 z-[60] md:hidden transition-opacity"
                 onClick={onClose}
                 aria-hidden="true"
             />
 
-            {/* Drawer */}
-            <div className="fixed inset-y-0 left-0 w-80 max-w-[85vw] bg-white dark:bg-gray-800 z-50 md:hidden shadow-xl transform transition-transform duration-300 ease-in-out">
+            {/* Drawer - Z-index higher than overlay */}
+            <div className="fixed inset-y-0 left-0 w-80 max-w-[85vw] bg-white dark:bg-gray-800 z-[70] md:hidden shadow-xl transform transition-transform duration-300 ease-in-out flex flex-col">
                 {/* Header */}
-                <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+                <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
                     <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100">Menu</h2>
                     <button
                         onClick={onClose}
@@ -70,25 +75,36 @@ export function MobileMenu({ isOpen, onClose, navigation }: MobileMenuProps) {
                 </div>
 
                 {/* Navigation */}
-                <nav className="p-4 space-y-1 overflow-y-auto h-[calc(100vh-73px)]">
-                    {navigation.map((item) => {
-                        const Icon = item.icon;
-                        const active = isActive(item.href);
+                <nav className="p-4 overflow-y-auto flex-1">
+                    {navigation.map((group, groupIndex) => (
+                        <div key={groupIndex} className="mb-6 last:mb-0">
+                            {group.title && (
+                                <h3 className="px-4 mb-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                    {group.title}
+                                </h3>
+                            )}
+                            <div className="space-y-1">
+                                {group.items.map((item) => {
+                                    const Icon = item.icon;
+                                    const active = isActive(item.href);
 
-                        return (
-                            <Link
-                                key={item.href}
-                                to={item.href}
-                                className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors touch-target ${active
-                                    ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
-                                    : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
-                                    }`}
-                            >
-                                <Icon className="w-5 h-5 flex-shrink-0" />
-                                <span className="font-medium">{item.name}</span>
-                            </Link>
-                        );
-                    })}
+                                    return (
+                                        <Link
+                                            key={item.href}
+                                            to={item.href}
+                                            className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors touch-target ${active
+                                                ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
+                                                : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+                                                }`}
+                                        >
+                                            <Icon className="w-5 h-5 flex-shrink-0" />
+                                            <span className="font-medium">{item.name}</span>
+                                        </Link>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    ))}
                 </nav>
             </div>
         </>

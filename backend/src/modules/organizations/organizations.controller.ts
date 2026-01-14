@@ -13,10 +13,23 @@ export class OrganizationsController {
         return this.organizationsService.findOne(organizationId);
     }
 
+    @Get('me')
+    async getMe(@CurrentOrganization() organizationId: string) {
+        return this.organizationsService.findOne(organizationId);
+    }
+
     @Patch('current')
     async updateCurrent(
         @CurrentOrganization() organizationId: string,
         @Body() data: { name: string },
+    ) {
+        return this.organizationsService.update(organizationId, data);
+    }
+
+    @Patch('me')
+    async updateMe(
+        @CurrentOrganization() organizationId: string,
+        @Body() data: any,
     ) {
         return this.organizationsService.update(organizationId, data);
     }

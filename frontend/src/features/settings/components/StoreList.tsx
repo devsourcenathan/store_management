@@ -2,13 +2,13 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/services/api';
 import { Plus, Pencil, Trash2, MapPin, Phone } from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/Dialog';
+import { StoreFormSheet } from './StoreFormSheet';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 
 export function StoreList() {
     const { t } = useTranslation();
-    const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const [isSheetOpen, setIsSheetOpen] = useState(false);
     const [editingStore, setEditingStore] = useState<any>(null);
 
     const queryClient = useQueryClient();
@@ -21,45 +21,14 @@ export function StoreList() {
         }
     });
 
-    const createMutation = useMutation({
-        mutationFn: async (data: any) => api.post('/stores', data),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['stores'] });
-            setIsDialogOpen(false);
-            setEditingStore(null);
-            toast.success(t('settings.stores.messages.create_success'));
-        }
-    });
-
-    const updateMutation = useMutation({
-        mutationFn: async (data: any) => api.put(`/stores/${editingStore.id}`, data),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['stores'] });
-            setIsDialogOpen(false);
-            setEditingStore(null);
-            toast.success(t('settings.stores.messages.update_success'));
-        }
-    });
-
     const deleteMutation = useMutation({
         mutationFn: async (id: string) => api.delete(`/stores/${id}`),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['stores'] });
+            queryClient.invalidateQueries({ queryKey: ['me'] });
             toast.success(t('settings.stores.messages.delete_success'));
         }
     });
-
-    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        const formData = new FormData(e.currentTarget);
-        const data = Object.fromEntries(formData);
-
-        if (editingStore) {
-            updateMutation.mutate(data);
-        } else {
-            createMutation.mutate(data);
-        }
-    };
 
     if (isLoading) return <div>{t('common.loading')}...</div>;
 
@@ -71,8 +40,8 @@ export function StoreList() {
                     <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">{t('settings.stores.subtitle')}</p>
                 </div>
                 <button
-                    onClick={() => { setEditingStore(null); setIsDialogOpen(true); }}
-                    className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                    onClick={() => { setEditingStore(null); setIsSheetOpen(true); }}
+                    className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
                 >
                     <Plus className="w-4 h-4" />
                     {t('settings.stores.add_store')}
@@ -100,8 +69,8 @@ export function StoreList() {
                             </div>
                             <div className="flex gap-2">
                                 <button
-                                    onClick={() => { setEditingStore(store); setIsDialogOpen(true); }}
-                                    className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:text-blue-400 dark:hover:bg-blue-900/40 rounded"
+                                    onClick={() => { setEditingStore(store); setIsSheetOpen(true); }}
+                                    className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:text-blue-400 dark:hover:bg-blue-900/40 rounded transition-colors"
                                 >
                                     <Pencil className="w-4 h-4" />
                                 </button>
@@ -111,7 +80,7 @@ export function StoreList() {
                                             deleteMutation.mutate(store.id);
                                         }
                                     }}
-                                    className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 dark:hover:text-red-400 dark:hover:bg-red-900/40 rounded"
+                                    className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 dark:hover:text-red-400 dark:hover:bg-red-900/40 rounded transition-colors"
                                 >
                                     <Trash2 className="w-4 h-4" />
                                 </button>
@@ -121,74 +90,11 @@ export function StoreList() {
                 ))}
             </div>
 
-            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                <DialogContent className="dark:bg-gray-800 dark:text-gray-100 dark:border-gray-700">
-                    <DialogHeader>
-                        <DialogTitle>{editingStore ? t('settings.stores.edit_store') : t('settings.stores.new_store')}</DialogTitle>
-                    </DialogHeader>
-                    <form onSubmit={handleSubmit} className="space-y-4">
-                        <div>
-                            <label className="block text-sm font-medium mb-1 dark:text-gray-300">{t('settings.stores.form.name')}</label>
-                            <input
-                                name="name"
-                                defaultValue={editingStore?.name}
-                                className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                required
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium mb-1 dark:text-gray-300">{t('settings.stores.form.address')}</label>
-                            <input
-                                name="address"
-                                defaultValue={editingStore?.address}
-                                className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium mb-1 dark:text-gray-300">{t('settings.stores.form.phone')}</label>
-                            <input
-                                name="phone"
-                                defaultValue={editingStore?.phone}
-                                className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium mb-1 dark:text-gray-300">{t('settings.stores.form.email')}</label>
-                            <input
-                                name="email"
-                                type="email"
-                                defaultValue={editingStore?.email}
-                                className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium mb-1 dark:text-gray-300">{t('settings.stores.form.receipt_footer')}</label>
-                            <textarea
-                                name="receiptFooter"
-                                defaultValue={editingStore?.receiptFooter}
-                                rows={2}
-                                className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                placeholder="Thank you for your visit!"
-                            />
-                        </div>
-                        <div className="flex justify-end gap-2 mt-6">
-                            <button
-                                type="button"
-                                onClick={() => setIsDialogOpen(false)}
-                                className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md"
-                            >
-                                {t('common.cancel')}
-                            </button>
-                            <button
-                                type="submit"
-                                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-                            >
-                                {editingStore ? t('settings.stores.form.save') : t('settings.stores.form.create')}
-                            </button>
-                        </div>
-                    </form>
-                </DialogContent>
-            </Dialog>
+            <StoreFormSheet
+                isOpen={isSheetOpen}
+                onClose={() => setIsSheetOpen(false)}
+                store={editingStore}
+            />
         </div>
     );
 }

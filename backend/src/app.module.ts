@@ -18,6 +18,9 @@ import { ServicesModule } from './modules/services/services.module';
 import { ImagesModule } from './modules/images/images.module';
 import { SyncModule } from './modules/sync/sync.module';
 import { AuditModule } from './modules/audit/audit.module';
+import { LandingModule } from './modules/landing/landing.module';
+import { AdminModule } from './modules/admin/admin.module';
+import { OrganizationLandingModule } from './modules/organization-landing/organization-landing.module';
 import { AnalyticsModule } from './modules/analytics/analytics.module';
 
 @Module({
@@ -53,6 +56,9 @@ import { AnalyticsModule } from './modules/analytics/analytics.module';
         SyncModule,
         AuditModule,
         AnalyticsModule,
+        LandingModule,
+        AdminModule,
+        OrganizationLandingModule,
     ],
 })
 export class AppModule { }

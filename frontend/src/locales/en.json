@@ -57,6 +57,9 @@
         "top_products": "Top Products",
         "top_selling": "Top Selling Products",
         "period": "Period:",
+        "welcome_title": "Welcome to Stock Management",
+        "welcome_subtitle": "To get started, you need to create your first store. A store helps you track inventory, sales, and orders.",
+        "create_first_store": "Create Your First Store",
         "actions": {
             "pos": "Open POS",
             "history": "History",
@@ -290,8 +293,11 @@
                 "phone": "Phone",
                 "email": "Email",
                 "receipt_footer": "Receipt Footer",
+                "receipt_footer_placeholder": "Thank you for your visit!",
                 "save": "Save Changes",
-                "create": "Create Store"
+                "create": "Create Store",
+                "edit_desc": "Update your store details.",
+                "create_desc": "Enter the details for your new store."
             },
             "messages": {
                 "create_success": "Store created successfully",

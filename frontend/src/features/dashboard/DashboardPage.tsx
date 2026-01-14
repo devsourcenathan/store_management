@@ -6,6 +6,7 @@ import { useStore } from '../stores/StoreProvider';
 import { SalesChart } from './components/SalesChart';
 import { TopProducts } from './components/TopProducts';
 import { useTranslation } from 'react-i18next';
+import { StoreFormSheet } from '../settings/components/StoreFormSheet';
 
 export function DashboardPage() {
     const { currentStore } = useStore();
@@ -106,6 +107,39 @@ export function DashboardPage() {
         },
         enabled: !!currentStore?.id,
     });
+
+    const { stores, isLoading: isLoadingStores } = useStore();
+    const [isCreateStoreOpen, setIsCreateStoreOpen] = useState(false);
+
+    if (!isLoadingStores && stores.length === 0) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-[60vh] text-center space-y-6">
+                <div className="bg-blue-50 dark:bg-blue-900/30 p-6 rounded-full">
+                    <BoxIcon className="w-12 h-12 text-blue-600 dark:text-blue-400" />
+                </div>
+                <div className="max-w-md space-y-2">
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{t('dashboard.welcome_title')}</h2>
+                    <p className="text-gray-600 dark:text-gray-400">
+                        {t('dashboard.welcome_subtitle')}
+                    </p>
+                </div>
+                <button
+                    onClick={() => setIsCreateStoreOpen(true)}
+                    className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium shadow-md hover:shadow-lg"
+                >
+                    <div className="w-5 h-5">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+                    </div>
+                    {t('dashboard.create_first_store')}
+                </button>
+
+                <StoreFormSheet
+                    isOpen={isCreateStoreOpen}
+                    onClose={() => setIsCreateStoreOpen(false)}
+                />
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-6 pb-12">

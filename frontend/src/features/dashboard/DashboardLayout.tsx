@@ -24,7 +24,8 @@ import {
     LogOut,
     Calculator,
     Settings,
-    Menu
+    Menu,
+    Shield
 } from 'lucide-react';
 
 export function DashboardLayout() {
@@ -34,25 +35,58 @@ export function DashboardLayout() {
     const { t } = useTranslation();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
+    const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
 
-    const navigation = [
-        { name: t('nav.dashboard'), href: '/', icon: LayoutDashboard },
-        { name: t('nav.products'), href: '/products', icon: Package },
-        { name: t('nav.categories'), href: '/categories', icon: Tags },
-        { name: t('nav.stock'), href: '/stock', icon: Warehouse },
-        { name: t('nav.pos'), href: '/pos', icon: Calculator },
-        { name: t('nav.sales_history'), href: '/sales', icon: ShoppingCart },
-        { name: t('nav.customers'), href: '/customers', icon: Users },
-        { name: t('nav.suppliers'), href: '/suppliers', icon: Truck },
-        { name: t('nav.supply_orders'), href: '/supplies', icon: Package },
-        { name: t('nav.subscriptions'), href: '/subscriptions', icon: CreditCard },
-        { name: t('nav.services'), href: '/subscriptions/offers', icon: Layers },
-        { name: t('nav.settings'), href: '/settings', icon: Settings },
+    const groupedNavigation = [
+        {
+            title: 'Overview',
+            items: [
+                { name: t('nav.dashboard'), href: '/', icon: LayoutDashboard },
+            ]
+        },
+        {
+            title: 'Commercial',
+            items: [
+                { name: t('nav.sales_history'), href: '/sales', icon: ShoppingCart },
+                { name: t('nav.pos'), href: '/pos', icon: Calculator },
+                { name: t('nav.customers'), href: '/customers', icon: Users },
+                { name: t('nav.suppliers'), href: '/suppliers', icon: Truck },
+                { name: t('nav.supply_orders'), href: '/supplies', icon: Package },
+            ]
+        },
+        {
+            title: 'Inventory',
+            items: [
+                { name: t('nav.products'), href: '/products', icon: Package },
+                { name: t('nav.categories'), href: '/categories', icon: Tags },
+                { name: t('nav.stock'), href: '/stock', icon: Warehouse },
+            ]
+        },
+        {
+            title: 'Finance',
+            items: [
+                { name: t('nav.subscriptions'), href: '/subscriptions', icon: CreditCard },
+                { name: t('nav.services'), href: '/subscriptions/offers', icon: Layers },
+            ]
+        },
+        {
+            title: 'Settings',
+            items: [
+                { name: t('nav.settings'), href: '/settings', icon: Settings },
+            ]
+        }
     ];
 
+    if (user?.role === 'GLOBAL_ADMIN') {
+        groupedNavigation.push({
+            title: 'Admin',
+            items: [{ name: 'Admin Panel', href: '/admin', icon: Shield }]
+        });
+    }
+
     const isActive = (href: string) => {
-        if (href === '/') {
-            return location.pathname === '/';
+        if (href === '/dashboard' && location.pathname === '/') {
+            return false; // Don't highlight dashboard on landing page if somehow rendered
         }
         return location.pathname.startsWith(href);
     };
@@ -68,7 +102,7 @@ export function DashboardLayout() {
             <MobileMenu
                 isOpen={isMobileMenuOpen}
                 onClose={() => setIsMobileMenuOpen(false)}
-                navigation={navigation}
+                navigation={groupedNavigation}
             />
 
             {/* Top Navigation */}
@@ -242,14 +276,55 @@ export function DashboardLayout() {
                                 <span className="text-xs sm:text-sm font-medium">{t('nav.balance')}</span>
                             </Link>
 
-                            {/* User Info - Desktop only shows name/role */}
-                            <div className="hidden md:flex items-center space-x-2 sm:space-x-3 border-l pl-2 sm:pl-4 border-gray-200 dark:border-gray-700">
-                                <div className="text-right hidden lg:block">
-                                    <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                                        {user?.firstName} {user?.lastName}
-                                    </p>
-                                    <p className="text-xs text-gray-500 dark:text-gray-400">{user?.role}</p>
-                                </div>
+                            {/* User Info - Desktop */}
+                            <div className="relative hidden md:block border-l pl-2 sm:pl-4 border-gray-200 dark:border-gray-700">
+                                <button
+                                    onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                                    className="flex items-center space-x-3 p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors focus:outline-none"
+                                >
+                                    <div className="text-right hidden lg:block">
+                                        <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                            {user?.firstName} {user?.lastName}
+                                        </p>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400">{user?.role}</p>
+                                    </div>
+                                    <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center ring-2 ring-transparent group-hover:ring-blue-500 transition-all">
+                                        <span className="text-xs font-semibold text-blue-600 dark:text-blue-300">
+                                            {user?.firstName?.[0]}{user?.lastName?.[0]}
+                                        </span>
+                                    </div>
+                                </button>
+
+                                {isUserMenuOpen && (
+                                    <>
+                                        {/* Backdrop */}
+                                        <div
+                                            className="fixed inset-0 z-40"
+                                            onClick={() => setIsUserMenuOpen(false)}
+                                        />
+
+                                        {/* Dropdown */}
+                                        <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-50 animate-in fade-in zoom-in-95 duration-100">
+                                            <div className="px-4 py-2 border-b border-gray-200 dark:border-gray-700 lg:hidden">
+                                                <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                                    {user?.firstName} {user?.lastName}
+                                                </p>
+                                                <p className="text-xs text-gray-500 dark:text-gray-400">{user?.email}</p>
+                                            </div>
+
+                                            <button
+                                                onClick={() => {
+                                                    setIsUserMenuOpen(false);
+                                                    logout();
+                                                }}
+                                                className="w-full flex items-center space-x-2 px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                                            >
+                                                <LogOut className="w-4 h-4" />
+                                                <span>{t('nav.logout')}</span>
+                                            </button>
+                                        </div>
+                                    </>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -260,25 +335,36 @@ export function DashboardLayout() {
             <div className="flex">
                 {/* Sidebar Navigation */}
                 <aside className="w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 min-h-[calc(100vh-4rem)] hidden md:block">
-                    <nav className="p-4 space-y-1">
-                        {navigation.map((item) => {
-                            const Icon = item.icon;
-                            const active = isActive(item.href);
+                    <nav className="p-4 overflow-y-auto">
+                        {groupedNavigation.map((group, groupIndex) => (
+                            <div key={groupIndex} className="mb-6 last:mb-0">
+                                {group.title && (
+                                    <h3 className="px-4 mb-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                        {group.title}
+                                    </h3>
+                                )}
+                                <div className="space-y-1">
+                                    {group.items.map((item) => {
+                                        const Icon = item.icon;
+                                        const active = isActive(item.href);
 
-                            return (
-                                <Link
-                                    key={item.href}
-                                    to={item.href}
-                                    className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${active
-                                        ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
-                                        : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
-                                        }`}
-                                >
-                                    <Icon className="w-5 h-5" />
-                                    <span className="font-medium">{item.name}</span>
-                                </Link>
-                            );
-                        })}
+                                        return (
+                                            <Link
+                                                key={item.href}
+                                                to={item.href}
+                                                className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${active
+                                                    ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
+                                                    : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+                                                    }`}
+                                            >
+                                                <Icon className="w-5 h-5 flex-shrink-0" />
+                                                <span className="font-medium">{item.name}</span>
+                                            </Link>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        ))}
                     </nav>
                 </aside>
 
