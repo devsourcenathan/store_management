@@ -17,14 +17,14 @@ export function StoreSelector() {
         <div className="relative">
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="flex items-center space-x-2 px-3 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors min-w-[200px]"
+                className="flex items-center space-x-2 px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors min-w-[200px]"
             >
                 <div className="p-1 bg-blue-100 rounded text-blue-600">
                     <Store className="w-4 h-4" />
                 </div>
                 <div className="flex-1 text-left">
                     <p className="text-xs text-gray-500">Current Store</p>
-                    <p className="text-sm font-medium text-gray-900 truncate">
+                    <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
                         {currentStore ? currentStore.name : 'Select Store'}
                     </p>
                 </div>
@@ -38,8 +38,8 @@ export function StoreSelector() {
                         className="fixed inset-0 z-10"
                         onClick={() => setIsOpen(false)}
                     />
-                    <div className="absolute top-full right-0 mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 z-20 py-1">
-                        <div className="px-3 py-2 border-b border-gray-100">
+                    <div className="absolute top-full right-0 mt-2 w-64 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-20 py-1">
+                        <div className="px-3 py-2 border-b border-gray-100 dark:border-gray-700">
                             <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">My Stores</h3>
                         </div>
 
@@ -47,7 +47,7 @@ export function StoreSelector() {
                             {stores.map(store => (
                                 <div
                                     key={store.id}
-                                    className={`flex items-center justify-between px-4 py-3 hover:bg-gray-50 group ${currentStore?.id === store.id ? 'bg-blue-50' : ''
+                                    className={`flex items-center justify-between px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 group ${currentStore?.id === store.id ? 'bg-blue-50 dark:bg-blue-900/30' : ''
                                         }`}
                                 >
                                     <button
@@ -57,7 +57,7 @@ export function StoreSelector() {
                                         }}
                                         className="flex-1 text-left"
                                     >
-                                        <p className={`text-sm font-medium ${currentStore?.id === store.id ? 'text-blue-900' : 'text-gray-900 group-hover:text-blue-600'
+                                        <p className={`text-sm font-medium ${currentStore?.id === store.id ? 'text-blue-900 dark:text-blue-300' : 'text-gray-900 dark:text-gray-100 group-hover:text-blue-600 dark:group-hover:text-blue-400'
                                             }`}>
                                             {store.name}
                                         </p>
@@ -86,7 +86,7 @@ export function StoreSelector() {
                             ))}
                         </div>
 
-                        <div className="border-t border-gray-100 p-2">
+                        <div className="border-t border-gray-100 dark:border-gray-700 p-2">
                             <button
                                 onClick={() => {
                                     setIsOpen(false);

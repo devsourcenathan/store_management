@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+
 import { Plus, Trash2 } from 'lucide-react';
 
 interface PricingCondition {
@@ -71,7 +71,7 @@ export function PricingRulesEditor({ rules, onChange }: PricingRulesEditorProps)
     return (
         <div className="space-y-4">
             <div className="flex justify-between items-center">
-                <label className="block text-sm font-medium text-gray-700">Dynamic Pricing Rules</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Dynamic Pricing Rules</label>
                 <button
                     type="button"
                     onClick={addRule}
@@ -82,15 +82,15 @@ export function PricingRulesEditor({ rules, onChange }: PricingRulesEditorProps)
             </div>
 
             {rules.length === 0 && (
-                <div className="text-sm text-gray-500 italic border border-dashed rounded p-4 text-center">
+                <div className="text-sm text-gray-500 dark:text-gray-400 italic border border-dashed border-gray-300 dark:border-gray-600 rounded p-4 text-center">
                     No custom pricing rules defined. Base price will apply.
                 </div>
             )}
 
             {rules.map((rule, index) => (
-                <div key={index} className="border border-gray-200 rounded-lg p-3 bg-gray-50 space-y-3">
+                <div key={index} className="border border-gray-200 dark:border-gray-700 rounded-lg p-3 bg-gray-50 dark:bg-gray-800/50 space-y-3">
                     <div className="flex justify-between items-start">
-                        <h5 className="text-xs font-bold uppercase text-gray-500">Rule #{index + 1}</h5>
+                        <h5 className="text-xs font-bold uppercase text-gray-500 dark:text-gray-400">Rule #{index + 1}</h5>
                         <button
                             type="button"
                             onClick={() => removeRule(index)}
@@ -102,33 +102,33 @@ export function PricingRulesEditor({ rules, onChange }: PricingRulesEditorProps)
 
                     <div className="grid grid-cols-2 gap-3">
                         <div>
-                            <label className="block text-xs font-medium text-gray-700 mb-1">Override Price (FCFA)</label>
+                            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Override Price (FCFA)</label>
                             <input
                                 type="number"
                                 value={rule.price}
                                 onChange={(e) => updateRule(index, 'price', parseFloat(e.target.value))}
-                                className="block w-full border border-gray-300 rounded-md shadow-sm p-1.5 text-sm"
+                                className="block w-full border border-gray-300 dark:border-gray-600 rounded-md shadow-sm p-1.5 text-sm dark:bg-gray-700 dark:text-white"
                             />
                         </div>
                         <div>
-                            <label className="block text-xs font-medium text-gray-700 mb-1">Priority (Higher wins)</label>
+                            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Priority (Higher wins)</label>
                             <input
                                 type="number"
                                 value={rule.priority}
                                 onChange={(e) => updateRule(index, 'priority', parseInt(e.target.value))}
-                                className="block w-full border border-gray-300 rounded-md shadow-sm p-1.5 text-sm"
+                                className="block w-full border border-gray-300 dark:border-gray-600 rounded-md shadow-sm p-1.5 text-sm dark:bg-gray-700 dark:text-white"
                             />
                         </div>
                     </div>
 
                     {/* Conditions Section */}
-                    <div className="bg-white p-2 rounded border border-gray-100">
-                        <p className="text-xs font-medium text-gray-700 mb-2">Conditions (All must match)</p>
+                    <div className="bg-white dark:bg-gray-900/50 p-2 rounded border border-gray-100 dark:border-gray-700">
+                        <p className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">Conditions (All must match)</p>
 
                         {/* Duration Condition */}
                         <div className="grid grid-cols-2 gap-2 mb-2">
                             <div>
-                                <label className="block text-[10px] text-gray-500">Min Duration (Days)</label>
+                                <label className="block text-[10px] text-gray-500 dark:text-gray-400">Min Duration (Days)</label>
                                 <input
                                     type="number"
                                     placeholder="Any"
@@ -138,11 +138,11 @@ export function PricingRulesEditor({ rules, onChange }: PricingRulesEditorProps)
                                         const currentDuration = rule.condition.duration || {};
                                         updateCondition(index, 'duration', { ...currentDuration, gte: val });
                                     }}
-                                    className="block w-full border border-gray-200 rounded p-1 text-xs"
+                                    className="block w-full border border-gray-200 dark:border-gray-600 rounded p-1 text-xs dark:bg-gray-700 dark:text-white"
                                 />
                             </div>
                             <div>
-                                <label className="block text-[10px] text-gray-500">Max Duration (Days)</label>
+                                <label className="block text-[10px] text-gray-500 dark:text-gray-400">Max Duration (Days)</label>
                                 <input
                                     type="number"
                                     placeholder="Any"
@@ -152,7 +152,7 @@ export function PricingRulesEditor({ rules, onChange }: PricingRulesEditorProps)
                                         const currentDuration = rule.condition.duration || {};
                                         updateCondition(index, 'duration', { ...currentDuration, lte: val });
                                     }}
-                                    className="block w-full border border-gray-200 rounded p-1 text-xs"
+                                    className="block w-full border border-gray-200 dark:border-gray-600 rounded p-1 text-xs dark:bg-gray-700 dark:text-white"
                                 />
                             </div>
                         </div>
@@ -160,7 +160,7 @@ export function PricingRulesEditor({ rules, onChange }: PricingRulesEditorProps)
                         {/* Offer Price Condition */}
                         <div className="grid grid-cols-2 gap-2 mb-2">
                             <div>
-                                <label className="block text-[10px] text-gray-500">Min Base Price (FCFA)</label>
+                                <label className="block text-[10px] text-gray-500 dark:text-gray-400">Min Base Price (FCFA)</label>
                                 <input
                                     type="number"
                                     placeholder="Any"
@@ -170,11 +170,11 @@ export function PricingRulesEditor({ rules, onChange }: PricingRulesEditorProps)
                                         const currentOfferPrice = rule.condition.offerPrice || {};
                                         updateCondition(index, 'offerPrice', { ...currentOfferPrice, gte: val });
                                     }}
-                                    className="block w-full border border-gray-200 rounded p-1 text-xs"
+                                    className="block w-full border border-gray-200 dark:border-gray-600 rounded p-1 text-xs dark:bg-gray-700 dark:text-white"
                                 />
                             </div>
                             <div>
-                                <label className="block text-[10px] text-gray-500">Max Base Price (FCFA)</label>
+                                <label className="block text-[10px] text-gray-500 dark:text-gray-400">Max Base Price (FCFA)</label>
                                 <input
                                     type="number"
                                     placeholder="Any"
@@ -184,20 +184,20 @@ export function PricingRulesEditor({ rules, onChange }: PricingRulesEditorProps)
                                         const currentOfferPrice = rule.condition.offerPrice || {};
                                         updateCondition(index, 'offerPrice', { ...currentOfferPrice, lte: val });
                                     }}
-                                    className="block w-full border border-gray-200 rounded p-1 text-xs"
+                                    className="block w-full border border-gray-200 dark:border-gray-600 rounded p-1 text-xs dark:bg-gray-700 dark:text-white"
                                 />
                             </div>
                         </div>
 
                         {/* Store ID Condition - simplified as text input for now, could be multiselect */}
                         <div>
-                            <label className="block text-[10px] text-gray-500">Store ID (Optional)</label>
+                            <label className="block text-[10px] text-gray-500 dark:text-gray-400">Store ID (Optional)</label>
                             <input
                                 type="text"
                                 placeholder="Specific Store ID..."
                                 value={(rule.condition.storeId as string) || ''}
                                 onChange={(e) => updateCondition(index, 'storeId', e.target.value || undefined)}
-                                className="block w-full border border-gray-200 rounded p-1 text-xs"
+                                className="block w-full border border-gray-200 dark:border-gray-600 rounded p-1 text-xs dark:bg-gray-700 dark:text-white"
                             />
                         </div>
                     </div>

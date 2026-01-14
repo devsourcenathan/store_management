@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/services/api';
-import { Plus, Edit2, Trash2, Package, Layers, Settings, ChevronDown, ChevronRight } from 'lucide-react';
+import { Plus, Edit2, Trash2, Layers, Settings, ChevronDown, ChevronRight } from 'lucide-react';
 import { ServiceModal } from './ServiceModal';
 import { OfferSheet } from './OfferModal';
 
@@ -42,22 +42,7 @@ export function OffersManagementPage() {
     });
 
     // Fetch offers for all services (or could fetch on expand per service to optimize)
-    const { data: allOffers } = useQuery<SubscriptionOffer[]>({
-        queryKey: ['subscription-offers-all'],
-        queryFn: async () => {
-            // In a real app we might have a bulk endpoint or fetch per service.
-            // For now assuming we can fetch all or iterating.
-            // Let's implement a loop or a bulk endpoint if available. 
-            // Fallback: fetching for the expanded service only would be better practice strictly speaking,
-            // but let's assume we fetch all for the UI overview.
-            // Actually, let's use the pattern of fetching when expanded or a dedicated endpoint.
-            // Simplified: Fetch active offers from a general endpoint if it existed, 
-            // but since our API is /services/:id/offers, let's stick to that structure.
-            // We'll fetch offers only for the expanded service for now to be safe.
-            return [];
-        },
-        enabled: false // We will manage offers via separate queries or a state component
-    });
+
 
     // Mutations
     const deleteServiceMutation = useMutation({
@@ -74,8 +59,8 @@ export function OffersManagementPage() {
         <div className="space-y-6">
             <div className="flex justify-between items-center">
                 <div>
-                    <h2 className="text-2xl font-bold text-gray-900">Offers & Services</h2>
-                    <p className="text-gray-600">Configure subscription services and their pricing offers</p>
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Offers & Services</h2>
+                    <p className="text-gray-600 dark:text-gray-400">Configure subscription services and their pricing offers</p>
                 </div>
                 <button
                     onClick={() => { setEditingService(null); setIsServiceModalOpen(true); }}
@@ -86,17 +71,17 @@ export function OffersManagementPage() {
                 </button>
             </div>
 
-            <div className="bg-white rounded-lg shadow overflow-hidden">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden border border-gray-100 dark:border-gray-700">
                 {isLoadingServices ? (
-                    <div className="p-8 text-center text-gray-500">Loading services...</div>
+                    <div className="p-8 text-center text-gray-500 dark:text-gray-400">Loading services...</div>
                 ) : services?.length === 0 ? (
-                    <div className="p-12 text-center text-gray-500">
+                    <div className="p-12 text-center text-gray-500 dark:text-gray-400">
                         <Layers className="w-12 h-12 mx-auto text-gray-400 mb-4" />
                         <p className="text-lg font-medium">No services configured</p>
                         <p className="text-sm">Create a service (e.g., "Netflix") to start adding offers.</p>
                     </div>
                 ) : (
-                    <div className="divide-y divide-gray-200">
+                    <div className="divide-y divide-gray-200 dark:divide-gray-700">
                         {services?.map(service => (
                             <ServiceRow
                                 key={service.id}
@@ -146,19 +131,19 @@ function ServiceRow({ service, isExpanded, onToggleExpand, onEdit, onDelete, onA
 
     return (
         <div className="group">
-            <div className={`p-4 flex items-center justify-between hover:bg-gray-50 cursor-pointer ${isExpanded ? 'bg-gray-50' : ''}`} onClick={(e) => {
+            <div className={`p-4 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer ${isExpanded ? 'bg-gray-50 dark:bg-gray-700/50' : ''}`} onClick={(e) => {
                 // Prevent toggle when clicking actions
                 if ((e.target as HTMLElement).closest('button')) return;
                 onToggleExpand();
             }}>
                 <div className="flex items-center space-x-4">
                     {isExpanded ? <ChevronDown className="text-gray-400" /> : <ChevronRight className="text-gray-400" />}
-                    <div className={`p-2 rounded-lg ${service.isActive ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-500'}`}>
+                    <div className={`p-2 rounded-lg ${service.isActive ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400' : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400'}`}>
                         <Layers className="w-5 h-5" />
                     </div>
                     <div className={service.isActive ? '' : 'opacity-60'}>
-                        <h3 className="text-sm font-medium text-gray-900">{service.name} {service.isActive ? '' : '(Inactive)'}</h3>
-                        <p className="text-sm text-gray-500">{service.provider}</p>
+                        <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100">{service.name} {service.isActive ? '' : '(Inactive)'}</h3>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">{service.provider}</p>
                     </div>
                 </div>
                 <div className="flex items-center space-x-3">
@@ -174,7 +159,7 @@ function ServiceRow({ service, isExpanded, onToggleExpand, onEdit, onDelete, onA
                     >
                         <span
                             aria-hidden="true"
-                            className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${service.isActive ? 'translate-x-5' : 'translate-x-0'
+                            className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white dark:bg-gray-200 shadow ring-0 transition duration-200 ease-in-out ${service.isActive ? 'translate-x-5' : 'translate-x-0'
                                 }`}
                         />
                     </button>
@@ -188,13 +173,13 @@ function ServiceRow({ service, isExpanded, onToggleExpand, onEdit, onDelete, onA
 
             {/* Expanded Content: Offers List */}
             {isExpanded && (
-                <div className="bg-gray-50 px-4 pb-4 pl-14">
-                    <div className="border-t border-gray-200 pt-4">
+                <div className="bg-gray-50 dark:bg-gray-900/30 px-4 pb-4 pl-14">
+                    <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
                         <div className="flex justify-between items-center mb-3">
-                            <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Available Offers</h4>
+                            <h4 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Available Offers</h4>
                             <button
                                 onClick={onAddOffer}
-                                className="text-xs font-medium text-blue-600 hover:text-blue-800 flex items-center"
+                                className="text-xs font-medium text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 flex items-center"
                             >
                                 <Plus className="w-3 h-3 mr-1" /> Add Offer
                             </button>
@@ -207,10 +192,10 @@ function ServiceRow({ service, isExpanded, onToggleExpand, onEdit, onDelete, onA
                         ) : (
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                 {offers?.map((offer: SubscriptionOffer) => (
-                                    <div key={offer.id} className="bg-white p-3 rounded border border-gray-200 flex justify-between items-center">
+                                    <div key={offer.id} className="bg-white dark:bg-gray-800 p-3 rounded border border-gray-200 dark:border-gray-700 flex justify-between items-center">
                                         <div>
-                                            <div className="font-medium text-sm">{offer.name}</div>
-                                            <div className="text-xs text-gray-500">{offer.duration} days • {offer.basePrice.toLocaleString()} FCFA</div>
+                                            <div className="font-medium text-sm text-gray-900 dark:text-gray-100">{offer.name}</div>
+                                            <div className="text-xs text-gray-500 dark:text-gray-400">{offer.duration} days • {offer.basePrice.toLocaleString()} FCFA</div>
                                         </div>
                                         <div className="text-gray-400 hover:text-gray-600 cursor-pointer" onClick={() => onEditOffer(offer)}>
                                             <Settings className="w-4 h-4" />

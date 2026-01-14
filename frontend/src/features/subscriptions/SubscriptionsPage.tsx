@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/services/api';
 import { Calendar, AlertCircle, CheckCircle, RefreshCw } from 'lucide-react';
 import { RenewSubscriptionModal } from './RenewSubscriptionModal';
@@ -97,12 +97,12 @@ export function SubscriptionsPage() {
         <div className="space-y-6">
             <div className="flex justify-between items-center">
                 <div>
-                    <h2 className="text-2xl font-bold text-gray-900">Subscriptions</h2>
-                    <p className="text-gray-600">Manage customer subscriptions and renewals</p>
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Subscriptions</h2>
+                    <p className="text-gray-600 dark:text-gray-400">Manage customer subscriptions and renewals</p>
                 </div>
                 <div className="flex space-x-3">
                     <select
-                        className="border border-gray-300 rounded-lg px-3 py-2 text-sm"
+                        className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                         value={selectedStatus}
                         onChange={(e) => setSelectedStatus(e.target.value)}
                     >
@@ -122,41 +122,41 @@ export function SubscriptionsPage() {
             </div>
 
             {/* Subscriptions Table */}
-            <div className="bg-white rounded-lg shadow overflow-hidden">
-                <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden border border-gray-100 dark:border-gray-700">
+                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                    <thead className="bg-gray-50 dark:bg-gray-700/50">
                         <tr>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Service</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Offer</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">End Date</th>
-                            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Customer</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Service</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Offer</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">End Date</th>
+                            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
                         </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
+                    <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                         {subscriptions?.length === 0 ? (
                             <tr>
-                                <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
+                                <td colSpan={6} className="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
                                     No subscriptions found. Click "New Subscription" to create one.
                                 </td>
                             </tr>
                         ) : (
                             subscriptions?.map((subscription) => (
-                                <tr key={subscription.id} className={isExpiringSoon(subscription.endDate) ? 'bg-yellow-50' : ''}>
+                                <tr key={subscription.id} className={isExpiringSoon(subscription.endDate) ? 'bg-yellow-50 dark:bg-yellow-900/10' : ''}>
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <div>
-                                            <div className="text-sm font-medium text-gray-900">{subscription.customer.name}</div>
-                                            <div className="text-sm text-gray-500">{subscription.customer.phone || 'N/A'}</div>
+                                            <div className="text-sm font-medium text-gray-900 dark:text-gray-100">{subscription.customer.name}</div>
+                                            <div className="text-sm text-gray-500 dark:text-gray-400">{subscription.customer.phone || 'N/A'}</div>
                                         </div>
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
                                         {subscription.offer.service.name}
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <div>
-                                            <div className="text-sm font-medium text-gray-900">{subscription.offer.name}</div>
-                                            <div className="text-sm text-gray-500">{subscription.offer.basePrice} FCFA / {subscription.offer.duration}j</div>
+                                            <div className="text-sm font-medium text-gray-900 dark:text-gray-100">{subscription.offer.name}</div>
+                                            <div className="text-sm text-gray-500 dark:text-gray-400">{subscription.offer.basePrice} FCFA / {subscription.offer.duration}j</div>
                                         </div>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
@@ -165,12 +165,12 @@ export function SubscriptionsPage() {
                                             <span>{subscription.status}</span>
                                         </span>
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                         {subscription.endDate ? (
                                             <div>
                                                 <div>{new Date(subscription.endDate).toLocaleDateString()}</div>
                                                 {isExpiringSoon(subscription.endDate) && (
-                                                    <div className="text-xs text-yellow-600 font-medium">Expires soon!</div>
+                                                    <div className="text-xs text-yellow-600 dark:text-yellow-400 font-medium">Expires soon!</div>
                                                 )}
                                             </div>
                                         ) : (
@@ -180,13 +180,13 @@ export function SubscriptionsPage() {
                                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                         <button
                                             onClick={() => handleRenew(subscription)}
-                                            className="inline-flex items-center space-x-1 text-blue-600 hover:text-blue-900 mr-3"
+                                            className="inline-flex items-center space-x-1 text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 mr-3"
                                             disabled={subscription.status === 'CANCELLED'}
                                         >
                                             <RefreshCw className="w-4 h-4" />
                                             <span>Renew</span>
                                         </button>
-                                        <button className="text-gray-600 hover:text-gray-900">Details</button>
+                                        <button className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-300">Details</button>
                                     </td>
                                 </tr>
                             ))

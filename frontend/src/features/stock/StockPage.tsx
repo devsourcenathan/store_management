@@ -93,8 +93,8 @@ export function StockPage() {
         <div className="space-y-6">
             <div className="flex justify-between items-center">
                 <div>
-                    <h2 className="text-2xl font-bold text-gray-900">Stock Management</h2>
-                    <p className="text-gray-600">Track inventory movements and levels</p>
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Stock Management</h2>
+                    <p className="text-gray-600 dark:text-gray-400">Track inventory movements and levels</p>
                 </div>
                 <div className="flex space-x-3">
                     <button
@@ -117,26 +117,26 @@ export function StockPage() {
 
             {/* Stock Overview Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="bg-white rounded-lg shadow p-6">
-                    <p className="text-sm font-medium text-gray-600">Current Balance</p>
-                    <p className="text-3xl font-bold text-gray-900 mt-2">
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 border border-gray-100 dark:border-gray-700">
+                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Current Balance</p>
+                    <p className="text-3xl font-bold text-gray-900 dark:text-gray-100 mt-2">
                         {movements?.reduce((acc, m) => {
                             const isInbound = ['IN', 'RETURN', 'ADJUST', 'SUPPLY', 'TRANSFER_IN'].includes(m.type);
                             return acc + (isInbound ? m.quantity : -m.quantity);
                         }, 0) || 0}
                     </p>
-                    <p className="text-sm text-gray-500 mt-1">Total items in this store</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-500 mt-1">Total items in this store</p>
                 </div>
-                <div className="bg-white rounded-lg shadow p-6">
-                    <p className="text-sm font-medium text-gray-600">Total Inbound</p>
-                    <p className="text-3xl font-bold text-green-600 mt-2">
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 border border-gray-100 dark:border-gray-700">
+                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Inbound</p>
+                    <p className="text-3xl font-bold text-green-600 dark:text-green-400 mt-2">
                         {movements?.filter(m => ['IN', 'RETURN', 'ADJUST', 'SUPPLY', 'TRANSFER_IN'].includes(m.type))
                             .reduce((acc, m) => acc + m.quantity, 0) || 0}
                     </p>
                 </div>
-                <div className="bg-white rounded-lg shadow p-6">
-                    <p className="text-sm font-medium text-gray-600">Total Outbound</p>
-                    <p className="text-3xl font-bold text-red-600 mt-2">
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 border border-gray-100 dark:border-gray-700">
+                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Outbound</p>
+                    <p className="text-3xl font-bold text-red-600 dark:text-red-400 mt-2">
                         {movements?.filter(m => ['OUT', 'SALE', 'TRANSFER_OUT', 'ADJUSTMENT'].includes(m.type))
                             .reduce((acc, m) => acc + m.quantity, 0) || 0}
                     </p>
@@ -144,22 +144,22 @@ export function StockPage() {
             </div>
 
             {/* Recent Movements */}
-            <div className="bg-white rounded-lg shadow overflow-hidden">
-                <div className="px-6 py-4 border-b border-gray-200">
-                    <h3 className="text-lg font-semibold text-gray-900">Recent Movements</h3>
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden border border-gray-100 dark:border-gray-700">
+                <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Recent Movements</h3>
                 </div>
                 <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200">
-                        <thead className="bg-gray-50">
+                    <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                        <thead className="bg-gray-50 dark:bg-gray-700/50">
                             <tr>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Reference</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Date</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Product</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Type</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Quantity</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Reference</th>
                             </tr>
                         </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
+                        <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                             {isLoading ? (
                                 <tr><td colSpan={5} className="px-6 py-4 text-center">Loading...</td></tr>
                             ) : movements?.length === 0 ? (
@@ -167,10 +167,10 @@ export function StockPage() {
                             ) : (
                                 movements?.map((movement) => (
                                     <tr key={movement.id}>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                             {new Date(movement.createdAt).toLocaleDateString()}
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
                                             {movement.product.name} ({movement.product.sku})
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -200,10 +200,10 @@ export function StockPage() {
                     </SheetHeader>
                     <form onSubmit={handleSubmit} className="space-y-6">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700">Product</label>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Product</label>
                             <select
                                 required
-                                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                                className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md shadow-sm p-2 dark:bg-gray-700 dark:text-white"
                                 value={formData.productId}
                                 onChange={(e) => setFormData({ ...formData, productId: e.target.value })}
                             >
@@ -213,10 +213,10 @@ export function StockPage() {
                         </div>
                         <div className="grid grid-cols-1 gap-4">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700">Movement Type</label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Movement Type</label>
                                 <select
                                     required
-                                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                                    className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md shadow-sm p-2 dark:bg-gray-700 dark:text-white"
                                     value={formData.type}
                                     onChange={(e) => setFormData({ ...formData, type: e.target.value as any })}
                                 >
@@ -227,10 +227,10 @@ export function StockPage() {
                                 </select>
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700">Source</label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Source</label>
                                 <select
                                     required
-                                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                                    className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md shadow-sm p-2 dark:bg-gray-700 dark:text-white"
                                     value={formData.source}
                                     onChange={(e) => setFormData({ ...formData, source: e.target.value as any })}
                                 >
@@ -242,21 +242,21 @@ export function StockPage() {
                             </div>
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700">Quantity</label>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Quantity</label>
                             <input
                                 type="number"
                                 required
                                 min="1"
-                                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                                className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md shadow-sm p-2 dark:bg-gray-700 dark:text-white"
                                 value={formData.quantity}
                                 onChange={(e) => setFormData({ ...formData, quantity: parseInt(e.target.value) })}
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700">Reference (Optional)</label>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Reference (Optional)</label>
                             <input
                                 type="text"
-                                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                                className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md shadow-sm p-2 dark:bg-gray-700 dark:text-white"
                                 value={formData.reference}
                                 onChange={(e) => setFormData({ ...formData, reference: e.target.value })}
                                 placeholder="e.g. INV-001"

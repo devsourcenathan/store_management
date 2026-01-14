@@ -55,8 +55,8 @@ export function CustomersPage() {
         <div className="space-y-6">
             <div className="flex justify-between items-center">
                 <div>
-                    <h2 className="text-2xl font-bold text-gray-900">Customers</h2>
-                    <p className="text-gray-600">Manage customer information</p>
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Customers</h2>
+                    <p className="text-gray-600 dark:text-gray-400">Manage customer information</p>
                 </div>
                 <button
                     onClick={() => setIsModalOpen(true)}
@@ -71,45 +71,45 @@ export function CustomersPage() {
                 <input
                     type="text"
                     placeholder="Search customers by name, email or phone..."
-                    className="w-full pl-4 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full pl-4 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                 />
             </div>
 
-            <div className="bg-white rounded-lg shadow overflow-hidden">
-                <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden border border-gray-100 dark:border-gray-700">
+                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                    <thead className="bg-gray-50 dark:bg-gray-700/50">
                         <tr>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Credit Limit</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Current Credit</th>
-                            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Name</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Contact</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Credit Limit</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Current Credit</th>
+                            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
                         </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
+                    <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                         {isLoading ? (
-                            <tr><td colSpan={5} className="px-6 py-4 text-center">Loading...</td></tr>
+                            <tr><td colSpan={5} className="px-6 py-4 text-center dark:text-gray-400">Loading...</td></tr>
                         ) : filteredCustomers?.length === 0 ? (
-                            <tr><td colSpan={5} className="px-6 py-12 text-center text-gray-500">No customers found matching your search.</td></tr>
+                            <tr><td colSpan={5} className="px-6 py-12 text-center text-gray-500 dark:text-gray-400">No customers found matching your search.</td></tr>
                         ) : (
                             filteredCustomers?.map((customer) => (
                                 <tr
                                     key={customer.id}
-                                    className="hover:bg-gray-50 cursor-pointer transition-colors"
+                                    className="hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer transition-colors"
                                     onClick={() => setSelectedCustomerId(customer.id)}
                                 >
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{customer.name}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">{customer.name}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                         {customer.email && <div>{customer.email}</div>}
                                         {customer.phone && <div>{customer.phone}</div>}
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{customer.creditLimit} FCFA</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{customer.currentCredit} FCFA</td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{customer.creditLimit} FCFA</td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{customer.currentCredit} FCFA</td>
                                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                         <button
-                                            className="text-blue-600 hover:text-blue-900 mr-3 z-10 relative"
+                                            className="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 mr-3 z-10 relative"
                                             onClick={(e) => {
                                                 e.stopPropagation();
                                                 // Handle Edit
@@ -118,7 +118,7 @@ export function CustomersPage() {
                                             Edit
                                         </button>
                                         <button
-                                            className="text-red-600 hover:text-red-900 z-10 relative"
+                                            className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 z-10 relative"
                                             onClick={(e) => {
                                                 e.stopPropagation();
                                                 // Handle Delete
@@ -142,32 +142,32 @@ export function CustomersPage() {
             />
 
             {isModalOpen && (
-                <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
-                    <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
-                        <h3 className="text-xl font-bold mb-4">Add New Customer</h3>
+                <div className="fixed inset-0 bg-gray-600 bg-opacity-50 dark:bg-black/80 flex items-center justify-center z-50">
+                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md border border-gray-200 dark:border-gray-700">
+                        <h3 className="text-xl font-bold mb-4 text-gray-900 dark:text-gray-100">Add New Customer</h3>
                         <form onSubmit={handleSubmit} className="space-y-4">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700">Name</label>
-                                <input type="text" required className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Name</label>
+                                <input type="text" required className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md shadow-sm p-2 dark:bg-gray-700 dark:text-white"
                                     value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700">Email</label>
-                                <input type="email" className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Email</label>
+                                <input type="email" className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md shadow-sm p-2 dark:bg-gray-700 dark:text-white"
                                     value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700">Phone</label>
-                                <input type="text" className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Phone</label>
+                                <input type="text" className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md shadow-sm p-2 dark:bg-gray-700 dark:text-white"
                                     value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700">Credit Limit</label>
-                                <input type="number" className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Credit Limit</label>
+                                <input type="number" className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md shadow-sm p-2 dark:bg-gray-700 dark:text-white"
                                     value={formData.creditLimit} onChange={(e) => setFormData({ ...formData, creditLimit: parseFloat(e.target.value) })} />
                             </div>
                             <div className="flex justify-end space-x-3 mt-6">
-                                <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 border border-gray-300 rounded-md">Cancel</button>
+                                <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">Cancel</button>
                                 <button type="submit" disabled={createCustomerMutation.isPending} className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
                                     {createCustomerMutation.isPending ? 'Creating...' : 'Create Customer'}
                                 </button>

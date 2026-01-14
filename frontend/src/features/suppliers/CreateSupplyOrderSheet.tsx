@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/services/api';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/Sheet";
-import { Plus, Trash2, ShoppingCart, X } from 'lucide-react';
+import { Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface CreateSupplyOrderSheetProps {
@@ -118,20 +118,20 @@ export function CreateSupplyOrderSheet({ isOpen, onClose, initialData, mode = 'c
 
     return (
         <Sheet open={isOpen} onOpenChange={onClose}>
-            <SheetContent className="w-[400px] sm:w-[640px] overflow-y-auto">
+            <SheetContent className="w-[400px] sm:w-[640px] overflow-y-auto bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
                 <SheetHeader className="mb-6">
-                    <SheetTitle>{mode === 'view' ? 'Order Details' : 'New Supply Order'}</SheetTitle>
-                    <SheetDescription>
+                    <SheetTitle className="text-gray-900 dark:text-gray-100">{mode === 'view' ? 'Order Details' : 'New Supply Order'}</SheetTitle>
+                    <SheetDescription className="text-gray-500 dark:text-gray-400">
                         {mode === 'view' ? 'View details of existing order' : 'Create a new order for a supplier'}
                     </SheetDescription>
                 </SheetHeader>
 
                 <form onSubmit={handleSubmit} className="space-y-6">
-                    <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm space-y-4">
+                    <div className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm space-y-4">
                         <div>
-                            <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Supplier</label>
+                            <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Supplier</label>
                             <select
-                                className="block w-full rounded-lg border-gray-200 bg-gray-50 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-70"
+                                className="block w-full rounded-lg border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:border-blue-500 focus:ring-blue-500 disabled:opacity-70"
                                 value={supplierId}
                                 onChange={(e) => setSupplierId(e.target.value)}
                                 required
@@ -145,9 +145,9 @@ export function CreateSupplyOrderSheet({ isOpen, onClose, initialData, mode = 'c
                         </div>
 
                         <div>
-                            <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Notes</label>
+                            <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Notes</label>
                             <textarea
-                                className="block w-full rounded-lg border-gray-200 bg-gray-50 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-70"
+                                className="block w-full rounded-lg border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:border-blue-500 focus:ring-blue-500 disabled:opacity-70"
                                 value={notes}
                                 onChange={(e) => setNotes(e.target.value)}
                                 rows={2}
@@ -159,12 +159,12 @@ export function CreateSupplyOrderSheet({ isOpen, onClose, initialData, mode = 'c
 
                     <div className="space-y-4">
                         <div className="flex justify-between items-center">
-                            <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider">Order Items</h3>
+                            <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100 uppercase tracking-wider">Order Items</h3>
                             {!isReadOnly && (
                                 <button
                                     type="button"
                                     onClick={addItem}
-                                    className="flex items-center text-xs text-blue-600 hover:text-blue-700 font-bold bg-blue-50 px-3 py-1.5 rounded-full hover:bg-blue-100 transition-colors"
+                                    className="flex items-center text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-bold bg-blue-50 dark:bg-blue-900/20 px-3 py-1.5 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors"
                                 >
                                     <Plus className="w-3 h-3 mr-1" />
                                     ADD ITEM
@@ -174,11 +174,11 @@ export function CreateSupplyOrderSheet({ isOpen, onClose, initialData, mode = 'c
 
                         <div className="space-y-3">
                             {items.map((item, index) => (
-                                <div key={index} className="flex gap-3 items-start bg-gray-50 p-3 rounded-xl border border-gray-100 transition-all hover:border-blue-200 hover:shadow-sm">
+                                <div key={index} className="flex gap-3 items-start bg-gray-50 dark:bg-gray-700/50 p-3 rounded-xl border border-gray-100 dark:border-gray-700 transition-all hover:border-blue-200 dark:hover:border-blue-600 hover:shadow-sm">
                                     <div className="flex-1">
                                         <label className="block text-[10px] uppercase text-gray-400 font-bold mb-1">Product</label>
                                         <select
-                                            className="block w-full rounded-md border-gray-200 text-sm focus:border-blue-500 focus:ring-blue-500 disabled:bg-gray-100"
+                                            className="block w-full rounded-md border-gray-200 dark:border-gray-600 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-blue-500 focus:ring-blue-500 disabled:bg-gray-100 dark:disabled:bg-gray-800"
                                             value={item.productId}
                                             onChange={(e) => updateItem(index, 'productId', e.target.value)}
                                             required
@@ -195,7 +195,7 @@ export function CreateSupplyOrderSheet({ isOpen, onClose, initialData, mode = 'c
                                         <input
                                             type="number"
                                             min="1"
-                                            className="block w-full rounded-md border-gray-200 text-sm focus:border-blue-500 focus:ring-blue-500 disabled:bg-gray-100"
+                                            className="block w-full rounded-md border-gray-200 dark:border-gray-600 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-blue-500 focus:ring-blue-500 disabled:bg-gray-100 dark:disabled:bg-gray-800"
                                             value={item.quantity}
                                             onChange={(e) => updateItem(index, 'quantity', parseInt(e.target.value) || 0)}
                                             required
@@ -207,7 +207,7 @@ export function CreateSupplyOrderSheet({ isOpen, onClose, initialData, mode = 'c
                                         <input
                                             type="number"
                                             min="0"
-                                            className="block w-full rounded-md border-gray-200 text-sm focus:border-blue-500 focus:ring-blue-500 disabled:bg-gray-100"
+                                            className="block w-full rounded-md border-gray-200 dark:border-gray-600 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-blue-500 focus:ring-blue-500 disabled:bg-gray-100 dark:disabled:bg-gray-800"
                                             value={item.unitCost}
                                             onChange={(e) => updateItem(index, 'unitCost', parseFloat(e.target.value) || 0)}
                                             required
@@ -227,15 +227,15 @@ export function CreateSupplyOrderSheet({ isOpen, onClose, initialData, mode = 'c
                             ))}
 
                             {items.length === 0 && (
-                                <div className="text-center py-8 text-gray-400 bg-gray-50 rounded-xl border border-dashed border-gray-200">
+                                <div className="text-center py-8 text-gray-400 dark:text-gray-500 bg-gray-50 dark:bg-gray-700/50 rounded-xl border border-dashed border-gray-200 dark:border-gray-700">
                                     No items added yet.
                                 </div>
                             )}
                         </div>
                     </div>
 
-                    <div className="pt-4 border-t border-gray-100">
-                        <div className="bg-gray-900 text-white p-4 rounded-xl flex justify-between items-center shadow-lg">
+                    <div className="pt-4 border-t border-gray-100 dark:border-gray-700">
+                        <div className="bg-gray-900 dark:bg-gray-700 text-white p-4 rounded-xl flex justify-between items-center shadow-lg">
                             <span className="font-medium">Total Amount</span>
                             <span className="font-bold text-2xl">{totalAmount.toLocaleString()} FCFA</span>
                         </div>

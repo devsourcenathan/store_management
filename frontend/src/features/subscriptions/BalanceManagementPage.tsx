@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/services/api';
-import { DollarSign, TrendingUp, AlertTriangle, CheckCircle, Plus } from 'lucide-react';
+import { DollarSign, TrendingUp, AlertTriangle, Plus } from 'lucide-react';
 
 interface SubscriptionAccount {
     id: string;

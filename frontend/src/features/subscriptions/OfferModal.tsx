@@ -12,6 +12,7 @@ interface SubscriptionOffer {
     billingCycle: string;
     isActive: boolean;
     pricingRules?: any[];
+    options?: any[];
 }
 
 interface OfferModalProps {
@@ -90,19 +91,19 @@ export function OfferSheet({ serviceId, offer, onClose, onSuccess }: OfferModalP
 
     return (
         <Sheet open={true} onOpenChange={(open) => !open && onClose()}>
-            <SheetContent className="overflow-y-auto sm:max-w-xl">
+            <SheetContent className="overflow-y-auto sm:max-w-xl bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
                 <SheetHeader className="mb-6">
-                    <SheetTitle>{offer ? 'Edit Offer' : 'New Offer'}</SheetTitle>
+                    <SheetTitle className="text-gray-900 dark:text-gray-100">{offer ? 'Edit Offer' : 'New Offer'}</SheetTitle>
                 </SheetHeader>
 
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <div className="space-y-4">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700">Offer Name</label>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Offer Name</label>
                             <input
                                 type="text"
                                 required
-                                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-slate-500 focus:border-slate-500"
+                                className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md shadow-sm p-2 focus:ring-slate-500 focus:border-slate-500 dark:bg-gray-700 dark:text-white"
                                 value={name}
                                 onChange={(e) => setName(e.target.value)}
                                 placeholder="e.g., Access (1 Mois)"
@@ -111,23 +112,23 @@ export function OfferSheet({ serviceId, offer, onClose, onSuccess }: OfferModalP
 
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700">Price (FCFA)</label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Price (FCFA)</label>
                                 <input
                                     type="number"
                                     required
                                     min="0"
-                                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-slate-500 focus:border-slate-500"
+                                    className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md shadow-sm p-2 focus:ring-slate-500 focus:border-slate-500 dark:bg-gray-700 dark:text-white"
                                     value={basePrice}
                                     onChange={(e) => setBasePrice(e.target.value as any)}
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700">Duration (Days)</label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Duration (Days)</label>
                                 <input
                                     type="number"
                                     required
                                     min="1"
-                                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-slate-500 focus:border-slate-500"
+                                    className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md shadow-sm p-2 focus:ring-slate-500 focus:border-slate-500 dark:bg-gray-700 dark:text-white"
                                     value={duration}
                                     onChange={(e) => setDuration(e.target.value as any)}
                                 />
@@ -135,10 +136,10 @@ export function OfferSheet({ serviceId, offer, onClose, onSuccess }: OfferModalP
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700">Billing Cycle</label>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Billing Cycle</label>
                             <select
                                 required
-                                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-slate-500 focus:border-slate-500"
+                                className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md shadow-sm p-2 focus:ring-slate-500 focus:border-slate-500 dark:bg-gray-700 dark:text-white"
                                 value={billingCycle}
                                 onChange={(e) => setBillingCycle(e.target.value)}
                             >
@@ -149,18 +150,18 @@ export function OfferSheet({ serviceId, offer, onClose, onSuccess }: OfferModalP
                             </select>
                         </div>
 
-                        <div className="border-t pt-4">
-                            <h4 className="font-medium text-gray-900 mb-4">Pricing Rules (Base Offer)</h4>
+                        <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
+                            <h4 className="font-medium text-gray-900 dark:text-gray-100 mb-4">Pricing Rules (Base Offer)</h4>
                             <PricingRulesEditor rules={pricingRules} onChange={setPricingRules} />
                         </div>
 
-                        <div className="border-t pt-4">
+                        <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
                             <div className="flex justify-between items-center mb-4">
-                                <h4 className="font-medium text-gray-900">Options</h4>
+                                <h4 className="font-medium text-gray-900 dark:text-gray-100">Options</h4>
                                 <button
                                     type="button"
                                     onClick={addOption}
-                                    className="text-sm text-blue-600 hover:underline flex items-center"
+                                    className="text-sm text-blue-600 dark:text-blue-400 hover:underline flex items-center"
                                 >
                                     + Add Option
                                 </button>
@@ -168,23 +169,23 @@ export function OfferSheet({ serviceId, offer, onClose, onSuccess }: OfferModalP
 
                             <div className="space-y-4">
                                 {options.map((option, index) => (
-                                    <div key={option.id || index} className="border rounded-lg p-4 bg-gray-50">
+                                    <div key={option.id || index} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-gray-50 dark:bg-gray-800/50">
                                         <div className="grid grid-cols-2 gap-4 mb-3">
                                             <div>
-                                                <label className="block text-xs font-medium text-gray-500">Option Name</label>
+                                                <label className="block text-xs font-medium text-gray-500 dark:text-gray-400">Option Name</label>
                                                 <input
                                                     type="text"
-                                                    className="mt-1 block w-full border border-gray-300 rounded px-2 py-1 text-sm bg-white"
+                                                    className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 text-sm bg-white dark:bg-gray-700 dark:text-white"
                                                     value={option.name}
                                                     onChange={(e) => updateOption(index, 'name', e.target.value)}
                                                     placeholder="e.g. Sport"
                                                 />
                                             </div>
                                             <div>
-                                                <label className="block text-xs font-medium text-gray-500">Price (FCFA)</label>
+                                                <label className="block text-xs font-medium text-gray-500 dark:text-gray-400">Price (FCFA)</label>
                                                 <input
                                                     type="number"
-                                                    className="mt-1 block w-full border border-gray-300 rounded px-2 py-1 text-sm bg-white"
+                                                    className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 text-sm bg-white dark:bg-gray-700 dark:text-white"
                                                     value={option.price}
                                                     onChange={(e) => updateOption(index, 'price', e.target.value)}
                                                 />
@@ -192,7 +193,7 @@ export function OfferSheet({ serviceId, offer, onClose, onSuccess }: OfferModalP
                                         </div>
 
                                         <div className="mt-2">
-                                            <div className="text-xs font-medium text-gray-500 mb-1">Pricing Rules (Option)</div>
+                                            <div className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Pricing Rules (Option)</div>
                                             <PricingRulesEditor
                                                 rules={option.pricingRules || []}
                                                 onChange={(newRules) => updateOption(index, 'pricingRules', newRules)}
@@ -203,7 +204,7 @@ export function OfferSheet({ serviceId, offer, onClose, onSuccess }: OfferModalP
                                             <button
                                                 type="button"
                                                 onClick={() => removeOption(index)}
-                                                className="text-red-500 hover:text-red-700 text-xs underline"
+                                                className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 text-xs underline"
                                             >
                                                 Remove Option
                                             </button>
@@ -211,17 +212,17 @@ export function OfferSheet({ serviceId, offer, onClose, onSuccess }: OfferModalP
                                     </div>
                                 ))}
                                 {options.length === 0 && (
-                                    <p className="text-sm text-gray-500 italic">No options added yet.</p>
+                                    <p className="text-sm text-gray-500 dark:text-gray-400 italic">No options added yet.</p>
                                 )}
                             </div>
                         </div>
                     </div>
 
-                    <div className="flex justify-end space-x-3 pt-6 border-t mt-auto">
+                    <div className="flex justify-end space-x-3 pt-6 border-t border-gray-200 dark:border-gray-700 mt-auto">
                         <button
                             type="button"
                             onClick={onClose}
-                            className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
+                            className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                         >
                             Cancel
                         </button>

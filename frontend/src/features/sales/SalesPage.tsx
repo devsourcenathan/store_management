@@ -129,8 +129,8 @@ export function SalesPage() {
         <div className="space-y-6">
             <div className="flex justify-between items-center">
                 <div>
-                    <h2 className="text-2xl font-bold text-gray-900">Sales</h2>
-                    <p className="text-gray-600">Manage sales and transactions</p>
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Sales</h2>
+                    <p className="text-gray-600 dark:text-gray-400">Manage sales and transactions</p>
                 </div>
                 <button
                     onClick={() => setIsModalOpen(true)}
@@ -140,40 +140,40 @@ export function SalesPage() {
                 </button>
             </div>
 
-            <div className="bg-white rounded-lg shadow overflow-hidden">
-                <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden border border-gray-100 dark:border-gray-700">
+                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                    <thead className="bg-gray-50 dark:bg-gray-700/50">
                         <tr>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Date</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Customer</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Total</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
+                            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
                         </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
+                    <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                         {isLoading ? (
-                            <tr><td colSpan={5} className="px-6 py-4 text-center">Loading...</td></tr>
+                            <tr><td colSpan={5} className="px-6 py-4 text-center dark:text-gray-400">Loading...</td></tr>
                         ) : sales?.length === 0 ? (
-                            <tr><td colSpan={5} className="px-6 py-12 text-center text-gray-500">No sales found.</td></tr>
+                            <tr><td colSpan={5} className="px-6 py-12 text-center text-gray-500 dark:text-gray-400">No sales found.</td></tr>
                         ) : (
                             sales?.map((sale) => (
                                 <tr key={sale.id}>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{new Date(sale.createdAt).toLocaleDateString()}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{sale.customer?.name || 'Walk-in'}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{sale.totalAmount} FCFA</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium">{sale.status}</span>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{new Date(sale.createdAt).toLocaleDateString()}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">{sale.customer?.name || 'Walk-in'}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{sale.totalAmount} FCFA</td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                        <span className="px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 rounded-full text-xs font-medium">{sale.status}</span>
                                     </td>
 
                                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                         <button
                                             onClick={() => printer.printInvoice(sale, currentStore?.name)}
-                                            className="text-blue-600 hover:text-blue-900 mr-3"
+                                            className="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 mr-3"
                                         >
                                             Print
                                         </button>
-                                        <button className="text-gray-600 hover:text-gray-900">View</button>
+                                        <button className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-300">View</button>
                                     </td>
                                 </tr>
                             ))
@@ -194,9 +194,9 @@ export function SalesPage() {
                     <form onSubmit={handleSubmit} className="space-y-6">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700">Customer (Optional)</label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Customer (Optional)</label>
                                 <select
-                                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                                    className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md shadow-sm p-2 dark:bg-gray-700 dark:text-white"
                                     value={newSale.customerId}
                                     onChange={(e) => setNewSale({ ...newSale, customerId: e.target.value })}
                                 >
@@ -205,9 +205,9 @@ export function SalesPage() {
                                 </select>
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700">Add Product</label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Add Product</label>
                                 <select
-                                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                                    className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md shadow-sm p-2 dark:bg-gray-700 dark:text-white"
                                     onChange={(e) => {
                                         if (e.target.value) handleAddItem(e.target.value);
                                         e.target.value = '';
@@ -227,29 +227,29 @@ export function SalesPage() {
                         </div>
 
                         <div>
-                            <h4 className="font-semibold text-gray-900 mb-2">Items</h4>
-                            <div className="border rounded-md overflow-hidden">
-                                <table className="min-w-full divide-y divide-gray-200">
-                                    <thead className="bg-gray-50">
+                            <h4 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">Items</h4>
+                            <div className="border border-gray-200 dark:border-gray-700 rounded-md overflow-hidden">
+                                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                                    <thead className="bg-gray-50 dark:bg-gray-700/50">
                                         <tr>
-                                            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Item</th>
-                                            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Qty</th>
-                                            <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Total</th>
+                                            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Item</th>
+                                            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Qty</th>
+                                            <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Total</th>
                                             <th className="px-4 py-2"></th>
                                         </tr>
                                     </thead>
-                                    <tbody className="bg-white divide-y divide-gray-200">
+                                    <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                                         {newSale.items.map((item, index) => (
                                             <tr key={index}>
                                                 <td className="px-4 py-2 text-sm">
-                                                    <div className="font-medium">{item.name}</div>
-                                                    <div className="text-xs text-gray-500">{item.unitPrice} FCFA/unit</div>
+                                                    <div className="font-medium text-gray-900 dark:text-gray-100">{item.name}</div>
+                                                    <div className="text-xs text-gray-500 dark:text-gray-400">{item.unitPrice} FCFA/unit</div>
                                                 </td>
                                                 <td className="px-4 py-2 text-sm">
                                                     <input
                                                         type="number"
                                                         min="1"
-                                                        className="w-16 border rounded p-1"
+                                                        className="w-16 border border-gray-300 dark:border-gray-600 rounded p-1 dark:bg-gray-700 dark:text-white"
                                                         value={item.quantity}
                                                         onChange={(e) => {
                                                             const newItems = [...newSale.items];
@@ -258,7 +258,7 @@ export function SalesPage() {
                                                         }}
                                                     />
                                                 </td>
-                                                <td className="px-4 py-2 text-sm text-right font-medium">
+                                                <td className="px-4 py-2 text-sm text-right font-medium text-gray-900 dark:text-gray-100">
                                                     {item.quantity * item.unitPrice}
                                                 </td>
                                                 <td className="px-4 py-2 text-right">
@@ -281,10 +281,10 @@ export function SalesPage() {
                                         )}
                                     </tbody>
                                     {newSale.items.length > 0 && (
-                                        <tfoot className="bg-gray-50 font-bold">
+                                        <tfoot className="bg-gray-50 dark:bg-gray-700/50 font-bold text-gray-900 dark:text-gray-100">
                                             <tr>
                                                 <td colSpan={2} className="px-4 py-3 text-right">Total Amount:</td>
-                                                <td className="px-4 py-3 text-right text-blue-600 text-lg">
+                                                <td className="px-4 py-3 text-right text-blue-600 dark:text-blue-400 text-lg">
                                                     {newSale.items.reduce((acc, item) => acc + (item.quantity * item.unitPrice), 0)} FCFA
                                                 </td>
                                                 <td></td>
@@ -296,9 +296,9 @@ export function SalesPage() {
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700">Notes</label>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Notes</label>
                             <textarea
-                                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                                className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md shadow-sm p-2 dark:bg-gray-700 dark:text-white"
                                 rows={3}
                                 value={newSale.notes}
                                 onChange={(e) => setNewSale({ ...newSale, notes: e.target.value })}
@@ -317,7 +317,7 @@ export function SalesPage() {
                             <button
                                 type="button"
                                 onClick={() => setIsModalOpen(false)}
-                                className="w-full px-4 py-3 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 font-medium transition-colors"
+                                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 font-medium transition-colors"
                             >
                                 Cancel
                             </button>

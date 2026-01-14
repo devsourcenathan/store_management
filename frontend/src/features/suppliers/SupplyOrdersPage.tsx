@@ -94,12 +94,12 @@ export function SupplyOrdersPage() {
         <div className="space-y-8 p-1">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h2 className="text-3xl font-bold text-gray-900 tracking-tight">Supply Management</h2>
-                    <p className="text-gray-500 mt-1">Track orders and manage inventory replenishment</p>
+                    <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100 tracking-tight">Supply Management</h2>
+                    <p className="text-gray-500 dark:text-gray-400 mt-1">Track orders and manage inventory replenishment</p>
                 </div>
                 <button
                     onClick={handleCreate}
-                    className="flex items-center justify-center space-x-2 px-6 py-3 bg-gray-900 text-white rounded-xl hover:bg-gray-800 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                    className="flex items-center justify-center space-x-2 px-6 py-3 bg-gray-900 dark:bg-gray-700 text-white rounded-xl hover:bg-gray-800 dark:hover:bg-gray-600 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                 >
                     <Plus className="w-5 h-5" />
                     <span className="font-medium">New Order</span>
@@ -114,13 +114,13 @@ export function SupplyOrdersPage() {
                 <motion.div
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    className="text-center py-24 bg-white rounded-2xl shadow-sm border border-gray-100"
+                    className="text-center py-24 bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700"
                 >
-                    <div className="bg-blue-50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
-                        <Truck className="w-10 h-10 text-blue-600" />
+                    <div className="bg-blue-50 dark:bg-blue-900/20 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <Truck className="w-10 h-10 text-blue-600 dark:text-blue-400" />
                     </div>
-                    <h3 className="text-xl font-semibold text-gray-900 mb-2">No orders yet</h3>
-                    <p className="text-gray-500 max-w-sm mx-auto">Start by creating a supply order to replenish your stock.</p>
+                    <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">No orders yet</h3>
+                    <p className="text-gray-500 dark:text-gray-400 max-w-sm mx-auto">Start by creating a supply order to replenish your stock.</p>
                 </motion.div>
             ) : (
                 <motion.div
@@ -133,7 +133,7 @@ export function SupplyOrdersPage() {
                         <motion.div
                             key={order.id}
                             variants={item}
-                            className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow group relative"
+                            className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-md transition-shadow group relative"
                         >
                             <div className="absolute top-4 right-4 z-10 actions-menu">
                                 <button
@@ -141,9 +141,9 @@ export function SupplyOrdersPage() {
                                         e.stopPropagation();
                                         setActiveMenuId(activeMenuId === order.id ? null : order.id);
                                     }}
-                                    className="p-1 hover:bg-gray-100 rounded-full transition-colors bg-white/50 backdrop-blur-sm"
+                                    className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm"
                                 >
-                                    <MoreVertical className="w-5 h-5 text-gray-600 font-bold" />
+                                    <MoreVertical className="w-5 h-5 text-gray-600 dark:text-gray-400 font-bold" />
                                 </button>
 
                                 <AnimatePresence>
@@ -152,7 +152,7 @@ export function SupplyOrdersPage() {
                                             initial={{ opacity: 0, scale: 0.95, y: 10 }}
                                             animate={{ opacity: 1, scale: 1, y: 0 }}
                                             exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                                            className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden z-20"
+                                            className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-100 dark:border-gray-700 overflow-hidden z-20"
                                             onClick={(e) => e.stopPropagation()}
                                         >
                                             <div className="py-1">
@@ -162,14 +162,14 @@ export function SupplyOrdersPage() {
                                                         printer.printSupplyOrder(order);
                                                         setActiveMenuId(null);
                                                     }}
-                                                    className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 flex items-center"
+                                                    className="w-full text-left px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center"
                                                 >
                                                     <Printer className="w-4 h-4 mr-2" />
                                                     Print Order
                                                 </button>
                                                 <button
                                                     onClick={() => handleView(order)}
-                                                    className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 flex items-center"
+                                                    className="w-full text-left px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center"
                                                 >
                                                     <Eye className="w-4 h-4 mr-2" />
                                                     View Details
@@ -177,7 +177,7 @@ export function SupplyOrdersPage() {
                                                 {order.status !== 'PAID' && (
                                                     <button
                                                         onClick={() => handleDelete(order.id)}
-                                                        className="w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 flex items-center"
+                                                        className="w-full text-left px-4 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center"
                                                     >
                                                         <Trash2 className="w-4 h-4 mr-2" />
                                                         Delete Order
@@ -190,12 +190,12 @@ export function SupplyOrdersPage() {
                             </div>
 
                             <div className="flex items-start justify-between mb-4">
-                                <div className="p-3 bg-gray-50 rounded-xl">
-                                    <Package className="w-6 h-6 text-gray-700" />
+                                <div className="p-3 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
+                                    <Package className="w-6 h-6 text-gray-700 dark:text-gray-300" />
                                 </div>
                                 <span className={`px-3 py-1 rounded-full text-xs font-semibold flex items-center ${order.status === 'PAID'
-                                    ? 'bg-green-50 text-green-700 ring-1 ring-green-600/20'
-                                    : 'bg-amber-50 text-amber-700 ring-1 ring-amber-600/20'
+                                    ? 'bg-green-50 text-green-700 ring-1 ring-green-600/20 dark:bg-green-900/20 dark:text-green-400 dark:ring-green-500/20'
+                                    : 'bg-amber-50 text-amber-700 ring-1 ring-amber-600/20 dark:bg-amber-900/20 dark:text-amber-400 dark:ring-amber-500/20'
                                     }`}>
                                     {order.status === 'PAID' ? (
                                         <>
@@ -211,19 +211,19 @@ export function SupplyOrdersPage() {
 
                             <div className="space-y-4">
                                 <div>
-                                    <p className="text-xs text-gray-500 uppercase tracking-wider font-medium mb-1">Supplier</p>
-                                    <h3 className="font-bold text-gray-900 text-lg">{order.supplier.name}</h3>
+                                    <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider font-medium mb-1">Supplier</p>
+                                    <h3 className="font-bold text-gray-900 dark:text-gray-100 text-lg">{order.supplier.name}</h3>
                                 </div>
 
-                                <div className="flex items-center text-sm text-gray-500">
+                                <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
                                     <Calendar className="w-4 h-4 mr-2" />
                                     {format(new Date(order.createdAt), 'PPP')}
                                 </div>
 
-                                <div className="pt-4 border-t border-gray-100 flex justify-between items-end">
+                                <div className="pt-4 border-t border-gray-100 dark:border-gray-700 flex justify-between items-end">
                                     <div>
-                                        <p className="text-xs text-gray-500 mb-1">{order.items.length} items</p>
-                                        <p className="text-xl font-bold text-gray-900">{Number(order.totalAmount).toLocaleString()} F</p>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">{order.items.length} items</p>
+                                        <p className="text-xl font-bold text-gray-900 dark:text-gray-100">{Number(order.totalAmount).toLocaleString()} F</p>
                                     </div>
 
                                     {order.status !== 'PAID' && (

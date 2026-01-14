@@ -98,18 +98,18 @@ export function TransferModal({ onClose, onSuccess }: TransferModalProps) {
                 <form onSubmit={handleSubmit} className="space-y-6">
                     {/* Source Store (Read-only) */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700">From Store</label>
-                        <div className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 bg-gray-50 text-gray-700">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">From Store</label>
+                        <div className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md shadow-sm p-2 bg-gray-50 dark:bg-gray-700/50 text-gray-700 dark:text-gray-300">
                             {currentStore?.name || 'No store selected'}
                         </div>
                     </div>
 
                     {/* Destination Store */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700">To Store</label>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">To Store</label>
                         <select
                             required
-                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                            className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md shadow-sm p-2 dark:bg-gray-700 dark:text-white"
                             value={destinationStoreId}
                             onChange={(e) => setDestinationStoreId(e.target.value)}
                         >
@@ -122,10 +122,10 @@ export function TransferModal({ onClose, onSuccess }: TransferModalProps) {
 
                     {/* Product */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700">Product</label>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Product</label>
                         <select
                             required
-                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                            className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md shadow-sm p-2 dark:bg-gray-700 dark:text-white"
                             value={productId}
                             onChange={(e) => setProductId(e.target.value)}
                         >
@@ -145,12 +145,12 @@ export function TransferModal({ onClose, onSuccess }: TransferModalProps) {
 
                     {/* Quantity */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700">Quantity</label>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Quantity</label>
                         <input
                             type="number"
                             required
                             min="1"
-                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                            className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md shadow-sm p-2 dark:bg-gray-700 dark:text-white"
                             value={quantity}
                             onChange={(e) => setQuantity(parseInt(e.target.value))}
                         />
@@ -158,9 +158,9 @@ export function TransferModal({ onClose, onSuccess }: TransferModalProps) {
 
                     {/* Notes */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700">Notes (Optional)</label>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Notes (Optional)</label>
                         <textarea
-                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                            className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md shadow-sm p-2 dark:bg-gray-700 dark:text-white"
                             rows={3}
                             value={notes}
                             onChange={(e) => setNotes(e.target.value)}
@@ -170,15 +170,15 @@ export function TransferModal({ onClose, onSuccess }: TransferModalProps) {
 
                     {/* Transfer Summary */}
                     {productId && destinationStoreId && (
-                        <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
+                        <div className="bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-md p-4">
                             <div className="flex items-center justify-between text-sm">
-                                <span className="font-medium text-blue-900">{currentStore?.name}</span>
-                                <ArrowRight className="w-4 h-4 text-blue-600" />
-                                <span className="font-medium text-blue-900">
+                                <span className="font-medium text-blue-900 dark:text-blue-200">{currentStore?.name}</span>
+                                <ArrowRight className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                                <span className="font-medium text-blue-900 dark:text-blue-200">
                                     {stores.find(s => s.id === destinationStoreId)?.name}
                                 </span>
                             </div>
-                            <p className="text-xs text-blue-700 mt-2">
+                            <p className="text-xs text-blue-700 dark:text-blue-300 mt-2">
                                 Moving {quantity} unit(s) of {products?.find(p => p.id === productId)?.name}
                             </p>
                         </div>
@@ -203,7 +203,7 @@ export function TransferModal({ onClose, onSuccess }: TransferModalProps) {
                         <button
                             type="button"
                             onClick={onClose}
-                            className="w-full px-4 py-3 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 font-medium transition-colors"
+                            className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 font-medium transition-colors"
                         >
                             Close
                         </button>
