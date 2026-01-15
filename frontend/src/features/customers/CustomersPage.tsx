@@ -55,14 +55,14 @@ export function CustomersPage() {
 
     return (
         <div className="space-y-6">
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                     <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100">{t('customers.title')}</h2>
                     <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">{t('customers.subtitle')}</p>
                 </div>
                 <button
                     onClick={() => setIsModalOpen(true)}
-                    className="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                    className="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors whitespace-nowrap"
                 >
                     {t('customers.add_customer')}
                 </button>

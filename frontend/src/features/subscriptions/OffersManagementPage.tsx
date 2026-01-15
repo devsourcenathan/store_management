@@ -59,14 +59,14 @@ export function OffersManagementPage() {
 
     return (
         <div className="space-y-6">
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                     <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100">{t('offers.title')}</h2>
                     <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">{t('offers.subtitle')}</p>
                 </div>
                 <button
                     onClick={() => { setEditingService(null); setIsServiceModalOpen(true); }}
-                    className="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center"
+                    className="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center whitespace-nowrap"
                 >
                     <Plus className="w-4 h-4 mr-2" />
                     {t('offers.new_service')}

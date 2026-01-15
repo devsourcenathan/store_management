@@ -145,12 +145,12 @@ export function ProductsPage() {
 
     return (
         <div className="space-y-6">
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                     <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100">{t('products.title')}</h2>
                     <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">{t('products.subtitle')}</p>
                 </div>
-                <div className="flex flex-col xs:flex-row gap-2 sm:gap-3">
+                <div className="flex flex-row gap-2 sm:gap-3">
                     {stores && (
                         <select
                             className="border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg px-2 sm:px-3 py-2 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-full xs:w-auto"
@@ -163,7 +163,7 @@ export function ProductsPage() {
 
                     <button
                         onClick={() => { resetForm(); setIsModalOpen(true); }}
-                        className="px-3 sm:px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm sm:text-base touch-target w-full xs:w-auto flex items-center justify-center"
+                        className="px-3 sm:px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm sm:text-base touch-target w-full xs:w-auto flex items-center justify-center whitespace-nowrap"
                     >
                         <Plus className="w-4 h-4 sm:inline-block mr-0 sm:mr-2" />
                         <span className="hidden xs:inline">{t('products.add_product')}</span>
