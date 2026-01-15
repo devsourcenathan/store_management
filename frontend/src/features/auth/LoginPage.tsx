@@ -23,7 +23,7 @@ export function LoginPage() {
             await login(email, password);
             navigate('/dashboard');
         } catch (err: any) {
-            setError(err.response?.data?.message || t('common.error'));
+            setError(err.response?.data?.message || err.message || t('common.error'));
         } finally {
             setIsLoading(false);
         }

@@ -637,12 +637,12 @@ model LandingContent {
 model OrganizationLanding {
   id             String   @id @default(uuid())
   organizationId String   @unique
-  subdomain      String?  @unique
-  customDomain   String?  @unique
-  title          String?
-  description    String?
-  themeConfig    Json?    // { primaryColor, font, etc. }
-  sections       Json?    // Custom sections
+  subdomain     String?  @unique
+  customDomain  String?  @unique
+  published     Boolean  @default(false)
+
+  sections      Json?
+  themeConfig   Json?
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 

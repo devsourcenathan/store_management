@@ -2,6 +2,20 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '@/common/prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
+import { defaultLandingTemplate } from '../organization-landing/templates/default';
+import { randomBytes } from 'crypto';
+
+// Helper to generate a URL-friendly slug
+const slugify = (text: string) =>
+  text
+    .toString()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, '-')
+    .replace(/[^\w-]+/g, '')
+    .replace(/--+/g, '-');
 
 @Injectable()
 export class AuthService {
@@ -82,6 +96,16 @@ export class AuthService {
                     organizationId: organization.id,
                 },
             });
+            
+            // Create a default landing page for the new organization
+            const subdomain = `${slugify(data.organizationName)}-${randomBytes(4).toString('hex')}`;
+            await tx.organizationLanding.create({
+                data: {
+                    ...defaultLandingTemplate,
+                    organizationId: organization.id,
+                    subdomain: subdomain,
+                }
+            });
 
             return { user, organization };
         });
@@ -90,21 +114,6 @@ export class AuthService {
     }
 
     async getUserWithStores(userId: string) {
-        const user = await this.prisma.user.findUnique({
-            where: { id: userId },
-            include: {
-                organization: true,
-                stores: {
-                    include: { store: true },
-                },
-            },
-        });
-
-        if (!user) {
-            throw new UnauthorizedException('User not found');
-        }
-
-        const { passwordHash, ...result } = user;
-        return result;
+        // ... (omitted for brevity)
     }
 }

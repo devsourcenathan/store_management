@@ -1,4 +1,4 @@
-import { IsOptional, IsString, IsArray, IsObject } from 'class-validator';
+import { IsOptional, IsString, IsArray, IsObject, IsBoolean } from 'class-validator';
 
 export class UpdateOrgLandingDto {
     @IsOptional()
@@ -25,4 +25,7 @@ export class UpdateOrgLandingDto {
     @IsArray()
     sections?: any[];
 
+    @IsOptional()
+    @IsBoolean()
+    published?: boolean;
 }

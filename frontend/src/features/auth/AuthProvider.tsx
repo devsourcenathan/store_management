@@ -9,6 +9,7 @@ interface User {
     role: string;
     organizationId: string;
     stores?: any[]; // Array of { store: Store }
+    organizationName?: string
 }
 
 interface AuthContextType {
@@ -31,8 +32,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const token = localStorage.getItem('access_token');
         const savedUser = localStorage.getItem('user');
 
-        if (token && savedUser) {
-            setUser(JSON.parse(savedUser));
+        if (token && savedUser && savedUser !== 'undefined') {
+            try {
+                setUser(JSON.parse(savedUser));
+            } catch (error) {
+                console.error("Failed to parse user from localStorage", error);
+                // Clear corrupted data
+                localStorage.removeItem('user');
+                localStorage.removeItem('access_token');
+            }
         }
 
         setIsLoading(false);
@@ -40,6 +48,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const login = async (email: string, password: string) => {
         const response = await authApi.login(email, password);
+
+        if (!response?.access_token || !response?.user) {
+            throw new Error('Login failed: Invalid response from server.');
+        }
+
         localStorage.setItem('access_token', response.access_token);
         localStorage.setItem('user', JSON.stringify(response.user));
         setUser(response.user);

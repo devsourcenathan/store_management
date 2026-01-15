@@ -15,7 +15,7 @@ export class OrganizationLandingService {
             where: { subdomain },
             include: { organization: { select: { name: true, logoUrl: true } } },
         });
-        if (!landing) throw new NotFoundException('Organization not found');
+        if (!landing || !landing.published) throw new NotFoundException('Organization not found');
         return landing;
     }
 
@@ -34,6 +34,10 @@ export class OrganizationLandingService {
     }
 
     async upsert(organizationId: string, dto: UpdateOrgLandingDto, userId: string) {
+        console.log('--- UPSERT LANDING ATTEMPT ---');
+        console.log('organizationId:', organizationId);
+        console.log('Incoming DTO:', JSON.stringify(dto, null, 2));
+
         // Check subdomain uniqueness if provided
         if (dto.subdomain) {
             const existing = await this.prisma.organizationLanding.findUnique({
@@ -54,14 +58,50 @@ export class OrganizationLandingService {
             }
         }
 
-        const result = await this.prisma.organizationLanding.upsert({
-            where: { organizationId },
-            update: { ...dto },
-            create: {
-                organizationId,
-                ...dto,
-            },
-        });
+        let result;
+        try {
+            let result;
+            const existingLanding = await this.prisma.organizationLanding.findUnique({
+                where: { organizationId },
+            });
+
+            const dataToSave = {
+                title: dto.title,
+                description: dto.description,
+                subdomain: dto.subdomain,
+                customDomain: dto.customDomain,
+                themeConfig: dto.themeConfig,
+                sections: dto.sections,
+                published: dto.published,
+            };
+
+            if (existingLanding) {
+                // Update existing record
+                result = await this.prisma.organizationLanding.update({
+                    where: { organizationId },
+                    data: dataToSave,
+                });
+            } else {
+                // Create new record
+                result = await this.prisma.organizationLanding.create({
+                    data: {
+                        organizationId,
+                        title: dataToSave.title || '', // Provide default for required string fields
+                        description: dataToSave.description || '', // Provide default for required string fields
+                        subdomain: dataToSave.subdomain,
+                        customDomain: dataToSave.customDomain,
+                        themeConfig: dataToSave.themeConfig,
+                        sections: dataToSave.sections,
+                        published: dataToSave.published,
+                    } as any,
+                });
+            }
+
+            console.log('Prisma upsert result:', JSON.stringify(result, null, 2));
+        } catch (error) {
+            console.error('Prisma upsert failed:', error);
+            throw error; // Re-throw to propagate the original error
+        }
 
         // Audit Log
         await this.auditService.log(
