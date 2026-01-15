@@ -60,14 +60,12 @@ export class OrganizationLandingService {
 
         let result;
         try {
-            let result;
             const existingLanding = await this.prisma.organizationLanding.findUnique({
                 where: { organizationId },
             });
 
+            // Only save fields that exist in the schema
             const dataToSave = {
-                title: dto.title,
-                description: dto.description,
                 subdomain: dto.subdomain,
                 customDomain: dto.customDomain,
                 themeConfig: dto.themeConfig,
@@ -86,14 +84,8 @@ export class OrganizationLandingService {
                 result = await this.prisma.organizationLanding.create({
                     data: {
                         organizationId,
-                        title: dataToSave.title || '', // Provide default for required string fields
-                        description: dataToSave.description || '', // Provide default for required string fields
-                        subdomain: dataToSave.subdomain,
-                        customDomain: dataToSave.customDomain,
-                        themeConfig: dataToSave.themeConfig,
-                        sections: dataToSave.sections,
-                        published: dataToSave.published,
-                    } as any,
+                        ...dataToSave,
+                    },
                 });
             }
 
