@@ -32,8 +32,14 @@ export interface ThemeConfig {
 export interface OrganizationLandingData {
   title: string;
   description: string;
+  subdomain?: string;
+  customDomain?: string;
+  published?: boolean;
   themeConfig: ThemeConfig;
   sections: Section[];
+  rawCss?: string;
+  rawJs?: string;
+  rawHtml?: string;
   organization: {
     name: string;
     // Add other organization properties if needed

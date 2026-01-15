@@ -8,7 +8,10 @@ import { PageEditor } from './editor';
 import { OrganizationLandingData } from '@/types/landing';
 import { SettingsModal } from './editor/SettingsModal';
 import { TemplateGallery } from './editor/TemplateGallery';
-import { PublishMenu } from './editor/PublishMenu'; // Import PublishMenu
+import { PublishMenu } from './editor/PublishMenu';
+import { ImportSiteDialog } from './editor/ImportSiteDialog';
+import { ExportSiteDialog } from './editor/ExportSiteDialog';
+import { CodeEditorDialog } from './editor/CodeEditorDialog';
 
 export const OrgLandingEditor = () => {
     const { user } = useAuth();
@@ -89,6 +92,15 @@ export const OrgLandingEditor = () => {
                 <header className="flex justify-between items-center p-4 border-b bg-white">
                     <h2 className="text-xl font-bold tracking-tight">Landing Page Builder</h2>
                     <div className="flex items-center gap-4">
+                        <ImportSiteDialog onImportSuccess={() => window.location.reload()}>
+                            <Button variant="outline">Import Site</Button>
+                        </ImportSiteDialog>
+                        <ExportSiteDialog>
+                            <Button variant="outline">Export</Button>
+                        </ExportSiteDialog>
+                        <CodeEditorDialog onSave={() => window.location.reload()}>
+                            <Button variant="outline">Code Editor</Button>
+                        </CodeEditorDialog>
                         <TemplateGallery onSelectTemplate={onSelectTemplate}>
                             <Button variant="outline">Templates</Button>
                         </TemplateGallery>

@@ -643,6 +643,14 @@ model OrganizationLanding {
 
   sections      Json?
   themeConfig   Json?
+  
+  // HTML/CSS/JS Import Support
+  rawHtml       String?  @db.Text // Original HTML content
+  rawCss        String?  @db.Text // Original CSS content
+  rawJs         String?  @db.Text // Original JavaScript content
+  importedAt    DateTime? // When the site was imported
+  editMode      String   @default("visual") // "visual" or "code"
+  
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 

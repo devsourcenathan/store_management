@@ -1,6 +1,7 @@
 import { Body, Controller, Get, Param, Post, Put, Query, Request, UseGuards } from '@nestjs/common';
 import { OrganizationLandingService } from './organization-landing.service';
 import { UpdateOrgLandingDto } from './dto/update-org-landing.dto';
+import { ImportSiteDto } from './dto/import-site.dto';
 import { Public } from '../../common/decorators/public.decorator';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
@@ -73,5 +74,26 @@ export class OrganizationLandingController {
                 message
             };
         }
+    }
+
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(UserRole.OWNER, UserRole.MANAGER)
+    @Post('import')
+    async importSite(@CurrentUser() user: any, @Body() dto: ImportSiteDto) {
+        return this.service.importSite(user.organizationId, dto, user.id);
+    }
+
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(UserRole.OWNER, UserRole.MANAGER)
+    @Get('export')
+    async exportSite(@CurrentUser() user: any) {
+        return this.service.exportSite(user.organizationId);
+    }
+
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(UserRole.OWNER, UserRole.MANAGER)
+    @Post('toggle-mode')
+    async toggleEditMode(@CurrentUser() user: any, @Body('mode') mode: 'visual' | 'code') {
+        return this.service.toggleEditMode(user.organizationId, mode, user.id);
     }
 }
