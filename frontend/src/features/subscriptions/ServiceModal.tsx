@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/services/api';
 import { X } from 'lucide-react';
+import { MediaSelector } from '../media/components/MediaSelector';
+import { mediaService, Media } from '@/services/mediaService';
 
 interface Service {
     id?: string;
@@ -9,6 +11,7 @@ interface Service {
     provider: string;
     description?: string;
     isActive: boolean;
+    media?: Media[];
 }
 
 interface ServiceModalProps {
@@ -22,18 +25,37 @@ export function ServiceModal({ service, onClose, onSuccess }: ServiceModalProps)
     const [provider, setProvider] = useState(service?.provider || '');
     const [description, setDescription] = useState(service?.description || '');
     const [isActive, setIsActive] = useState(service?.isActive ?? true);
+    const [selectedMedia, setSelectedMedia] = useState<Media[]>(service?.media || []);
 
     const queryClient = useQueryClient();
 
     const mutation = useMutation({
         mutationFn: async (data: any) => {
             if (service?.id) {
-                return api.put(`/services/${service.id}`, data);
+                const response = await api.put(`/services/${service.id}`, data);
+                return response.data;
             } else {
-                return api.post('/services', data);
+                const response = await api.post('/services', data);
+                return response.data;
             }
         },
-        onSuccess: () => {
+        onSuccess: async (createdService) => {
+            // If creation (or update where we added new media in local state)
+            if (selectedMedia.length > 0) {
+                // For update, we might re-link but it's idempotent or we check.
+                // Actually for update, onSelect already linked it.
+                // So we only need this for Creation really, or if we change logic to always link at end.
+                // Mixed approach: 
+                // - Create: link all selectedMedia to createdService.id
+                // - Update: onSelect linked immediately. But new uploads?
+
+                // If !service?.id (Creation), we must link.
+                if (!service?.id) {
+                    await Promise.all(selectedMedia.map(m =>
+                        mediaService.linkToEntity(m.id, 'SERVICE', createdService.id)
+                    ));
+                }
+            }
             queryClient.invalidateQueries({ queryKey: ['services'] });
             onSuccess();
             onClose();
@@ -113,6 +135,24 @@ export function ServiceModal({ service, onClose, onSuccess }: ServiceModalProps)
                         <label htmlFor="isActive" className="ml-2 block text-sm text-gray-900 dark:text-gray-100">
                             Service Active
                         </label>
+                    </div>
+
+                    <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Service Image</label>
+                        <MediaSelector
+                            entityType="SERVICE"
+                            entityId={service?.id || ''}
+                            onSelect={async (media) => {
+                                if (service?.id) {
+                                    await mediaService.linkToEntity(media.id, 'SERVICE', service.id);
+                                    queryClient.invalidateQueries({ queryKey: ['services'] });
+                                    setSelectedMedia(prev => [...prev, media]);
+                                } else {
+                                    setSelectedMedia(prev => [...prev, media]);
+                                }
+                            }}
+                            selectedMedia={selectedMedia}
+                        />
                     </div>
 
                     <div className="flex justify-end space-x-3 mt-6">

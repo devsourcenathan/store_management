@@ -43,7 +43,8 @@
         "balance": "Solde",
         "online": "En ligne",
         "offline": "Hors ligne",
-        "logout": "Déconnexion"
+        "logout": "Déconnexion",
+        "media": "Média"
     },
     "dashboard": {
         "title": "Tableau de bord",
@@ -398,6 +399,45 @@
             "SUPPLY": "Approvisionnement (SUPPLY)",
             "SALE": "Vente (SALE)",
             "RETURN": "Retour (RETURN)"
+        }
+    },
+    "media": {
+        "title": "Bibliothèque de Médias",
+        "subtitle": "Gérez vos images et médias pour vos produits, organisations et plus",
+        "select_image": "Sélectionner une image",
+        "library": "Bibliothèque",
+        "upload": "Téléverser",
+        "selected_images": "Images sélectionnées",
+        "drag_drop": "Glissez une image ici ou cliquez pour sélectionner",
+        "drop_here": "Déposez l'image ici...",
+        "upload_success": "Média téléchargé avec succès",
+        "upload_error": "Erreur lors du téléchargement",
+        "delete_success": "Média supprimé",
+        "delete_error": "Erreur lors de la suppression",
+        "delete_confirm": "Êtes-vous sûr de vouloir supprimer ce média ?",
+        "no_media": "Aucun média trouvé",
+        "no_media_desc": "Téléchargez votre première image pour commencer",
+        "entity_type": "Type d'entité",
+        "entity_id": "ID de l'entité (optionnel)",
+        "entity_id_placeholder": "Laissez vide pour une bibliothèque générale",
+        "alt_text": "Texte alternatif",
+        "alt_text_placeholder": "Description de l'image pour l'accessibilité",
+        "tags": "Tags (séparés par des virgules)",
+        "tags_placeholder": "produit, promo, nouveau",
+        "upload_button": "Télécharger",
+        "uploading": "Téléchargement...",
+        "filter_tags": "Rechercher par tags...",
+        "all_types": "Tous les types",
+        "types": {
+            "PRODUCT": "Produit",
+            "ORGANIZATION": "Organisation",
+            "STORE": "Boutique",
+            "LANDING_PAGE": "Page d'accueil",
+            "CATEGORY": "Catégorie",
+            "OTHER": "Autre",
+            "SERVICE": "Service",
+            "OFFER": "Offre",
+            "USER": "Utilisateur"
         }
     }
 }

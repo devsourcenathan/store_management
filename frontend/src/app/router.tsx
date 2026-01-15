@@ -16,6 +16,7 @@ import { BalanceManagementPage } from '@/features/subscriptions/BalanceManagemen
 import { OffersManagementPage } from '@/features/subscriptions/OffersManagementPage';
 import { SupplyOrdersPage } from '@/features/suppliers/SupplyOrdersPage';
 import { SettingsPage } from '@/features/settings/SettingsPage';
+import { MediaLibrary } from '@/features/media/MediaLibrary';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
     const { user, isLoading } = useAuth();
@@ -75,6 +76,7 @@ export function AppRouter() {
                 <Route path="subscriptions/offers" element={<OffersManagementPage />} />
                 <Route path="settings" element={<SettingsPage />} />
                 <Route path="settings/landing" element={<OrgLandingEditor />} />
+                <Route path="media" element={<MediaLibrary />} />
             </Route>
         </Routes>
     );

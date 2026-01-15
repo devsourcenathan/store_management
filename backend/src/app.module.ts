@@ -15,7 +15,7 @@ import { SuppliersModule } from './modules/suppliers/suppliers.module';
 import { SuppliesModule } from './modules/supplies/supplies.module';
 import { SubscriptionsModule } from './modules/subscriptions/subscriptions.module';
 import { ServicesModule } from './modules/services/services.module';
-import { ImagesModule } from './modules/images/images.module';
+import { MediaModule } from './modules/media/media.module';
 import { SyncModule } from './modules/sync/sync.module';
 import { AuditModule } from './modules/audit/audit.module';
 import { LandingModule } from './modules/landing/landing.module';
@@ -52,7 +52,7 @@ import { AnalyticsModule } from './modules/analytics/analytics.module';
         SuppliesModule,
         SubscriptionsModule,
         ServicesModule,
-        ImagesModule,
+        MediaModule,
         SyncModule,
         AuditModule,
         AnalyticsModule,

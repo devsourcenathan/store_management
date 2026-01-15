@@ -43,7 +43,8 @@
         "balance": "Balance",
         "online": "Online",
         "offline": "Offline",
-        "logout": "Logout"
+        "logout": "Logout",
+        "media": "Media"
     },
     "dashboard": {
         "title": "Dashboard",
@@ -398,6 +399,45 @@
             "SUPPLY": "Supply (SUPPLY)",
             "SALE": "Sale (SALE)",
             "RETURN": "Return (RETURN)"
+        }
+    },
+    "media": {
+        "title": "Media Library",
+        "subtitle": "Manage your images and media for products, organizations, and more",
+        "select_image": "Select Image",
+        "library": "Library",
+        "upload": "Upload",
+        "selected_images": "Selected Images",
+        "drag_drop": "Drag & drop files here, or click to select",
+        "drop_here": "Drop the image here...",
+        "upload_success": "Media uploaded successfully",
+        "upload_error": "Error uploading media",
+        "delete_success": "Media deleted",
+        "delete_error": "Error deleting media",
+        "delete_confirm": "Are you sure you want to delete this media?",
+        "no_media": "No media found",
+        "no_media_desc": "Upload your first image to get started",
+        "entity_type": "Entity Type",
+        "entity_id": "Entity ID (Optional)",
+        "entity_id_placeholder": "Leave empty for general library",
+        "alt_text": "Alt Text",
+        "alt_text_placeholder": "Image description for accessibility",
+        "tags": "Tags (comma separated)",
+        "tags_placeholder": "product, promo, new",
+        "upload_button": "Upload",
+        "uploading": "Uploading...",
+        "filter_tags": "Filter by tags...",
+        "all_types": "All Types",
+        "types": {
+            "PRODUCT": "Product",
+            "ORGANIZATION": "Organization",
+            "STORE": "Store",
+            "LANDING_PAGE": "Landing Page",
+            "CATEGORY": "Category",
+            "OTHER": "Other",
+            "SERVICE": "Service",
+            "OFFER": "Offer",
+            "USER": "User"
         }
     }
 }

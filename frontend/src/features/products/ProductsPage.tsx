@@ -3,6 +3,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/services/api';
 import { Package, Image as ImageIcon, Edit, Trash2, Plus } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { MediaSelector } from '@/features/media/components/MediaSelector';
+import { mediaService, Media } from '@/services/mediaService';
 
 interface Product {
     id: string;
@@ -17,6 +19,7 @@ interface Product {
         id: string;
         name: string;
     };
+    media?: Media[];
     stockLevels?: Array<{
         storeId: string;
         quantity: number;
@@ -29,6 +32,7 @@ export function ProductsPage() {
     const [editingProduct, setEditingProduct] = useState<Product | null>(null);
     const [formData, setFormData] = useState({ name: '', sku: '', basePrice: 0, minStock: 10, categoryId: '' });
     const [selectedStoreId, setSelectedStoreId] = useState<string>('');
+    const [selectedMedia, setSelectedMedia] = useState<Media[]>([]);
     const queryClient = useQueryClient();
 
     const { t } = useTranslation();
@@ -76,9 +80,15 @@ export function ProductsPage() {
 
     const createProductMutation = useMutation({
         mutationFn: async (newProduct: any) => {
-            return api.post('/products', newProduct);
+            const response = await api.post('/products', newProduct);
+            return response.data;
         },
-        onSuccess: () => {
+        onSuccess: async (createdProduct) => {
+            if (selectedMedia.length > 0) {
+                await Promise.all(selectedMedia.map(m =>
+                    mediaService.linkToEntity(m.id, 'PRODUCT', createdProduct.id)
+                ));
+            }
             queryClient.invalidateQueries({ queryKey: ['products'] });
             setIsModalOpen(false);
             resetForm();
@@ -113,6 +123,7 @@ export function ProductsPage() {
 
     const resetForm = () => {
         setFormData({ name: '', sku: '', basePrice: 0, minStock: 10, categoryId: '' });
+        setSelectedMedia([]);
         setEditingProduct(null);
     };
 
@@ -125,6 +136,7 @@ export function ProductsPage() {
             minStock: product.minStock || 10,
             categoryId: product.categoryId || product.category?.id || '',
         });
+        setSelectedMedia(product.media || []);
         setIsModalOpen(true);
     };
 
@@ -145,12 +157,12 @@ export function ProductsPage() {
 
     return (
         <div className="space-y-6">
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                     <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100">{t('products.title')}</h2>
                     <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">{t('products.subtitle')}</p>
                 </div>
-                <div className="flex flex-col xs:flex-row gap-2 sm:gap-3">
+                <div className="flex flex-row gap-2 sm:gap-3">
                     {stores && (
                         <select
                             className="border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg px-2 sm:px-3 py-2 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-full xs:w-auto"
@@ -163,7 +175,7 @@ export function ProductsPage() {
 
                     <button
                         onClick={() => { resetForm(); setIsModalOpen(true); }}
-                        className="px-3 sm:px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm sm:text-base touch-target w-full xs:w-auto flex items-center justify-center"
+                        className="px-3 sm:px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm sm:text-base touch-target w-full xs:w-auto flex items-center justify-center whitespace-nowrap"
                     >
                         <Plus className="w-4 h-4 sm:inline-block mr-0 sm:mr-2" />
                         <span className="hidden xs:inline">{t('products.add_product')}</span>
@@ -186,8 +198,16 @@ export function ProductsPage() {
                                 {/* Product Header */}
                                 <div className="flex items-start justify-between mb-3">
                                     <div className="flex items-center flex-1 min-w-0">
-                                        <div className="flex-shrink-0 h-12 w-12 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center text-gray-400 dark:text-gray-500 border border-gray-200 dark:border-gray-600">
-                                            <ImageIcon className="w-6 h-6" />
+                                        <div className="flex-shrink-0 h-12 w-12 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center text-gray-400 dark:text-gray-500 border border-gray-200 dark:border-gray-600 overflow-hidden">
+                                            {product.media && product.media.length > 0 ? (
+                                                <img
+                                                    src={product.media[0].url}
+                                                    alt={product.media[0].alt || product.name}
+                                                    className="w-full h-full object-cover"
+                                                />
+                                            ) : (
+                                                <ImageIcon className="w-6 h-6" />
+                                            )}
                                         </div>
                                         <div className="ml-3 flex-1 min-w-0">
                                             <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">
@@ -274,8 +294,16 @@ export function ProductsPage() {
                                     <tr key={product.id}>
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             <div className="flex items-center">
-                                                <div className="flex-shrink-0 h-10 w-10 bg-gray-100 dark:bg-gray-700 rounded flex items-center justify-center text-gray-400 dark:text-gray-500">
-                                                    <ImageIcon className="w-6 h-6" />
+                                                <div className="flex-shrink-0 h-10 w-10 bg-gray-100 dark:bg-gray-700 rounded flex items-center justify-center text-gray-400 dark:text-gray-500 overflow-hidden">
+                                                    {product.media && product.media.length > 0 ? (
+                                                        <img
+                                                            src={product.media[0].url}
+                                                            alt={product.media[0].alt || product.name}
+                                                            className="w-full h-full object-cover"
+                                                        />
+                                                    ) : (
+                                                        <ImageIcon className="w-6 h-6" />
+                                                    )}
                                                 </div>
                                                 <div className="ml-4">
                                                     <div className="text-sm font-medium text-gray-900 dark:text-gray-100">{product.name}</div>
@@ -382,6 +410,26 @@ export function ProductsPage() {
                                             <option key={cat.id} value={cat.id}>{cat.name}</option>
                                         ))}
                                     </select>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Image</label>
+                                    <MediaSelector
+                                        entityType="PRODUCT"
+                                        entityId={editingProduct?.id || ''}
+                                        selectedMedia={selectedMedia}
+                                        onSelect={async (media) => {
+                                            if (editingProduct) {
+                                                await mediaService.linkToEntity(media.id, 'PRODUCT', editingProduct.id);
+                                                queryClient.invalidateQueries({ queryKey: ['products'] });
+                                                // Refresh local state if needed, or query invalidation handles it via re-render of list, 
+                                                // but for modal we might want to update selectedMedia
+                                                setSelectedMedia(prev => [...prev, media]);
+                                            } else {
+                                                // Creation mode: just add to local state
+                                                setSelectedMedia(prev => [...prev, media]);
+                                            }
+                                        }}
+                                    />
                                 </div>
                                 <div className="flex justify-end space-x-3 mt-6">
                                     <button

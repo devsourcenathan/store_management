@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/services/api';
+import { Media } from '@/services/mediaService';
 import { useStore } from '../stores/StoreProvider';
 import { Search, ShoppingCart, Trash2, Plus, Minus, CreditCard, Banknote, Smartphone, LayoutGrid, List, User, Printer } from 'lucide-react';
 import {
@@ -21,6 +22,7 @@ interface Product {
     sku: string;
     basePrice: number;
     category?: { id: string; name: string };
+    media?: Media[];
 }
 
 interface CartItem {
@@ -282,8 +284,16 @@ export function PosPage() {
                                         className="bg-white dark:bg-gray-800 p-3 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md hover:border-blue-300 dark:hover:border-blue-500 transition-all flex items-center justify-between group"
                                     >
                                         <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 bg-gray-100 dark:bg-gray-700 rounded-md flex items-center justify-center text-gray-400 dark:text-gray-500 font-bold">
-                                                {product.name.charAt(0)}
+                                            <div className="w-10 h-10 bg-gray-100 dark:bg-gray-700 rounded-md flex items-center justify-center text-gray-400 dark:text-gray-500 font-bold overflow-hidden">
+                                                {product.media && product.media.length > 0 ? (
+                                                    <img
+                                                        src={product.media[0].url}
+                                                        alt={product.media[0].alt || product.name}
+                                                        className="w-full h-full object-cover"
+                                                    />
+                                                ) : (
+                                                    product.name.charAt(0)
+                                                )}
                                             </div>
                                             <div className="text-left">
                                                 <h3 className="font-semibold text-gray-900 dark:text-gray-100 group-hover:text-blue-600 dark:group-hover:text-blue-400">{product.name}</h3>
@@ -314,11 +324,18 @@ export function PosPage() {
                                     className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md hover:border-blue-300 dark:hover:border-blue-500 transition-all text-left flex flex-col justify-between h-full group"
                                 >
                                     <div>
-                                        <div className="aspect-square bg-gray-100 dark:bg-gray-700 rounded-lg mb-3 flex items-center justify-center text-gray-300 dark:text-gray-500">
-                                            {/* Placeholder for Image */}
-                                            <div className="text-4xl font-bold text-gray-200 dark:text-gray-600">
-                                                {product.name.charAt(0)}
-                                            </div>
+                                        <div className="aspect-square bg-gray-100 dark:bg-gray-700 rounded-lg mb-3 flex items-center justify-center text-gray-300 dark:text-gray-500 overflow-hidden relative">
+                                            {product.media && product.media.length > 0 ? (
+                                                <img
+                                                    src={product.media[0].url}
+                                                    alt={product.media[0].alt || product.name}
+                                                    className="w-full h-full object-cover"
+                                                />
+                                            ) : (
+                                                <div className="text-4xl font-bold text-gray-200 dark:text-gray-600">
+                                                    {product.name.charAt(0)}
+                                                </div>
+                                            )}
                                         </div>
                                         <h3 className="font-semibold text-gray-900 dark:text-gray-100 line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400">
                                             {product.name}
