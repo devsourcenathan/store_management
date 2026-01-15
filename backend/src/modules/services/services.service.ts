@@ -6,7 +6,7 @@ export class ServicesService {
     constructor(private prisma: PrismaService) { }
 
     async findAll(organizationId: string) {
-        return this.prisma.service.findMany({
+        const services = await this.prisma.service.findMany({
             where: { organizationId },
             include: {
                 _count: {
@@ -15,6 +15,17 @@ export class ServicesService {
             },
             orderBy: { name: 'asc' }
         });
+
+        return Promise.all(services.map(async (service) => {
+            const media = await this.prisma.media.findMany({
+                where: {
+                    organizationId,
+                    entityType: 'SERVICE',
+                    entityId: service.id
+                }
+            });
+            return { ...service, media };
+        }));
     }
 
     async findOne(id: string) {
@@ -22,7 +33,16 @@ export class ServicesService {
             where: { id }
         });
         if (!service) throw new NotFoundException('Service not found');
-        return service;
+
+        const media = await this.prisma.media.findMany({
+            where: {
+                organizationId: service.organizationId,
+                entityType: 'SERVICE',
+                entityId: service.id
+            }
+        });
+
+        return { ...service, media };
     }
 
     async create(data: any, organizationId: string) {
@@ -89,13 +109,29 @@ export class ServicesService {
 
     // Offers
     async findOffers(serviceId: string) {
-        return this.prisma.subscriptionOffer.findMany({
+        const offers = await this.prisma.subscriptionOffer.findMany({
             where: { serviceId },
             include: {
-                options: true
+                options: true,
+                service: true // Include service to get orgId if needed, though we can infer it or fetch separately
             },
             orderBy: { basePrice: 'asc' }
         });
+
+        if (offers.length === 0) return [];
+
+        const organizationId = offers[0].service.organizationId;
+
+        return Promise.all(offers.map(async (offer) => {
+            const media = await this.prisma.media.findMany({
+                where: {
+                    organizationId, // We assume all offers belong to same org as service
+                    entityType: 'OFFER',
+                    entityId: offer.id
+                }
+            });
+            return { ...offer, media };
+        }));
     }
 
     async createOffer(serviceId: string, data: any) {

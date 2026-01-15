@@ -35,6 +35,7 @@ model Organization {
   services      Service[]
   auditLogs     AuditLog[]
   landingPage   OrganizationLanding?
+  media         Media[]
 
   @@map("organizations")
 }
@@ -139,6 +140,49 @@ model ProductImage {
   product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@map("product_images")
+}
+
+model Media {
+  id             String          @id @default(uuid())
+  filename       String
+  originalName   String
+  mimeType       String
+  size           Int             // Size in bytes
+  url            String          // S3 URL
+  thumbnailUrl   String?         // Optional thumbnail
+  alt            String?         // Alt text for accessibility
+  
+  // Polymorphic relations
+  entityType     MediaEntityType
+  entityId       String
+  
+  // Organization scoping
+  organizationId String
+  organization   Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  
+  // Metadata
+  uploadedBy     String
+  isPublic       Boolean         @default(false)
+  tags           String[]        // For search and filtering
+  
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  
+  @@index([organizationId, entityType, entityId])
+  @@index([organizationId, tags])
+  @@map("media")
+}
+
+enum MediaEntityType {
+  PRODUCT
+  ORGANIZATION
+  STORE
+  LANDING_PAGE
+  CATEGORY
+  OTHER
+  SERVICE
+  OFFER
+  USER
 }
 
 model Category {
@@ -650,3 +694,5 @@ model OrganizationLanding {
 
   @@map("organization_landing")
 }
+
+// End of file

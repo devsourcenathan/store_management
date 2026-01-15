@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/services/api';
 import { PricingRulesEditor } from './PricingRulesEditor';
+import { MediaSelector } from '../media/components/MediaSelector';
+import { mediaService, Media } from '@/services/mediaService';
 
 interface SubscriptionOffer {
     id?: string;
@@ -13,6 +15,7 @@ interface SubscriptionOffer {
     isActive: boolean;
     pricingRules?: any[];
     options?: any[];
+    media?: Media[];
 }
 
 interface OfferModalProps {
@@ -36,18 +39,26 @@ export function OfferSheet({ serviceId, offer, onClose, onSuccess }: OfferModalP
     const [billingCycle, setBillingCycle] = useState(offer?.billingCycle || 'MONTHLY');
     const [pricingRules, setPricingRules] = useState<any[]>(offer?.pricingRules && Array.isArray(offer.pricingRules) ? offer.pricingRules : []);
     const [options, setOptions] = useState<any[]>(offer?.options || []);
+    const [selectedMedia, setSelectedMedia] = useState<Media[]>(offer?.media || []);
 
     const queryClient = useQueryClient();
 
     const mutation = useMutation({
         mutationFn: async (data: any) => {
             if (offer?.id) {
-                return api.put(`/services/${serviceId}/offers/${offer.id}`, data);
+                const response = await api.put(`/services/${serviceId}/offers/${offer.id}`, data);
+                return response.data;
             } else {
-                return api.post(`/services/${serviceId}/offers`, data);
+                const response = await api.post(`/services/${serviceId}/offers`, data);
+                return response.data;
             }
         },
-        onSuccess: () => {
+        onSuccess: async (createdOffer) => {
+            if (selectedMedia.length > 0 && !offer?.id) {
+                await Promise.all(selectedMedia.map(m =>
+                    mediaService.linkToEntity(m.id, 'OFFER', createdOffer.id)
+                ));
+            }
             queryClient.invalidateQueries({ queryKey: ['subscription-offers', serviceId] });
             onSuccess();
             onClose();
@@ -218,6 +229,24 @@ export function OfferSheet({ serviceId, offer, onClose, onSuccess }: OfferModalP
                         </div>
                     </div>
 
+                    <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Offer Image</label>
+                        <MediaSelector
+                            entityType="OFFER"
+                            entityId={offer?.id || ''}
+                            onSelect={async (media) => {
+                                if (offer?.id) {
+                                    await mediaService.linkToEntity(media.id, 'OFFER', offer.id);
+                                    queryClient.invalidateQueries({ queryKey: ['subscription-offers', serviceId] });
+                                    setSelectedMedia(prev => [...prev, media]);
+                                } else {
+                                    setSelectedMedia(prev => [...prev, media]);
+                                }
+                            }}
+                            selectedMedia={selectedMedia}
+                        />
+                    </div>
+
                     <div className="flex justify-end space-x-3 pt-6 border-t border-gray-200 dark:border-gray-700 mt-auto">
                         <button
                             type="button"
@@ -236,6 +265,6 @@ export function OfferSheet({ serviceId, offer, onClose, onSuccess }: OfferModalP
                     </div>
                 </form>
             </SheetContent>
-        </Sheet>
+        </Sheet >
     );
 }

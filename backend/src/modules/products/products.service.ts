@@ -1,12 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '@/common/prisma/prisma.service';
+import { MediaEntityType } from '@prisma/client';
 
 @Injectable()
 export class ProductsService {
     constructor(private prisma: PrismaService) { }
 
     async findAll(organizationId: string) {
-        return this.prisma.product.findMany({
+        const products = await this.prisma.product.findMany({
             where: { organizationId, isActive: true },
             include: {
                 category: true,
@@ -17,16 +18,42 @@ export class ProductsService {
             },
             orderBy: { name: 'asc' },
         });
+
+        const productIds = products.map(p => p.id);
+        const media = await this.prisma.media.findMany({
+            where: {
+                organizationId,
+                entityType: MediaEntityType.PRODUCT,
+                entityId: { in: productIds },
+            },
+        });
+
+        return products.map(p => ({
+            ...p,
+            media: media.filter(m => m.entityId === p.id),
+        }));
     }
 
     async findOne(id: string, organizationId: string) {
-        return this.prisma.product.findFirst({
+        const product = await this.prisma.product.findFirst({
             where: { id, organizationId },
             include: {
                 category: true,
                 pricingRules: true,
             },
         });
+
+        if (!product) return null;
+
+        const media = await this.prisma.media.findMany({
+            where: {
+                organizationId,
+                entityType: MediaEntityType.PRODUCT,
+                entityId: id,
+            },
+        });
+
+        return { ...product, media };
     }
 
     async create(data: any, organizationId: string) {

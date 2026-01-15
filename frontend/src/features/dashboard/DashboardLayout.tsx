@@ -25,7 +25,8 @@ import {
     Calculator,
     Settings,
     Menu,
-    Shield
+    Shield,
+    Image,
 } from 'lucide-react';
 
 export function DashboardLayout() {
@@ -67,6 +68,12 @@ export function DashboardLayout() {
             items: [
                 { name: t('nav.subscriptions'), href: '/subscriptions', icon: CreditCard },
                 { name: t('nav.services'), href: '/subscriptions/offers', icon: Layers },
+            ]
+        },
+        {
+            title: 'Content',
+            items: [
+                { name: t('nav.media'), href: '/media', icon: Image },
             ]
         },
         {
