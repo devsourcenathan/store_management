@@ -170,7 +170,7 @@ export function TransferModal({ onClose, onSuccess }: TransferModalProps) {
 
                     {/* Transfer Summary */}
                     {productId && destinationStoreId && (
-                        <div className="bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-md p-4">
+                        <div className="bg-theme-primary/10 border border-theme-primary/20 rounded-md p-4">
                             <div className="flex items-center justify-between text-sm">
                                 <span className="font-medium text-blue-900 dark:text-blue-200">{currentStore?.name}</span>
                                 <ArrowRight className="w-4 h-4 text-blue-600 dark:text-blue-400" />
@@ -195,7 +195,7 @@ export function TransferModal({ onClose, onSuccess }: TransferModalProps) {
                         <button
                             type="submit"
                             disabled={transferMutation.isPending || !currentStore || !destinationStoreId || !productId}
-                            className="flex items-center justify-center w-full px-4 py-3 bg-blue-600 text-white rounded-md font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors"
+                            className="flex items-center justify-center w-full px-4 py-3 btn-theme-primary rounded-md font-medium disabled:opacity-50 transition-colors"
                         >
                             {transferMutation.isPending ? 'Processing...' : 'Complete Transfer'}
                             {!transferMutation.isPending && <ArrowRight className="w-4 h-4 ml-2" />}

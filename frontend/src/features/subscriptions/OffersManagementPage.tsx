@@ -69,7 +69,7 @@ export function OffersManagementPage() {
                 </div>
                 <button
                     onClick={() => { setEditingService(null); setIsServiceModalOpen(true); }}
-                    className="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center whitespace-nowrap"
+                    className="w-full sm:w-auto px-4 py-2 btn-theme-primary rounded-lg transition-colors flex items-center justify-center whitespace-nowrap"
                 >
                     <Plus className="w-4 h-4 mr-2" />
                     {t('offers.new_service')}
@@ -144,7 +144,7 @@ function ServiceRow({ service, isExpanded, onToggleExpand, onEdit, onDelete, onA
             }}>
                 <div className="flex items-center space-x-4">
                     {isExpanded ? <ChevronDown className="text-gray-400" /> : <ChevronRight className="text-gray-400" />}
-                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center overflow-hidden ${service.isActive ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400' : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400'}`}>
+                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center overflow-hidden ${service.isActive ? 'bg-theme-primary/10 text-theme-primary' : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400'}`}>
                         {service.media && service.media.length > 0 ? (
                             <img src={service.media[0].url} alt={service.name} className="w-full h-full object-cover" />
                         ) : (

@@ -118,7 +118,7 @@ export function SupplyOrdersPage() {
                     animate={{ opacity: 1, scale: 1 }}
                     className="text-center py-24 bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700"
                 >
-                    <div className="bg-blue-50 dark:bg-blue-900/20 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <div className="bg-theme-primary/10 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
                         <Truck className="w-10 h-10 text-blue-600 dark:text-blue-400" />
                     </div>
                     <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">{t('suppliers.no_orders')}</h3>
@@ -231,7 +231,7 @@ export function SupplyOrdersPage() {
                                     {order.status !== 'PAID' && (
                                         <button
                                             onClick={() => handleReceiveClick(order)}
-                                            className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors shadow-sm hover:shadow"
+                                            className="px-4 py-2 btn-theme-primary text-sm font-medium rounded-lg transition-colors shadow-sm hover:shadow"
                                         >
                                             {t('suppliers.receive')}
                                         </button>

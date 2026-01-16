@@ -24,6 +24,7 @@ model Organization {
   taxId     String? // NIF or equivalent
   logoUrl   String?
   footer    String? // Default footer for invoices
+  themeConfig Json? // Theme colors and branding settings
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

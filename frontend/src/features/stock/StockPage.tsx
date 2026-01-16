@@ -107,7 +107,7 @@ export function StockPage() {
                     </button>
                     <button
                         onClick={() => setIsModalOpen(true)}
-                        className="w-full xs:w-auto px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors whitespace-nowrap"
+                        className="w-full xs:w-auto px-4 py-2 btn-theme-primary rounded-lg transition-colors whitespace-nowrap"
                     >
                         {t('stock.new_movement')}
                     </button>
@@ -268,7 +268,7 @@ export function StockPage() {
                             <button
                                 type="submit"
                                 disabled={createMovementMutation.isPending || !formData.productId || !currentStore}
-                                className="w-full px-4 py-3 bg-blue-600 text-white rounded-md font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors"
+                                className="w-full px-4 py-3 btn-theme-primary rounded-md font-medium disabled:opacity-50 transition-colors"
                             >
                                 {createMovementMutation.isPending ? t('common.processing') : t('stock.save_movement')}
                             </button>

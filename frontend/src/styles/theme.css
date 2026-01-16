@@ -1,0 +1,24 @@
+/* Organization Theme Colors */
+:root {
+  /* Default colors - will be overridden by organization settings */
+  --org-primary: #3b82f6;
+  --org-secondary: #6366f1;
+  --org-accent: #8b5cf6;
+  --org-sidebar-bg: #1f2937;
+  --org-navbar-bg: #ffffff;
+}
+
+/* Apply theme colors to buttons */
+.btn-primary {
+  background-color: var(--org-primary);
+}
+
+.btn-primary:hover {
+  filter: brightness(0.9);
+}
+
+/* Active states */
+.active-link {
+  background-color: var(--org-primary);
+  opacity: 0.1;
+}

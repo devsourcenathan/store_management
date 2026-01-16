@@ -220,7 +220,7 @@ export function PosPage() {
                         <button
                             onClick={() => setSelectedCategory('all')}
                             className={`px-3 sm:px-4 py-1.5 rounded-full text-xs sm:text-sm font-medium whitespace-nowrap transition-colors flex-shrink-0 ${selectedCategory === 'all'
-                                ? 'bg-blue-600 text-white'
+                                ? 'btn-theme-primary'
                                 : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                                 }`}
                         >
@@ -231,7 +231,7 @@ export function PosPage() {
                                 key={cat.id}
                                 onClick={() => setSelectedCategory(cat.id)}
                                 className={`px-3 sm:px-4 py-1.5 rounded-full text-xs sm:text-sm font-medium whitespace-nowrap transition-colors flex-shrink-0 ${selectedCategory === cat.id
-                                    ? 'bg-blue-600 text-white'
+                                    ? 'btn-theme-primary'
                                     : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                                     }`}
                             >
@@ -245,7 +245,7 @@ export function PosPage() {
                         <button
                             onClick={() => setViewMode('grid')}
                             className={`p-1.5 rounded-md transition-all ${viewMode === 'grid'
-                                ? 'bg-white dark:bg-gray-600 shadow-sm text-blue-600 dark:text-blue-400'
+                                ? 'bg-white dark:bg-gray-600 shadow-sm text-theme-primary'
                                 : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
                                 }`}
                             title="Grid View"
@@ -255,7 +255,7 @@ export function PosPage() {
                         <button
                             onClick={() => setViewMode('list')}
                             className={`p-1.5 rounded-md transition-all ${viewMode === 'list'
-                                ? 'bg-white dark:bg-gray-600 shadow-sm text-blue-600 dark:text-blue-400'
+                                ? 'bg-white dark:bg-gray-600 shadow-sm text-theme-primary'
                                 : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
                                 }`}
                             title="List View"
@@ -444,7 +444,7 @@ export function PosPage() {
                     <button
                         onClick={() => setIsPaymentModalOpen(true)}
                         disabled={cart.length === 0}
-                        className="w-full py-3 bg-blue-600 text-white rounded-xl font-semibold shadow-sm hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-[0.98]"
+                        className="w-full py-3 btn-theme-primary rounded-xl font-semibold shadow-sm disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-[0.98]"
                     >
                         {t('pos.proceed_payment')}
                     </button>
@@ -459,7 +459,7 @@ export function PosPage() {
                         className="w-full px-4 py-3 flex items-center justify-between touch-target"
                     >
                         <div className="flex items-center space-x-3">
-                            <ShoppingCart className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                            <ShoppingCart className="w-5 h-5 text-theme-primary" />
                             <div className="text-left">
                                 <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">
                                     {totalItems} {t('pos.items')}
@@ -469,7 +469,7 @@ export function PosPage() {
                                 </p>
                             </div>
                         </div>
-                        <div className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium">
+                        <div className="px-4 py-2 btn-theme-primary rounded-lg font-medium">
                             {t('pos.proceed_payment')}
                         </div>
                     </button>
@@ -490,8 +490,8 @@ export function PosPage() {
                         <button
                             onClick={() => setPaymentMethod('CASH')}
                             className={`flex flex-col items-center justify-center p-3 sm:p-4 border-2 rounded-xl transition-all touch-target ${paymentMethod === 'CASH'
-                                ? 'border-blue-600 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
-                                : 'border-gray-200 dark:border-gray-600 hover:border-blue-200 dark:hover:border-blue-700 hover:bg-gray-50 dark:hover:bg-gray-700'
+                                ? 'border-theme-primary bg-theme-primary/10 text-theme-primary'
+                                : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
                                 }`}
                         >
                             <Banknote className="w-6 h-6 sm:w-8 sm:h-8 mb-2" />
@@ -500,8 +500,8 @@ export function PosPage() {
                         <button
                             onClick={() => setPaymentMethod('CARD')}
                             className={`flex flex-col items-center justify-center p-3 sm:p-4 border-2 rounded-xl transition-all touch-target ${paymentMethod === 'CARD'
-                                ? 'border-blue-600 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
-                                : 'border-gray-200 dark:border-gray-600 hover:border-blue-200 dark:hover:border-blue-700 hover:bg-gray-50 dark:hover:bg-gray-700'
+                                ? 'border-theme-primary bg-theme-primary/10 text-theme-primary'
+                                : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
                                 }`}
                         >
                             <CreditCard className="w-6 h-6 sm:w-8 sm:h-8 mb-2" />
@@ -510,8 +510,8 @@ export function PosPage() {
                         <button
                             onClick={() => setPaymentMethod('MOBILE')}
                             className={`flex flex-col items-center justify-center p-3 sm:p-4 border-2 rounded-xl transition-all touch-target ${paymentMethod === 'MOBILE'
-                                ? 'border-blue-600 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
-                                : 'border-gray-200 dark:border-gray-600 hover:border-blue-200 dark:hover:border-blue-700 hover:bg-gray-50 dark:hover:bg-gray-700'
+                                ? 'border-theme-primary bg-theme-primary/10 text-theme-primary'
+                                : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
                                 }`}
                         >
                             <Smartphone className="w-6 h-6 sm:w-8 sm:h-8 mb-2" />
@@ -529,7 +529,7 @@ export function PosPage() {
                         <button
                             onClick={handleCheckout}
                             disabled={createSaleMutation.isPending}
-                            className="px-6 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50"
+                            className="px-6 py-2 btn-theme-primary rounded-lg font-medium disabled:opacity-50"
                         >
                             {createSaleMutation.isPending ? t('pos.payment.processing') : t('pos.payment.confirm')}
                         </button>
@@ -554,7 +554,7 @@ export function PosPage() {
                     <div className="flex flex-col space-y-3 py-4">
                         <button
                             onClick={handlePrintInvoice}
-                            className="w-full flex items-center justify-center px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium"
+                            className="w-full flex items-center justify-center px-4 py-3 btn-theme-primary rounded-lg font-medium"
                         >
                             <Printer className="w-5 h-5 mr-2" />
                             {t('pos.success.print')}

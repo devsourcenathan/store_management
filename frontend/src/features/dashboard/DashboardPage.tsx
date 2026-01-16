@@ -114,8 +114,8 @@ export function DashboardPage() {
     if (!isLoadingStores && stores.length === 0) {
         return (
             <div className="flex flex-col items-center justify-center min-h-[60vh] text-center space-y-6">
-                <div className="bg-blue-50 dark:bg-blue-900/30 p-6 rounded-full">
-                    <BoxIcon className="w-12 h-12 text-blue-600 dark:text-blue-400" />
+                <div className="bg-theme-primary/10 p-6 rounded-full">
+                    <BoxIcon className="w-12 h-12 text-theme-primary" />
                 </div>
                 <div className="max-w-md space-y-2">
                     <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{t('dashboard.welcome_title')}</h2>
@@ -125,7 +125,7 @@ export function DashboardPage() {
                 </div>
                 <button
                     onClick={() => setIsCreateStoreOpen(true)}
-                    className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium shadow-md hover:shadow-lg"
+                    className="inline-flex items-center gap-2 px-6 py-3 btn-theme-primary rounded-lg transition-colors font-medium shadow-md hover:shadow-lg"
                 >
                     <div className="w-5 h-5">
                         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
@@ -258,7 +258,7 @@ export function DashboardPage() {
                 <div className="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 transition-colors">
                     <div className="flex items-center justify-between mb-6">
                         <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">{t('dashboard.revenue_trend')}</h3>
-                        <span className="text-sm font-medium text-blue-600 bg-blue-50 dark:bg-blue-900/30 dark:text-blue-300 px-3 py-1 rounded-full">{periodLabel}</span>
+                        <span className="text-sm font-medium text-theme-primary bg-theme-primary/10 px-3 py-1 rounded-full">{periodLabel}</span>
                     </div>
                     {/* Charts usually support dark mode via props or CSS variables, we might need to update SalesChart later */}
                     <SalesChart data={salesTrend} isLoading={isLoadingTrend} />
@@ -278,7 +278,7 @@ function ActionButton({ to, label, icon, variant = 'primary' }: any) {
     const baseStyles = "flex items-center gap-2 rounded-lg font-medium transition-all duration-200 shadow-sm whitespace-nowrap";
     const variants = {
         "primary-large": "bg-indigo-600 text-white hover:bg-indigo-700 hover:shadow-md px-5 py-2.5 text-base active:transform active:scale-95 ring-2 ring-indigo-100 dark:ring-indigo-900",
-        primary: "bg-blue-600 text-white hover:bg-blue-700 hover:shadow-md px-4 py-2 text-sm active:transform active:scale-95",
+        primary: "btn-theme-primary hover:shadow-md px-4 py-2 text-sm active:transform active:scale-95",
         outline: "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300 px-4 py-2 text-sm active:transform active:scale-95"
     };
 
@@ -292,7 +292,7 @@ function ActionButton({ to, label, icon, variant = 'primary' }: any) {
 
 function StatCard({ title, value, icon, color, isLoading }: any) {
     const colors: any = {
-        blue: 'bg-blue-50 text-blue-600 dark:bg-blue-900/40 dark:text-blue-400',
+        blue: 'bg-theme-primary/10 text-theme-primary',
         indigo: 'bg-indigo-50 text-indigo-600 dark:bg-indigo-900/40 dark:text-indigo-400',
         yellow: 'bg-yellow-50 text-yellow-600 dark:bg-yellow-900/40 dark:text-yellow-400',
         purple: 'bg-purple-50 text-purple-600 dark:bg-purple-900/40 dark:text-purple-400',

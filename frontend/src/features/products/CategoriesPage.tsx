@@ -52,7 +52,7 @@ export function CategoriesPage() {
                 </div>
                 <button
                     onClick={() => setIsModalOpen(true)}
-                    className="w-full sm:w-auto flex items-center justify-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors whitespace-nowrap"
+                    className="w-full sm:w-auto flex items-center justify-center space-x-2 px-4 py-2 btn-theme-primary rounded-lg transition-colors whitespace-nowrap"
                 >
                     <Plus className="w-4 h-4" />
                     <span>{t('products.add_category')}</span>
@@ -76,7 +76,7 @@ export function CategoriesPage() {
                                         <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{category.description || '-'}</p>
                                     </div>
                                     <div className="flex items-center space-x-2 ml-2">
-                                        <button className="p-2 text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/30 rounded-lg transition-colors">
+                                        <button className="p-2 text-theme-primary hover:bg-theme-primary/10 rounded-lg transition-colors">
                                             <Pencil className="w-4 h-4" />
                                         </button>
                                         <button className="p-2 text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/30 rounded-lg transition-colors">
@@ -156,7 +156,7 @@ export function CategoriesPage() {
                             </div>
                             <div className="flex justify-end space-x-3 mt-6">
                                 <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">{t('common.cancel')}</button>
-                                <button type="submit" disabled={createCategoryMutation.isPending} className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                                <button type="submit" disabled={createCategoryMutation.isPending} className="px-4 py-2 btn-theme-primary rounded-md">
                                     {createCategoryMutation.isPending ? t('common.processing') : t('products.add_category')}
                                 </button>
                             </div>

@@ -258,7 +258,7 @@ export function OfferSheet({ serviceId, offer, onClose, onSuccess }: OfferModalP
                         <button
                             type="submit"
                             disabled={mutation.isPending}
-                            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 transition-colors shadow-sm"
+                            className="px-4 py-2 btn-theme-primary rounded-md disabled:opacity-50 transition-colors shadow-sm"
                         >
                             {mutation.isPending ? 'Saving...' : 'Save Offer'}
                         </button>

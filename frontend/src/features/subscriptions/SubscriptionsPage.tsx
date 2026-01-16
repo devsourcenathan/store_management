@@ -116,7 +116,7 @@ export function SubscriptionsPage() {
                     </select>
                     <button
                         onClick={() => setNewSubscriptionModalOpen(true)}
-                        className="w-full xs:w-auto px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors whitespace-nowrap"
+                        className="w-full xs:w-auto px-4 py-2 btn-theme-primary rounded-lg transition-colors whitespace-nowrap"
                     >
                         {t('subscriptions.new_subscription')}
                     </button>

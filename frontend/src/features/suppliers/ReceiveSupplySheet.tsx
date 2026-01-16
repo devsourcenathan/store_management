@@ -87,7 +87,7 @@ export function ReceiveSupplySheet({ isOpen, onClose, order }: ReceiveSupplyShee
                 </SheetHeader>
 
                 <form onSubmit={handleSubmit} className="space-y-6">
-                    <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg flex items-start space-x-3 text-sm text-blue-800 dark:text-blue-100">
+                    <div className="bg-theme-primary/10 p-4 rounded-lg flex items-start space-x-3 text-sm text-theme-primary">
                         <AlertTriangle className="w-5 h-5 flex-shrink-0 text-blue-600 dark:text-blue-400" />
                         <p>{t('suppliers.verify_quantities', 'Verify quantities carefully. The stock will be updated based on the "Received" column, and the order total will be adjusted.')}</p>
                     </div>

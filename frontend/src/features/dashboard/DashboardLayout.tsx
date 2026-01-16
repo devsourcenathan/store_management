@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/features/auth/useAuth';
 import { useSync } from '@/offline/SyncProvider';
+import { useOrganization } from '@/contexts/OrganizationContext';
 import { StoreSelector } from '@/features/stores/StoreSelector';
 import { NoAccessPage } from '@/features/auth/NoAccessPage';
 import { ThemeToggle } from '@/components/ThemeToggle';
@@ -32,6 +33,7 @@ import {
 export function DashboardLayout() {
     const { user, logout } = useAuth();
     const { isOnline, isSyncing, pendingOperations, sync } = useSync();
+    const { organization } = useOrganization();
     const location = useLocation();
     const { t } = useTranslation();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -113,7 +115,12 @@ export function DashboardLayout() {
             />
 
             {/* Top Navigation */}
-            <nav className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700 sticky top-0 z-30">
+            <nav
+                className="shadow-sm border-b border-gray-200 dark:border-gray-700 sticky top-0 z-30"
+                style={{
+                    backgroundColor: organization?.themeConfig?.navbarBg || undefined
+                }}
+            >
                 <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
                     <div className="flex justify-between h-14 sm:h-16">
                         {/* Logo & Brand */}
@@ -127,7 +134,19 @@ export function DashboardLayout() {
                                 <Menu className="w-6 h-6 text-gray-600 dark:text-gray-400" />
                             </button>
 
-                            <h1 className="text-base sm:text-xl font-bold text-gray-900 dark:text-gray-100">Stock Management</h1>
+                            {/* Organization Logo & Name */}
+                            <div className="flex items-center space-x-2">
+                                {organization?.logoUrl && (
+                                    <img
+                                        src={organization.logoUrl}
+                                        alt={organization.name}
+                                        className="h-8 w-8 object-contain"
+                                    />
+                                )}
+                                <h1 className="text-base sm:text-xl font-bold text-gray-900 dark:text-gray-100">
+                                    {organization?.name || 'Stock Management'}
+                                </h1>
+                            </div>
 
                             {/* Store Selector - Desktop */}
                             <div className="hidden md:block">
@@ -341,7 +360,12 @@ export function DashboardLayout() {
             {/* Main Content */}
             <div className="flex">
                 {/* Sidebar Navigation */}
-                <aside className="w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 min-h-[calc(100vh-4rem)] hidden md:block">
+                <aside
+                    className="w-64 border-r border-gray-200 dark:border-gray-700 min-h-[calc(100vh-4rem)] hidden md:block"
+                    style={{
+                        backgroundColor: organization?.themeConfig?.sidebarBg || undefined
+                    }}
+                >
                     <nav className="p-4 overflow-y-auto">
                         {groupedNavigation.map((group, groupIndex) => (
                             <div key={groupIndex} className="mb-6 last:mb-0">
@@ -360,9 +384,15 @@ export function DashboardLayout() {
                                                 key={item.href}
                                                 to={item.href}
                                                 className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${active
-                                                    ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
-                                                    : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+                                                        ? ''
+                                                        : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
                                                     }`}
+                                                style={active ? {
+                                                    backgroundColor: organization?.themeConfig?.primaryColor
+                                                        ? `${organization.themeConfig.primaryColor}20`
+                                                        : undefined,
+                                                    color: organization?.themeConfig?.primaryColor || undefined
+                                                } : undefined}
                                             >
                                                 <Icon className="w-5 h-5 flex-shrink-0" />
                                                 <span className="font-medium">{item.name}</span>

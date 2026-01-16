@@ -4,6 +4,14 @@
 
 @layer base {
   :root {
+    /* Organization theme colors - will be overridden by OrganizationContext */
+    --theme-primary: 59 130 246;
+    /* blue-600 as default */
+    --theme-secondary: 99 102 241;
+    /* indigo-600 as default */
+    --theme-accent: 139 92 246;
+    /* violet-600 as default */
+
     --background: 0 0% 100%;
     --foreground: 0 0% 3.9%;
     --card: 0 0% 100%;
@@ -63,27 +71,76 @@
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
   }
 }
 
 @layer utilities {
+
+  /* Organization theme colors */
+  .btn-theme-primary {
+    background-color: rgb(var(--theme-primary));
+    color: white;
+  }
+
+  .btn-theme-primary:hover {
+    filter: brightness(0.9);
+  }
+
+  .bg-theme-primary {
+    background-color: rgb(var(--theme-primary));
+  }
+
+  .bg-theme-primary\/10 {
+    background-color: rgb(var(--theme-primary) / 0.1);
+  }
+
+  .bg-theme-primary\/20 {
+    background-color: rgb(var(--theme-primary) / 0.2);
+  }
+
+  .text-theme-primary {
+    color: rgb(var(--theme-primary));
+  }
+
+  .border-theme-primary {
+    border-color: rgb(var(--theme-primary));
+  }
+
+  .border-theme-primary\/20 {
+    border-color: rgb(var(--theme-primary) / 0.2);
+  }
+
+  .border-theme-primary\/30 {
+    border-color: rgb(var(--theme-primary) / 0.3);
+  }
+
+  .border-theme-primary\/50 {
+    border-color: rgb(var(--theme-primary) / 0.5);
+  }
+
+  .ring-theme-primary {
+    --tw-ring-color: rgb(var(--theme-primary));
+  }
+
   /* Hide scrollbar but keep functionality */
   .scrollbar-hide {
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
+
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
-  
+
   /* Touch-friendly minimum sizes */
   .touch-target {
     min-height: 44px;
     min-width: 44px;
   }
-  
+
   /* Smooth scroll for mobile */
   .smooth-scroll {
     -webkit-overflow-scrolling: touch;

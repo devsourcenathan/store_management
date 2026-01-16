@@ -6,10 +6,16 @@ import { toast } from 'sonner';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { MediaUpload } from '@/features/media/components/MediaUpload';
+import { useOrganization } from '@/contexts/OrganizationContext';
+import { Upload } from 'lucide-react';
 
 export function OrganizationSettings() {
     const { t } = useTranslation();
     const queryClient = useQueryClient();
+    const { organization, refetch } = useOrganization();
+    const [showLogoUpload, setShowLogoUpload] = useState(false);
     const [formData, setFormData] = useState({
         name: '',
         taxId: '',
@@ -18,7 +24,14 @@ export function OrganizationSettings() {
         email: '',
         website: '',
         logoUrl: '',
-        invoiceFooter: ''
+        footer: '',
+        themeConfig: {
+            primaryColor: '',
+            secondaryColor: '',
+            accentColor: '',
+            sidebarBg: '',
+            navbarBg: ''
+        }
     });
 
     const { data: org, isLoading } = useQuery({
@@ -39,10 +52,35 @@ export function OrganizationSettings() {
                 email: org.email || '',
                 website: org.website || '',
                 logoUrl: org.logoUrl || '',
-                invoiceFooter: org.invoiceFooter || ''
+                footer: org.footer || '',
+                themeConfig: org.themeConfig || {
+                    primaryColor: '',
+                    secondaryColor: '',
+                    accentColor: '',
+                    sidebarBg: '',
+                    navbarBg: ''
+                }
             });
         }
     }, [org]);
+
+    const handleLogoUpload = (media: any) => {
+        if (media?.url) {
+            setFormData(prev => ({ ...prev, logoUrl: media.url }));
+            setShowLogoUpload(false);
+            toast.success(t('settings.org.logo_uploaded'));
+        }
+    };
+
+    const handleThemeColorChange = (colorKey: string, value: string) => {
+        setFormData(prev => ({
+            ...prev,
+            themeConfig: {
+                ...prev.themeConfig,
+                [colorKey]: value
+            }
+        }));
+    };
 
     const updateMutation = useMutation({
         mutationFn: async (data: any) => api.put('/organizations/me', data),
@@ -62,7 +100,23 @@ export function OrganizationSettings() {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        updateMutation.mutate(formData);
+        // Filter out empty email and website to avoid validation errors
+        const dataToSubmit = { ...formData };
+        const finalData: any = {};
+
+        // Only include non-empty values
+        Object.entries(dataToSubmit).forEach(([key, value]) => {
+            if (key === 'email' || key === 'website') {
+                // Only include email and website if they have values
+                if (value) {
+                    finalData[key] = value;
+                }
+            } else {
+                finalData[key] = value;
+            }
+        });
+
+        updateMutation.mutate(finalData);
     };
 
     if (isLoading) return <div>{t('common.loading')}</div>;
@@ -143,30 +197,175 @@ export function OrganizationSettings() {
                 <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">{t('settings.org.branding_title')}</h3>
 
                 <div className="grid grid-cols-1 gap-6">
+                    {/* Logo Upload */}
                     <div className="space-y-2">
-                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('settings.org.logo_url')}</label>
-                        <Input
-                            name="logoUrl"
-                            value={formData.logoUrl}
-                            onChange={handleChange}
-                            placeholder="https://example.com/logo.png"
-                        />
-                        {formData.logoUrl && (
-                            <div className="mt-2 p-2 border rounded border-dashed border-gray-300 dark:border-gray-600 inline-block bg-white">
-                                <img src={formData.logoUrl} alt="Logo Preview" className="h-16 object-contain" />
+                        <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('settings.org.logo')}</Label>
+
+                        {formData.logoUrl ? (
+                            <div className="flex items-center gap-4">
+                                <div className="p-4 border rounded border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700">
+                                    <img src={formData.logoUrl} alt="Logo" className="h-20 w-20 object-contain" />
+                                </div>
+                                <div className="flex flex-col gap-2">
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => setShowLogoUpload(true)}
+                                    >
+                                        <Upload className="w-4 h-4 mr-2" />
+                                        {t('settings.org.change_logo')}
+                                    </Button>
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => setFormData(prev => ({ ...prev, logoUrl: '' }))}
+                                    >
+                                        {t('settings.org.remove_logo')}
+                                    </Button>
+                                </div>
+                            </div>
+                        ) : (
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => setShowLogoUpload(true)}
+                            >
+                                <Upload className="w-4 h-4 mr-2" />
+                                {t('settings.org.upload_logo')}
+                            </Button>
+                        )}
+
+                        {showLogoUpload && (
+                            <div className="mt-4 p-4 border rounded border-gray-300 dark:border-gray-600">
+                                <div className="flex justify-between items-center mb-2">
+                                    <h4 className="font-medium">{t('settings.org.upload_logo')}</h4>
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => setShowLogoUpload(false)}
+                                    >
+                                        {t('common.cancel')}
+                                    </Button>
+                                </div>
+                                <MediaUpload
+                                    onUploadComplete={handleLogoUpload}
+                                    defaultEntityType="ORGANIZATION"
+                                    defaultEntityId={organization?.id || ''}
+                                />
                             </div>
                         )}
                     </div>
 
                     <div className="space-y-2">
-                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('settings.org.invoice_footer')}</label>
+                        <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('settings.org.invoice_footer')}</Label>
                         <Textarea
-                            name="invoiceFooter"
-                            value={formData.invoiceFooter}
+                            name="footer"
+                            value={formData.footer}
                             onChange={handleChange}
                             rows={3}
                             placeholder="Thank you for your business!"
                         />
+                    </div>
+                </div>
+            </div>
+
+            {/* Theme Colors */}
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm transition-colors">
+                <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">{t('settings.org.theme_title')}</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">{t('settings.org.theme_description')}</p>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                        <Label>{t('settings.org.primary_color')}</Label>
+                        <div className="flex gap-2">
+                            <Input
+                                type="color"
+                                value={formData.themeConfig.primaryColor || '#3b82f6'}
+                                onChange={(e) => handleThemeColorChange('primaryColor', e.target.value)}
+                                className="w-16 h-10 cursor-pointer"
+                            />
+                            <Input
+                                type="text"
+                                value={formData.themeConfig.primaryColor || ''}
+                                onChange={(e) => handleThemeColorChange('primaryColor', e.target.value)}
+                                placeholder="#3b82f6"
+                            />
+                        </div>
+                    </div>
+
+                    <div className="space-y-2">
+                        <Label>{t('settings.org.secondary_color')}</Label>
+                        <div className="flex gap-2">
+                            <Input
+                                type="color"
+                                value={formData.themeConfig.secondaryColor || '#6366f1'}
+                                onChange={(e) => handleThemeColorChange('secondaryColor', e.target.value)}
+                                className="w-16 h-10 cursor-pointer"
+                            />
+                            <Input
+                                type="text"
+                                value={formData.themeConfig.secondaryColor || ''}
+                                onChange={(e) => handleThemeColorChange('secondaryColor', e.target.value)}
+                                placeholder="#6366f1"
+                            />
+                        </div>
+                    </div>
+
+                    <div className="space-y-2">
+                        <Label>{t('settings.org.accent_color')}</Label>
+                        <div className="flex gap-2">
+                            <Input
+                                type="color"
+                                value={formData.themeConfig.accentColor || '#8b5cf6'}
+                                onChange={(e) => handleThemeColorChange('accentColor', e.target.value)}
+                                className="w-16 h-10 cursor-pointer"
+                            />
+                            <Input
+                                type="text"
+                                value={formData.themeConfig.accentColor || ''}
+                                onChange={(e) => handleThemeColorChange('accentColor', e.target.value)}
+                                placeholder="#8b5cf6"
+                            />
+                        </div>
+                    </div>
+
+                    <div className="space-y-2">
+                        <Label>{t('settings.org.sidebar_bg')}</Label>
+                        <div className="flex gap-2">
+                            <Input
+                                type="color"
+                                value={formData.themeConfig.sidebarBg || '#1f2937'}
+                                onChange={(e) => handleThemeColorChange('sidebarBg', e.target.value)}
+                                className="w-16 h-10 cursor-pointer"
+                            />
+                            <Input
+                                type="text"
+                                value={formData.themeConfig.sidebarBg || ''}
+                                onChange={(e) => handleThemeColorChange('sidebarBg', e.target.value)}
+                                placeholder="#1f2937"
+                            />
+                        </div>
+                    </div>
+
+                    <div className="space-y-2">
+                        <Label>{t('settings.org.navbar_bg')}</Label>
+                        <div className="flex gap-2">
+                            <Input
+                                type="color"
+                                value={formData.themeConfig.navbarBg || '#ffffff'}
+                                onChange={(e) => handleThemeColorChange('navbarBg', e.target.value)}
+                                className="w-16 h-10 cursor-pointer"
+                            />
+                            <Input
+                                type="text"
+                                value={formData.themeConfig.navbarBg || ''}
+                                onChange={(e) => handleThemeColorChange('navbarBg', e.target.value)}
+                                placeholder="#ffffff"
+                            />
+                        </div>
                     </div>
                 </div>
             </div>

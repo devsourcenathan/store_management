@@ -175,9 +175,9 @@ export function NewSubscriptionModal({ onClose, onSuccess }: NewSubscriptionModa
                         Complete the information below to create a new subscription.
                     </SheetDescription>
                     <div className="flex space-x-2 mt-4">
-                        <div className={`h-1.5 flex-1 rounded-full ${step >= 1 ? 'bg-blue-600 dark:bg-blue-500' : 'bg-gray-200 dark:bg-gray-700'}`} />
-                        <div className={`h-1.5 flex-1 rounded-full ${step >= 2 ? 'bg-blue-600 dark:bg-blue-500' : 'bg-gray-200 dark:bg-gray-700'}`} />
-                        <div className={`h-1.5 flex-1 rounded-full ${step >= 3 ? 'bg-blue-600 dark:bg-blue-500' : 'bg-gray-200 dark:bg-gray-700'}`} />
+                        <div className={`h-1.5 flex-1 rounded-full ${step >= 1 ? 'bg-theme-primary' : 'bg-gray-200 dark:bg-gray-700'}`} />
+                        <div className={`h-1.5 flex-1 rounded-full ${step >= 2 ? 'bg-theme-primary' : 'bg-gray-200 dark:bg-gray-700'}`} />
+                        <div className={`h-1.5 flex-1 rounded-full ${step >= 3 ? 'bg-theme-primary' : 'bg-gray-200 dark:bg-gray-700'}`} />
                     </div>
                 </SheetHeader>
 
@@ -205,7 +205,7 @@ export function NewSubscriptionModal({ onClose, onSuccess }: NewSubscriptionModa
                                 filteredCustomers.map(customer => (
                                     <div
                                         key={customer.id}
-                                        className={`p-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 flex justify-between items-center ${selectedCustomer?.id === customer.id ? 'bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-600 dark:border-blue-500' : ''}`}
+                                        className={`p-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 flex justify-between items-center ${selectedCustomer?.id === customer.id ? 'bg-theme-primary/10 border-l-4 border-theme-primary' : ''}`}
                                         onClick={() => setSelectedCustomer(customer)}
                                     >
                                         <div>
@@ -235,7 +235,7 @@ export function NewSubscriptionModal({ onClose, onSuccess }: NewSubscriptionModa
                             <button
                                 onClick={() => setStep(2)}
                                 disabled={!selectedCustomer}
-                                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 font-medium"
+                                className="px-6 py-2 btn-theme-primary rounded-lg disabled:opacity-50 font-medium"
                             >
                                 Next: Select Offer
                             </button>
@@ -252,7 +252,7 @@ export function NewSubscriptionModal({ onClose, onSuccess }: NewSubscriptionModa
                                 {services?.map(service => (
                                     <div
                                         key={service.id}
-                                        className={`border rounded-lg p-3 cursor-pointer hover:border-blue-400 dark:hover:border-blue-500 transition-all ${selectedServiceId === service.id ? 'ring-2 ring-blue-600 border-transparent bg-blue-50 dark:bg-blue-900/20 dark:ring-blue-500' : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800'}`}
+                                        className={`border rounded-lg p-3 cursor-pointer hover:border-theme-primary/50 transition-all ${selectedServiceId === service.id ? 'ring-2 ring-theme-primary border-transparent bg-theme-primary/10' : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800'}`}
                                         onClick={() => {
                                             setSelectedServiceId(service.id);
                                             setSelectedOfferId('');
@@ -273,7 +273,7 @@ export function NewSubscriptionModal({ onClose, onSuccess }: NewSubscriptionModa
                                         {offers.map(offer => (
                                             <div
                                                 key={offer.id}
-                                                className={`border rounded-lg p-3 cursor-pointer hover:border-blue-400 dark:hover:border-blue-500 flex justify-between items-center transition-all ${selectedOfferId === offer.id ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-600 dark:border-blue-500 ring-1 ring-blue-600 dark:ring-blue-500' : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800'}`}
+                                                className={`border rounded-lg p-3 cursor-pointer hover:border-theme-primary/50 flex justify-between items-center transition-all ${selectedOfferId === offer.id ? 'bg-theme-primary/10 border-theme-primary ring-1 ring-theme-primary' : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800'}`}
                                                 onClick={() => setSelectedOfferId(offer.id)}
                                             >
                                                 <div>
@@ -297,7 +297,7 @@ export function NewSubscriptionModal({ onClose, onSuccess }: NewSubscriptionModa
                                     {options.map(option => (
                                         <div
                                             key={option.id}
-                                            className={`border rounded-lg p-3 cursor-pointer hover:border-blue-400 dark:hover:border-blue-500 text-center transition-all ${selectedOptions.find(o => o.id === option.id) ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-600 dark:border-blue-500 ring-1 ring-blue-600 dark:ring-blue-500' : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800'}`}
+                                            className={`border rounded-lg p-3 cursor-pointer hover:border-theme-primary/50 text-center transition-all ${selectedOptions.find(o => o.id === option.id) ? 'bg-theme-primary/10 border-theme-primary ring-1 ring-theme-primary' : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800'}`}
                                             onClick={() => {
                                                 if (selectedOptions.find(o => o.id === option.id)) {
                                                     setSelectedOptions(selectedOptions.filter(o => o.id !== option.id));
@@ -324,7 +324,7 @@ export function NewSubscriptionModal({ onClose, onSuccess }: NewSubscriptionModa
                             <button
                                 onClick={() => setStep(3)}
                                 disabled={!selectedOfferId}
-                                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 font-medium"
+                                className="flex-1 px-4 py-2 btn-theme-primary rounded-lg disabled:opacity-50 font-medium"
                             >
                                 Next: Payment
                             </button>
@@ -335,10 +335,10 @@ export function NewSubscriptionModal({ onClose, onSuccess }: NewSubscriptionModa
                 {/* Step 3: Payment */}
                 {step === 3 && selectedCustomer && selectedOffer && (
                     <div className="space-y-6">
-                        <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg space-y-3 border border-blue-100 dark:border-blue-800">
+                        <div className="bg-theme-primary/10 p-4 rounded-lg space-y-3 border border-theme-primary/20">
                             <h4 className="font-bold text-blue-900 dark:text-blue-100 border-b border-blue-200 dark:border-blue-700 pb-2 flex justify-between items-center">
                                 <span>Order Summary</span>
-                                <span className="text-xs font-normal text-blue-700 dark:text-blue-300 bg-white dark:bg-blue-900 px-2 py-0.5 rounded-full border border-blue-200 dark:border-blue-700 uppercase tracking-wider">Ready to Pay</span>
+                                <span className="text-xs font-normal text-theme-primary bg-white dark:bg-gray-800 px-2 py-0.5 rounded-full border border-theme-primary/30 uppercase tracking-wider">Ready to Pay</span>
                             </h4>
                             <div className="space-y-1.5">
                                 <div className="flex justify-between text-sm">

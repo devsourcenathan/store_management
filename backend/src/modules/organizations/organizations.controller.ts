@@ -1,7 +1,8 @@
-import { Controller, Get, Patch, Body, UseGuards } from '@nestjs/common';
+import { Controller, Get, Patch, Put, Body, UseGuards } from '@nestjs/common';
 import { OrganizationsService } from './organizations.service';
 import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
 import { CurrentOrganization } from '@/common/decorators/user.decorator';
+import { UpdateOrganizationDto } from './dto/update-organization.dto';
 
 @Controller('organizations')
 @UseGuards(JwtAuthGuard)
@@ -26,10 +27,11 @@ export class OrganizationsController {
         return this.organizationsService.update(organizationId, data);
     }
 
+    @Put('me')
     @Patch('me')
     async updateMe(
         @CurrentOrganization() organizationId: string,
-        @Body() data: any,
+        @Body() data: UpdateOrganizationDto,
     ) {
         return this.organizationsService.update(organizationId, data);
     }

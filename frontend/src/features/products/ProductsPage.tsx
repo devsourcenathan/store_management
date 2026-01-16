@@ -175,7 +175,7 @@ export function ProductsPage() {
 
                     <button
                         onClick={() => { resetForm(); setIsModalOpen(true); }}
-                        className="px-3 sm:px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm sm:text-base touch-target w-full xs:w-auto flex items-center justify-center whitespace-nowrap"
+                        className="px-3 sm:px-4 py-2 btn-theme-primary rounded-lg transition-colors text-sm sm:text-base touch-target w-full xs:w-auto flex items-center justify-center whitespace-nowrap"
                     >
                         <Plus className="w-4 h-4 sm:inline-block mr-0 sm:mr-2" />
                         <span className="hidden xs:inline">{t('products.add_product')}</span>
@@ -222,7 +222,7 @@ export function ProductsPage() {
                                     <div className="flex items-center space-x-2 ml-2">
                                         <button
                                             onClick={() => handleEdit(product)}
-                                            className="p-2 text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
+                                            className="p-2 text-theme-primary hover:bg-theme-primary/10 rounded-lg transition-colors"
                                         >
                                             <Edit className="w-4 h-4" />
                                         </button>
@@ -442,7 +442,7 @@ export function ProductsPage() {
                                     <button
                                         type="submit"
                                         disabled={createProductMutation.isPending || updateProductMutation.isPending}
-                                        className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+                                        className="px-4 py-2 btn-theme-primary rounded-md disabled:opacity-50"
                                     >
                                         {createProductMutation.isPending || updateProductMutation.isPending ? t('common.saving') : (editingProduct ? t('products.edit_product') : t('products.add_new_product'))}
                                     </button>

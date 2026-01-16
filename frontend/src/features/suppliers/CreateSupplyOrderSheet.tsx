@@ -166,7 +166,7 @@ export function CreateSupplyOrderSheet({ isOpen, onClose, initialData, mode = 'c
                                 <button
                                     type="button"
                                     onClick={addItem}
-                                    className="flex items-center text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-bold bg-blue-50 dark:bg-blue-900/20 px-3 py-1.5 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors"
+                                    className="flex items-center text-xs text-theme-primary hover:text-theme-primary font-bold bg-theme-primary/10 px-3 py-1.5 rounded-full hover:bg-theme-primary/20 transition-colors"
                                 >
                                     <Plus className="w-3 h-3 mr-1" />
                                     {t('suppliers.add_item', 'ADD ITEM')}
@@ -248,7 +248,7 @@ export function CreateSupplyOrderSheet({ isOpen, onClose, initialData, mode = 'c
                             <button
                                 type="submit"
                                 disabled={createMutation.isPending}
-                                className="w-full sm:w-auto px-8 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 disabled:opacity-50 transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+                                className="w-full sm:w-auto px-8 py-3 btn-theme-primary font-bold rounded-xl disabled:opacity-50 transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
                             >
                                 {createMutation.isPending ? t('common.processing', 'Processing...') : t('suppliers.create_order', 'Create Order')}
                             </button>

@@ -4,6 +4,7 @@ import { printer } from '@/services/printing';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/services/api';
 import { useStore } from '../stores/StoreProvider';
+import { useThemedButtonStyle, getThemedButtonClasses } from '@/hooks/useThemedButton';
 import {
     Sheet,
     SheetContent,
@@ -38,6 +39,7 @@ export function SalesPage() {
     const { t } = useTranslation();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const { currentStore } = useStore();
+    const themedButtonStyle = useThemedButtonStyle('primary');
     const [newSale, setNewSale] = useState({
         customerId: '',
         items: [] as any[],
@@ -136,7 +138,8 @@ export function SalesPage() {
                 </div>
                 <button
                     onClick={() => setIsModalOpen(true)}
-                    className="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors whitespace-nowrap"
+                    className={getThemedButtonClasses("w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors whitespace-nowrap", !!themedButtonStyle.backgroundColor)}
+                    style={themedButtonStyle}
                 >
                     {t('sales.new_sale')}
                 </button>

@@ -1,6 +1,7 @@
 import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
+import { useOrganization } from "@/contexts/OrganizationContext"
 
 const buttonVariants = cva(
     "inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
@@ -33,11 +34,38 @@ export interface ButtonProps
     VariantProps<typeof buttonVariants> { }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-    ({ className, variant, size, ...props }, ref) => {
+    ({ className, variant, size, style, ...props }, ref) => {
+        const { organization } = useOrganization();
+
+        const hasThemeColor = variant === 'default' && organization?.themeConfig?.primaryColor;
+
+        // Apply theme color for default variant
+        const themedStyle = hasThemeColor && organization?.themeConfig ? {
+            backgroundColor: organization.themeConfig.primaryColor,
+            color: '#ffffff',
+            ...style
+        } : style;
+
+        // Remove bg classes if using theme color to avoid conflicts
+        const buttonClass = hasThemeColor
+            ? cn(buttonVariants({ variant: 'default', size, className })).replace(/bg-\S+/g, '').replace(/text-primary-foreground/g, '')
+            : cn(buttonVariants({ variant, size, className }));
+
         return (
             <button
-                className={cn(buttonVariants({ variant, size, className }))}
+                className={buttonClass}
                 ref={ref}
+                style={themedStyle}
+                onMouseEnter={(e) => {
+                    if (hasThemeColor) {
+                        e.currentTarget.style.filter = 'brightness(0.9)';
+                    }
+                }}
+                onMouseLeave={(e) => {
+                    if (hasThemeColor) {
+                        e.currentTarget.style.filter = 'brightness(1)';
+                    }
+                }}
                 {...props}
             />
         )

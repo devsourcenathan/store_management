@@ -27,6 +27,7 @@ export class OrganizationsService {
                 taxId: data.taxId,
                 logoUrl: data.logoUrl,
                 footer: data.footer,
+                themeConfig: data.themeConfig,
             },
         });
     }

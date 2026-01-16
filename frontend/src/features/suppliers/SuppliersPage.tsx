@@ -101,7 +101,7 @@ export function SuppliersPage() {
                 </div>
                 <button
                     onClick={openNewModal}
-                    className="w-full sm:w-auto flex items-center justify-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors whitespace-nowrap"
+                    className="w-full sm:w-auto flex items-center justify-center space-x-2 px-4 py-2 btn-theme-primary rounded-lg transition-colors whitespace-nowrap"
                 >
                     <Plus className="w-4 h-4" />
                     <span>{t('common.create', 'Create')} {t('suppliers.supplier')}</span>
@@ -185,7 +185,7 @@ export function SuppliersPage() {
                             </div>
                             <div className="flex justify-end space-x-3 mt-6">
                                 <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">{t('common.cancel')}</button>
-                                <button type="submit" disabled={createSupplierMutation.isPending || updateSupplierMutation.isPending} className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                                <button type="submit" disabled={createSupplierMutation.isPending || updateSupplierMutation.isPending} className="px-4 py-2 btn-theme-primary rounded-md">
                                     {createSupplierMutation.isPending || updateSupplierMutation.isPending ? t('common.processing') : t('common.save')}
                                 </button>
                             </div>
