@@ -50,11 +50,11 @@ exit
 
 ```bash
 # Configurer Git (si repository privé)
-git config --global user.name "Your Name"
-git config --global user.email "your.email@example.com"
+git config --global user.name "Nathan Tchinda"
+git config --global user.email "sadenachbinathan@gmail.com"
 
 # Configurer l'accès SSH à GitHub (recommandé)
-ssh-keygen -t ed25519 -C "your.email@example.com"
+ssh-keygen -t ed25519 -C "sadenachbinathan@gmail.com"
 cat ~/.ssh/id_ed25519.pub
 # Ajouter cette clé dans GitHub Settings > SSH Keys
 ```
@@ -67,10 +67,10 @@ mkdir -p ~/apps
 cd ~/apps
 
 # Cloner le repo
-git clone git@github.com:your-username/stock.git
+git clone git@github.com:devsourcenathan/store_management.git
 # ou via HTTPS: git clone https://github.com/your-username/stock.git
 
-cd stock
+cd store_management
 ```
 
 ## 🔐 Configuration des Variables d'Environnement
@@ -78,7 +78,7 @@ cd stock
 ### 1. Créer le fichier .env.production
 
 ```bash
-cd ~/apps/stock
+cd ~/apps/store_management
 cp .env.production.template .env.production
 nano .env.production
 ```
@@ -109,8 +109,8 @@ openssl rand -base64 32
 ### 1. Copier la configuration nginx
 
 ```bash
-sudo cp ~/apps/stock/nginx-server.conf /etc/nginx/sites-available/stock
-sudo ln -s /etc/nginx/sites-available/stock /etc/nginx/sites-enabled/
+sudo cp ~/apps/store_management/nginx-server.conf /etc/nginx/sites-available/store_management
+sudo ln -s /etc/nginx/sites-available/store_management /etc/nginx/sites-enabled/
 ```
 
 ### 2. Désactiver le site par défaut
@@ -144,10 +144,10 @@ sudo systemctl enable nginx
 
 ```bash
 # Pour le frontend
-sudo certbot --nginx -d stock.sekuu.com --non-interactive --agree-tos -m your.email@example.com
+sudo certbot --nginx -d stock.sekuu.com --non-interactive --agree-tos -m sadenachbinathan@gmail.com
 
 # Pour l'API
-sudo certbot --nginx -d stockapi.sekuu.com --non-interactive --agree-tos -m your.email@example.com
+sudo certbot --nginx -d stockapi.sekuu.com --non-interactive --agree-tos -m sadenachbinathan@gmail.com
 ```
 
 ### 2. Recharger nginx
@@ -169,7 +169,7 @@ Les certificats se renouvelleront automatiquement tous les 90 jours.
 ### 1. Rendre le script exécutable
 
 ```bash
-cd ~/apps/stock
+cd ~/apps/store_management
 chmod +x deploy.sh
 ```
 
