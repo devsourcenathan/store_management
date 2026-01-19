@@ -1,16 +1,14 @@
 // backend/src/modules/organization-landing/templates/default.ts
 
 const generateUUID = () => {
-    // Basic UUID generator for template consistency
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-        var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
-        return v.toString(16);
-    });
+  // Basic UUID generator for template consistency
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+    var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
 }
 
 export const defaultLandingTemplate = {
-  title: 'Welcome to Our Page',
-  description: 'Your new, professionally designed landing page. Customize it in the editor!',
   published: true, // Let's make it published by default
   themeConfig: {
     primaryColor: '#3B82F6',
