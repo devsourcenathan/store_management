@@ -1,6 +1,6 @@
 // frontend/src/features/org-landing/editor/TemplateGallery.tsx
 import React from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/Dialog';
 import { Button } from '@/components/ui/button';
 import { pageTemplates, availablePageTemplates } from './page-templates';
 
@@ -10,7 +10,7 @@ interface TemplateGalleryProps {
 }
 
 const formatTemplateName = (name: string) => {
-    return name.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+  return name.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
 };
 
 export const TemplateGallery: React.FC<TemplateGalleryProps> = ({ onSelectTemplate, children }) => {

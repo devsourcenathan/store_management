@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/Dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
@@ -117,7 +117,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ children, onSubmit
                 </CardContent>
               </Card>
             )}
-            
+
             {activeTab === 'history' && (
               <AuditHistory />
             )}
