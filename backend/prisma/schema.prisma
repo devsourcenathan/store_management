@@ -291,6 +291,7 @@ model Sale {
   customerId  String?
   totalAmount Decimal    @db.Decimal(10, 2)
   paidAmount  Decimal    @db.Decimal(10, 2) @default(0)
+  discount    Decimal    @db.Decimal(10, 2) @default(0)
   status      SaleStatus
   notes       String?
   createdBy   String

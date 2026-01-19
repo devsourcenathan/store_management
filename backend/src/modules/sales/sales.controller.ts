@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Query, Param, UseGuards } from '@nestjs/common';
 import { SalesService } from './sales.service';
 import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
 import { StoreAuthGuard } from '@/common/guards/store-auth.guard';
@@ -19,5 +19,11 @@ export class SalesController {
     @UseGuards(StoreAuthGuard)
     async create(@Body() data: any, @CurrentUser() user: any) {
         return this.salesService.create(data, user.id);
+    }
+
+    @Post(':id/payments')
+    @UseGuards(StoreAuthGuard)
+    async addPayment(@Body() data: any, @CurrentUser() user: any, @Param('id') id: string) {
+        return this.salesService.addPayment(id, data, user.id);
     }
 }

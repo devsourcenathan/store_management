@@ -31,6 +31,7 @@ interface CartItem {
     sku: string;
     unitPrice: number;
     quantity: number;
+    discount: number;
 }
 
 export function PosPage() {
@@ -40,8 +41,10 @@ export function PosPage() {
     const [selectedCategory, setSelectedCategory] = useState<string>('all');
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
     const [cart, setCart] = useState<CartItem[]>([]);
+    const [globalDiscount, setGlobalDiscount] = useState<number>(0);
     const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
     const [paymentMethod, setPaymentMethod] = useState<'CASH' | 'CARD' | 'MOBILE'>('CASH');
+    const [paidAmount, setPaidAmount] = useState<number>(0);
     const [selectedCustomerId, setSelectedCustomerId] = useState<string>('');
 
     const { t } = useTranslation();
@@ -105,6 +108,7 @@ export function PosPage() {
 
             // Clear cart immediately
             setCart([]);
+            setGlobalDiscount(0);
 
             // Refresh background data
             queryClient.invalidateQueries({ queryKey: ['stock-levels'] });
@@ -143,7 +147,8 @@ export function PosPage() {
                 name: product.name,
                 sku: product.sku,
                 unitPrice: product.basePrice,
-                quantity: 1
+                quantity: 1,
+                discount: 0
             }];
         });
     };
@@ -158,11 +163,21 @@ export function PosPage() {
         }));
     };
 
+    const updateDiscount = (productId: string, discount: number) => {
+        setCart(prev => prev.map(item => {
+            if (item.productId === productId) {
+                return { ...item, discount: Math.max(0, discount) };
+            }
+            return item;
+        }));
+    };
+
     const removeFromCart = (productId: string) => {
         setCart(prev => prev.filter(item => item.productId !== productId));
     };
 
-    const cartTotal = cart.reduce((acc, item) => acc + (item.quantity * item.unitPrice), 0);
+    const itemsTotal = cart.reduce((acc, item) => acc + (item.quantity * item.unitPrice) - item.discount, 0);
+    const cartTotal = Math.max(0, itemsTotal - globalDiscount);
     const totalItems = cart.reduce((acc, item) => acc + item.quantity, 0);
 
     const handleCheckout = () => {
@@ -172,10 +187,13 @@ export function PosPage() {
             items: cart.map(item => ({
                 productId: item.productId,
                 quantity: item.quantity,
-                unitPrice: item.unitPrice
+                unitPrice: item.unitPrice,
+                discount: item.discount
             })),
             customerId: selectedCustomerId || undefined,
-            paymentMethod,
+            paymentMethod: paidAmount > 0 ? paymentMethod : undefined,
+            paidAmount: paidAmount,
+            discount: globalDiscount,
             notes: `POS Sale - ${paymentMethod}`
         });
     };
@@ -402,6 +420,16 @@ export function PosPage() {
                                 <p className="text-sm text-gray-500 dark:text-gray-400">
                                     {item.unitPrice.toLocaleString()} F x {item.quantity}
                                 </p>
+                                <div className="flex items-center gap-2 mt-1">
+                                    <span className="text-xs text-gray-500">Discount:</span>
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        className="w-16 h-6 text-xs border border-gray-200 dark:border-gray-600 rounded px-1 dark:bg-gray-800 dark:text-gray-200"
+                                        value={item.discount}
+                                        onChange={(e) => updateDiscount(item.productId, parseInt(e.target.value) || 0)}
+                                    />
+                                </div>
                             </div>
                             <div className="flex items-center gap-3">
                                 <div className="flex items-center bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg h-8">
@@ -437,12 +465,29 @@ export function PosPage() {
                 </div>
 
                 <div className="p-4 border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50 space-y-4">
-                    <div className="flex justify-between items-center text-lg font-bold text-gray-900 dark:text-gray-100">
+                    <div className="flex justify-between items-center text-sm">
+                        <span className="text-gray-600 dark:text-gray-400">Subtotal</span>
+                        <span className="text-gray-900 dark:text-gray-100">{itemsTotal.toLocaleString()} FCFA</span>
+                    </div>
+                    <div className="flex justify-between items-center text-sm gap-4">
+                        <span className="text-gray-600 dark:text-gray-400">Global Discount</span>
+                        <input
+                            type="number"
+                            min="0"
+                            className="w-24 border border-gray-300 dark:border-gray-600 rounded px-2 py-1 text-right dark:bg-gray-700 dark:text-white"
+                            value={globalDiscount}
+                            onChange={(e) => setGlobalDiscount(parseInt(e.target.value) || 0)}
+                        />
+                    </div>
+                    <div className="flex justify-between items-center text-lg font-bold text-gray-900 dark:text-gray-100 pt-2 border-t border-gray-200 dark:border-gray-700">
                         <span>{t('pos.total')}</span>
                         <span>{cartTotal.toLocaleString()} FCFA</span>
                     </div>
                     <button
-                        onClick={() => setIsPaymentModalOpen(true)}
+                        onClick={() => {
+                            setPaidAmount(cartTotal);
+                            setIsPaymentModalOpen(true);
+                        }}
                         disabled={cart.length === 0}
                         className="w-full py-3 btn-theme-primary rounded-xl font-semibold shadow-sm disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-[0.98]"
                     >
@@ -455,7 +500,10 @@ export function PosPage() {
             <div className="lg:hidden fixed bottom-0 left-0 right-0 z-20 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 shadow-lg">
                 {cart.length > 0 && (
                     <button
-                        onClick={() => setIsPaymentModalOpen(true)}
+                        onClick={() => {
+                            setPaidAmount(cartTotal);
+                            setIsPaymentModalOpen(true);
+                        }}
                         className="w-full px-4 py-3 flex items-center justify-between touch-target"
                     >
                         <div className="flex items-center space-x-3">
@@ -486,37 +534,65 @@ export function PosPage() {
                         </DialogDescription>
                     </DialogHeader>
 
-                    <div className="grid grid-cols-1 xs:grid-cols-3 gap-3 sm:gap-4 py-4">
-                        <button
-                            onClick={() => setPaymentMethod('CASH')}
-                            className={`flex flex-col items-center justify-center p-3 sm:p-4 border-2 rounded-xl transition-all touch-target ${paymentMethod === 'CASH'
-                                ? 'border-theme-primary bg-theme-primary/10 text-theme-primary'
-                                : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
-                                }`}
-                        >
-                            <Banknote className="w-6 h-6 sm:w-8 sm:h-8 mb-2" />
-                            <span className="text-xs sm:text-sm font-medium">{t('pos.payment.cash')}</span>
-                        </button>
-                        <button
-                            onClick={() => setPaymentMethod('CARD')}
-                            className={`flex flex-col items-center justify-center p-3 sm:p-4 border-2 rounded-xl transition-all touch-target ${paymentMethod === 'CARD'
-                                ? 'border-theme-primary bg-theme-primary/10 text-theme-primary'
-                                : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
-                                }`}
-                        >
-                            <CreditCard className="w-6 h-6 sm:w-8 sm:h-8 mb-2" />
-                            <span className="text-xs sm:text-sm font-medium">{t('pos.payment.card')}</span>
-                        </button>
-                        <button
-                            onClick={() => setPaymentMethod('MOBILE')}
-                            className={`flex flex-col items-center justify-center p-3 sm:p-4 border-2 rounded-xl transition-all touch-target ${paymentMethod === 'MOBILE'
-                                ? 'border-theme-primary bg-theme-primary/10 text-theme-primary'
-                                : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
-                                }`}
-                        >
-                            <Smartphone className="w-6 h-6 sm:w-8 sm:h-8 mb-2" />
-                            <span className="text-xs sm:text-sm font-medium">{t('pos.payment.mobile')}</span>
-                        </button>
+                    <div className="py-4 space-y-4">
+                        <div className="bg-gray-50 dark:bg-gray-900/50 p-4 rounded-xl border border-gray-100 dark:border-gray-700">
+                            <div className="flex justify-between mb-2">
+                                <span className="text-gray-600 dark:text-gray-400">Total Amount</span>
+                                <span className="font-bold text-gray-900 dark:text-gray-100">{cartTotal.toLocaleString()} FCFA</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <span className="text-gray-600 dark:text-gray-400 flex-none w-24">Amount Paid:</span>
+                                <input
+                                    type="number"
+                                    min="0"
+                                    max={cartTotal}
+                                    value={paidAmount}
+                                    onChange={(e) => setPaidAmount(Number(e.target.value))}
+                                    className="flex-1 border border-gray-300 dark:border-gray-600 rounded-lg p-2 dark:bg-gray-700 dark:text-white"
+                                />
+                            </div>
+                            <div className="flex justify-between mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
+                                <span className="text-gray-600 dark:text-gray-400">Balance (Credit)</span>
+                                <span className={`font-bold ${cartTotal - paidAmount > 0 ? 'text-red-500' : 'text-green-500'}`}>
+                                    {(cartTotal - paidAmount).toLocaleString()} FCFA
+                                </span>
+                            </div>
+                        </div>
+
+                        {paidAmount > 0 && (
+                            <div className="grid grid-cols-1 xs:grid-cols-3 gap-3 sm:gap-4">
+                                <button
+                                    onClick={() => setPaymentMethod('CASH')}
+                                    className={`flex flex-col items-center justify-center p-3 sm:p-4 border-2 rounded-xl transition-all touch-target ${paymentMethod === 'CASH'
+                                        ? 'border-theme-primary bg-theme-primary/10 text-theme-primary'
+                                        : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
+                                        }`}
+                                >
+                                    <Banknote className="w-6 h-6 sm:w-8 sm:h-8 mb-2" />
+                                    <span className="text-xs sm:text-sm font-medium">{t('pos.payment.cash')}</span>
+                                </button>
+                                <button
+                                    onClick={() => setPaymentMethod('CARD')}
+                                    className={`flex flex-col items-center justify-center p-3 sm:p-4 border-2 rounded-xl transition-all touch-target ${paymentMethod === 'CARD'
+                                        ? 'border-theme-primary bg-theme-primary/10 text-theme-primary'
+                                        : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
+                                        }`}
+                                >
+                                    <CreditCard className="w-6 h-6 sm:w-8 sm:h-8 mb-2" />
+                                    <span className="text-xs sm:text-sm font-medium">{t('pos.payment.card')}</span>
+                                </button>
+                                <button
+                                    onClick={() => setPaymentMethod('MOBILE')}
+                                    className={`flex flex-col items-center justify-center p-3 sm:p-4 border-2 rounded-xl transition-all touch-target ${paymentMethod === 'MOBILE'
+                                        ? 'border-theme-primary bg-theme-primary/10 text-theme-primary'
+                                        : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
+                                        }`}
+                                >
+                                    <Smartphone className="w-6 h-6 sm:w-8 sm:h-8 mb-2" />
+                                    <span className="text-xs sm:text-sm font-medium">{t('pos.payment.mobile')}</span>
+                                </button>
+                            </div>
+                        )}
                     </div>
 
                     <DialogFooter>
