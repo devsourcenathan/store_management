@@ -93,14 +93,14 @@ export function LoginPage() {
                     </form>
 
                     {/* Demo Credentials */}
-                    <div className="mt-6 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                    {/* <div className="mt-6 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
                         <p className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2">Demo Credentials:</p>
                         <div className="space-y-1 text-xs text-gray-600 dark:text-gray-400">
                             <p>Owner: owner@demo.com / password123</p>
                             <p>Manager: manager@demo.com / password123</p>
                             <p>Staff: staff@demo.com / password123</p>
                         </div>
-                    </div>
+                    </div> */}
 
                     {/* Register Link */}
                     <div className="mt-6 text-center">
