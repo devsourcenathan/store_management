@@ -35,28 +35,40 @@ docker-compose -f docker-compose.prod.yml up -d
 echo "⏳ Waiting for services to start..."
 sleep 10
 
-# Check if containers are running
-echo "✅ Checking container status..."
-docker-compose -f docker-compose.prod.yml ps
+echo ""
+echo "⏳ Vérification de la santé des services..."
 
-# Health check
-echo "🏥 Running health checks..."
-if curl -f http://localhost:3000/health > /dev/null 2>&1; then
-    echo "✅ Backend is healthy"
-else
-    echo "⚠️  Warning: Backend health check failed"
-fi
+# Vérification du backend
+echo "Vérification du backend..."
+for i in {1..10}; do
+    if curl -sf http://localhost:3000/api/health > /dev/null 2>&1; then
+        echo "✅ Backend opérationnel"
+        break
+    fi
+    if [ $i -eq 10 ]; then
+        echo "❌ Le backend ne répond pas au health check"
+        docker-compose -f docker-compose.prod.yml logs --tail=20 backend
+        exit 1
+    fi
+    echo "Attente du backend... ($i/10)"
+    sleep 3
+done
 
-if curl -f http://localhost:8080 > /dev/null 2>&1; then
-    echo "✅ Frontend is healthy"
+# Vérification du frontend
+echo "Vérification du frontend..."
+if curl -sf http://localhost:8080 > /dev/null 2>&1; then
+    echo "✅ Frontend opérationnel"
 else
-    echo "⚠️  Warning: Frontend health check failed"
+    echo "⚠️  Le frontend ne répond pas (peut être normal si nginx n'est pas configuré)"
 fi
 
 echo ""
-echo "✨ Deployment complete!"
-echo "Frontend: https://stock.sekuu.com"
-echo "API: https://stockapi.sekuu.com"
+echo "✅ Déploiement terminé avec succès!"
+echo ""
+echo "🌐 Votre application est accessible à :"
+echo "   Frontend: https://stock.sekuu.com"
+echo "   API:      https://stockapi.sekuu.com/api"
+echo "   Health:   https://stockapi.sekuu.com/api/health"
 echo ""
 echo "To view logs:"
 echo "  docker-compose -f docker-compose.prod.yml logs -f"

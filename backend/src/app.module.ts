@@ -22,6 +22,7 @@ import { LandingModule } from './modules/landing/landing.module';
 import { AdminModule } from './modules/admin/admin.module';
 import { OrganizationLandingModule } from './modules/organization-landing/organization-landing.module';
 import { AnalyticsModule } from './modules/analytics/analytics.module';
+import { HealthController } from './health/health.controller';
 
 @Module({
     imports: [
@@ -60,5 +61,7 @@ import { AnalyticsModule } from './modules/analytics/analytics.module';
         AdminModule,
         OrganizationLandingModule,
     ],
+    controllers: [HealthController],
+    providers: [],
 })
 export class AppModule { }
