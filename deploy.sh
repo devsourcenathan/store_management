@@ -8,13 +8,13 @@ set -e  # Exit on error
 echo "🚀 Starting deployment..."
 
 # Load environment variables
-if [ ! -f .env.production ]; then
-    echo "❌ Error: .env.production file not found"
-    echo "Please create it from .env.production.template"
+if [ ! -f .env ]; then
+    echo "❌ Error: .env file not found"
+    echo "Please create it from .env.template"
     exit 1
 fi
 
-source .env.production
+source .env
 
 # Pull latest code
 echo "📥 Pulling latest code from git..."
