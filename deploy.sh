@@ -38,7 +38,7 @@ sleep 10
 echo ""
 echo "⏳ Vérification de la santé des services..."
 
-# Vérification du backend
+# Vérification du backend test
 echo "Vérification du backend..."
 for i in {1..10}; do
     if curl -sf http://localhost:3000/api/health > /dev/null 2>&1; then
