@@ -11,7 +11,8 @@ export const OrgLandingPage = () => {
     const iframeRef = useRef<HTMLIFrameElement>(null);
 
     useEffect(() => {
-        fetch(`http://localhost:3000/api/org-landing/subdomain/${subdomain}`)
+        const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+        fetch(`${API_BASE_URL}/org-landing/subdomain/${subdomain}`)
             .then(res => res.json())
             .then(data => {
                 setLanding(data);

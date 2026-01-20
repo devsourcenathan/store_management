@@ -8,6 +8,8 @@ import { NoAccessPage } from '@/features/auth/NoAccessPage';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { LanguageSelector } from '@/components/LanguageSelector';
 import { MobileMenu } from '@/components/MobileMenu';
+import { OfflineIndicator } from '@/components/OfflineIndicator';
+import { PWAInstallPrompt } from '@/components/PWAInstallPrompt';
 import { useTranslation } from 'react-i18next';
 import {
     LayoutDashboard,
@@ -44,7 +46,7 @@ export function DashboardLayout() {
         {
             title: 'Overview',
             items: [
-                { name: t('nav.dashboard'), href: '/', icon: LayoutDashboard },
+                { name: t('nav.dashboard'), href: '/dashboard', icon: LayoutDashboard },
             ]
         },
         {
@@ -384,8 +386,8 @@ export function DashboardLayout() {
                                                 key={item.href}
                                                 to={item.href}
                                                 className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${active
-                                                        ? ''
-                                                        : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+                                                    ? ''
+                                                    : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
                                                     }`}
                                                 style={active ? {
                                                     backgroundColor: organization?.themeConfig?.primaryColor
@@ -410,6 +412,12 @@ export function DashboardLayout() {
                     <Outlet />
                 </main>
             </div>
+
+            {/* Offline Indicator */}
+            <OfflineIndicator />
+
+            {/* PWA Install Prompt */}
+            <PWAInstallPrompt />
         </div>
     );
 }

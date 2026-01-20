@@ -1,15 +1,21 @@
 export const printer = {
-    printInvoice: (sale: any, storeName: string = "STORE MANAGEMENT") => {
+    printInvoice: (sale: any, storeName: string = "STORE MANAGEMENT", t: (key: string) => string = (key) => key) => {
         const win = window.open('', '', 'width=800,height=600');
         if (!win) return;
 
         const date = new Date(sale.createdAt).toLocaleDateString();
         const time = new Date(sale.createdAt).toLocaleTimeString();
 
+        // Helper to get translated string with fallback
+        const tr = (key: string, defaultText: string) => {
+            const translated = t(key);
+            return translated === key ? defaultText : translated;
+        };
+
         const html = `
             <html>
             <head>
-                <title>INVOICE #${sale.id.slice(0, 8)}</title>
+                <title>${tr('invoice.title', 'INVOICE')} #${sale.id.slice(0, 8)}</title>
                 <style>
                     body { font-family: 'Courier New', monospace; padding: 20px; max-width: 400px; margin: 0 auto; }
                     .header { text-align: center; margin-bottom: 20px; border-bottom: 1px dashed #000; padding-bottom: 10px; }
@@ -26,9 +32,9 @@ export const printer = {
             <body>
                 <div class="header">
                     <div class="store-name">${storeName}</div>
-                    <div class="meta">Date: ${date} ${time}</div>
-                    <div class="meta">Receipt: #${sale.id.slice(0, 8).toUpperCase()}</div>
-                    ${sale.customer ? `<div class="meta">Customer: ${sale.customer.name}</div>` : ''}
+                    <div class="meta">${tr('invoice.date', 'Date')}: ${date} ${time}</div>
+                    <div class="meta">${tr('invoice.receipt', 'Receipt')}: #${sale.id.slice(0, 8).toUpperCase()}</div>
+                    ${sale.customer ? `<div class="meta">${tr('invoice.customer', 'Customer')}: ${sale.customer.name}</div>` : ''}
                 </div>
 
                 <div class="items">
@@ -41,19 +47,29 @@ export const printer = {
                 </div>
 
                 <div class="totals">
+                    ${(sale.discount || 0) > 0 ? `
+                    <div class="item" style="color: #666;">
+                        <span>${tr('invoice.discount', 'Discount')}</span>
+                        <span>-${Number(sale.discount).toLocaleString()}</span>
+                    </div>` : ''}
                     <div class="total-row">
-                        <span>TOTAL</span>
+                        <span>${tr('invoice.total', 'TOTAL')}</span>
                         <span>${Number(sale.totalAmount).toLocaleString()} FCFA</span>
                     </div>
                     <div class="item" style="margin-top: 5px">
-                        <span>Paid</span>
+                        <span>${tr('invoice.paid', 'Paid')}</span>
                         <span>${Number(sale.paidAmount).toLocaleString()}</span>
                     </div>
+                    ${(sale.totalAmount - sale.paidAmount) > 0 ? `
+                    <div class="total-row" style="margin-top: 5px; border-top: 1px dotted #000; padding-top: 5px;">
+                        <span>${tr('invoice.remaining', 'Remaining')}</span>
+                        <span>${Number(sale.totalAmount - sale.paidAmount).toLocaleString()}</span>
+                    </div>` : ''}
                 </div>
 
                 <div class="footer">
-                    <p>Thank you for your business!</p>
-                    <p>Powered by StockManagement</p>
+                    <p>${tr('invoice.thank_you', 'Thank you for your business!')}</p>
+                    <p>${tr('invoice.powered_by', 'Powered by StockManagement')}</p>
                 </div>
 
                 <script>

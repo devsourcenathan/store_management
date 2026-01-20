@@ -1,4 +1,6 @@
 import axios from 'axios';
+import { saveOffline, deleteOffline, withOfflineFallback, extractEntityFromUrl, getTableForEntity } from '@/offline/offlineOperations';
+import { db } from '@/offline/db';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
@@ -25,25 +27,94 @@ api.interceptors.request.use(
 
 import { toast } from 'sonner';
 
-// ... (API instantiation)
-
-// Response interceptor for error handling
+// Response interceptor for error handling and offline support
 api.interceptors.response.use(
     (response) => response,
-    (error) => {
+    async (error) => {
+        // Handle offline/network errors
+        if (!error.response && (error.code === 'ERR_NETWORK' || !navigator.onLine)) {
+            const config = error.config;
+
+            // Only handle write operations (POST, PATCH, PUT, DELETE)
+            if (['post', 'patch', 'put', 'delete'].includes(config.method?.toLowerCase() || '')) {
+                try {
+                    // Extract entity from URL
+                    const url = config.url || '';
+                    const entity = extractEntityFromUrl(url);
+                    const data = config.data ? JSON.parse(config.data) : {};
+
+                    let savedData: any;
+
+                    // Save offline based on method
+                    if (config.method?.toLowerCase() === 'post') {
+                        savedData = await saveOffline(entity, data, false);
+                        toast.success('Saved offline. Will sync when online.');
+                    } else if (config.method?.toLowerCase() === 'patch' || config.method?.toLowerCase() === 'put') {
+                        savedData = await saveOffline(entity, data, true);
+                        toast.success('Updated offline. Will sync when online.');
+                    } else if (config.method?.toLowerCase() === 'delete') {
+                        const id = url.split('/').pop();
+                        if (id) {
+                            await deleteOffline(entity, id);
+                            savedData = { success: true };
+                            toast.success('Deleted offline. Will sync when online.');
+                        }
+                    }
+
+                    // Return a complete axios response object
+                    return Promise.resolve({
+                        data: savedData,
+                        status: 200,
+                        statusText: 'OK',
+                        headers: {},
+                        config: config,
+                    });
+                } catch (offlineError) {
+                    console.error('Offline save failed:', offlineError);
+                    toast.error('Failed to save offline');
+                    return Promise.reject(offlineError);
+                }
+            } else {
+                // For read operations, try to get from IndexedDB
+                try {
+                    const url = config.url || '';
+                    const entity = extractEntityFromUrl(url);
+                    const table = getTableForEntity(entity);
+
+                    if (table) {
+                        const data = await table.toArray();
+                        toast.info('Showing offline data');
+
+                        // Return a complete axios response object
+                        return Promise.resolve({
+                            data: data,
+                            status: 200,
+                            statusText: 'OK',
+                            headers: {},
+                            config: config,
+                        });
+                    }
+                } catch (readError) {
+                    console.error('Offline read failed:', readError);
+                }
+            }
+
+            toast.error('No internet connection');
+            return Promise.reject(error);
+        }
+
+        // Handle HTTP errors
         if (error.response?.status === 401) {
-            // Clear token and redirect to login
             localStorage.removeItem('access_token');
-            // Check if we are already on login page to avoid loop
             if (!window.location.pathname.includes('/login')) {
                 window.location.href = '/login';
             }
         } else if (error.response?.status === 403) {
-            // Show forbidden error
             toast.error('Access Denied: You do not have permission to perform this action.');
         } else if (error.response?.status >= 500) {
             toast.error('Server Error: Something went wrong. Please try again later.');
         }
+
         return Promise.reject(error);
     }
 );
@@ -81,30 +152,75 @@ export const authApi = {
 
 export const productsApi = {
     getAll: async (organizationId: string) => {
-        const response = await api.get('/products', {
-            params: { organizationId },
-        });
-        return response.data;
+        return withOfflineFallback(
+            async () => {
+                const response = await api.get('/products', {
+                    params: { organizationId },
+                });
+                return response.data;
+            },
+            async () => {
+                // Fallback: get from IndexedDB
+                const products = await db.products
+                    .where('organizationId')
+                    .equals(organizationId)
+                    .toArray();
+                return products;
+            }
+        );
     },
 
     getOne: async (id: string) => {
-        const response = await api.get(`/products/${id}`);
-        return response.data;
+        return withOfflineFallback(
+            async () => {
+                const response = await api.get(`/products/${id}`);
+                return response.data;
+            },
+            async () => {
+                // Fallback: get from IndexedDB
+                return await db.products.get(id);
+            }
+        );
     },
 
     create: async (data: any) => {
-        const response = await api.post('/products', data);
-        return response.data;
+        return withOfflineFallback(
+            async () => {
+                const response = await api.post('/products', data);
+                return response.data;
+            },
+            async () => {
+                // Fallback: save locally and queue for sync
+                return await saveOffline('products', data, false);
+            }
+        );
     },
 
     update: async (id: string, data: any) => {
-        const response = await api.patch(`/products/${id}`, data);
-        return response.data;
+        return withOfflineFallback(
+            async () => {
+                const response = await api.patch(`/products/${id}`, data);
+                return response.data;
+            },
+            async () => {
+                // Fallback: update locally and queue for sync
+                return await saveOffline('products', { ...data, id }, true);
+            }
+        );
     },
 
     delete: async (id: string) => {
-        const response = await api.delete(`/products/${id}`);
-        return response.data;
+        return withOfflineFallback(
+            async () => {
+                const response = await api.delete(`/products/${id}`);
+                return response.data;
+            },
+            async () => {
+                // Fallback: delete locally and queue for sync
+                await deleteOffline('products', id);
+                return { success: true };
+            }
+        );
     },
 };
 
@@ -140,22 +256,59 @@ export const categoriesApi = {
 
 export const stockApi = {
     getMovements: async (storeId: string, productId?: string) => {
-        const response = await api.get('/stock/movements', {
-            params: { storeId, productId },
-        });
-        return response.data;
+        return withOfflineFallback(
+            async () => {
+                const response = await api.get('/stock/movements', {
+                    params: { storeId, productId },
+                });
+                return response.data;
+            },
+            async () => {
+                // Fallback: get from IndexedDB
+                let query = db.stockMovements.where('storeId').equals(storeId);
+                if (productId) {
+                    const movements = await query.toArray();
+                    return movements.filter(m => m.productId === productId);
+                }
+                return await query.toArray();
+            }
+        );
     },
 
     createMovement: async (data: any) => {
-        const response = await api.post('/stock/movements', data);
-        return response.data;
+        return withOfflineFallback(
+            async () => {
+                const response = await api.post('/stock/movements', data);
+                return response.data;
+            },
+            async () => {
+                // Fallback: save locally and queue for sync
+                return await saveOffline('stockMovements', data, false);
+            }
+        );
     },
 
     getCurrentStock: async (storeId: string, productId: string) => {
-        const response = await api.get('/stock/current', {
-            params: { storeId, productId },
-        });
-        return response.data;
+        return withOfflineFallback(
+            async () => {
+                const response = await api.get('/stock/current', {
+                    params: { storeId, productId },
+                });
+                return response.data;
+            },
+            async () => {
+                // Fallback: calculate from local movements
+                const movements = await db.stockMovements
+                    .where('storeId')
+                    .equals(storeId)
+                    .toArray();
+
+                const productMovements = movements.filter(m => m.productId === productId);
+                const quantity = productMovements.reduce((sum, m) => sum + m.quantity, 0);
+
+                return { productId, storeId, quantity };
+            }
+        );
     },
 };
 
@@ -165,20 +318,78 @@ export const stockApi = {
 
 export const salesApi = {
     getAll: async (storeId: string) => {
-        const response = await api.get('/sales', {
-            params: { storeId },
-        });
-        return response.data;
+        return withOfflineFallback(
+            async () => {
+                const response = await api.get('/sales', {
+                    params: { storeId },
+                });
+                return response.data;
+            },
+            async () => {
+                // Fallback: get from IndexedDB
+                const sales = await db.sales
+                    .where('storeId')
+                    .equals(storeId)
+                    .toArray();
+                return sales;
+            }
+        );
     },
 
     create: async (data: any) => {
-        const response = await api.post('/sales', data);
-        return response.data;
+        return withOfflineFallback(
+            async () => {
+                const response = await api.post('/sales', data);
+                return response.data;
+            },
+            async () => {
+                // Fallback: save locally and queue for sync
+                const sale = await saveOffline('sales', data, false);
+
+                // Also create stock movements locally
+                if (data.items && Array.isArray(data.items)) {
+                    for (const item of data.items) {
+                        const stockMovement = {
+                            productId: item.productId,
+                            storeId: data.storeId,
+                            type: 'OUT',
+                            source: 'SALE',
+                            quantity: -item.quantity,
+                            reference: sale.id,
+                            createdBy: data.createdBy,
+                            createdAt: new Date().toISOString(),
+                            clientId: sale.id,
+                        };
+                        await saveOffline('stockMovements', stockMovement, false);
+                    }
+                }
+
+                return sale;
+            }
+        );
     },
 
     addPayment: async (saleId: string, data: any) => {
-        const response = await api.post(`/sales/${saleId}/payments`, data);
-        return response.data;
+        return withOfflineFallback(
+            async () => {
+                const response = await api.post(`/sales/${saleId}/payments`, data);
+                return response.data;
+            },
+            async () => {
+                // Fallback: update sale locally
+                const sale = await db.sales.get(saleId);
+                if (sale) {
+                    sale.paidAmount = (sale.paidAmount || 0) + data.amount;
+                    if (sale.paidAmount >= sale.totalAmount) {
+                        sale.status = 'PAID';
+                    } else if (sale.paidAmount > 0) {
+                        sale.status = 'PARTIAL';
+                    }
+                    await saveOffline('sales', sale, true);
+                }
+                return { success: true };
+            }
+        );
     },
 };
 

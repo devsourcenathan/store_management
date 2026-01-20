@@ -16,7 +16,7 @@ export function SettingsPage() {
         { id: 'organization', label: t('settings.tabs.organization'), icon: Building, component: OrganizationSettings },
         { id: 'stores', label: t('settings.tabs.stores'), icon: StoreIcon, component: StoreList },
         { id: 'team', label: t('settings.tabs.team'), icon: Users, component: UserList },
-        { id: 'landing', label: 'Landing Page', icon: Globe, component: OrgLandingEditor },
+        // { id: 'landing', label: 'Landing Page', icon: Globe, component: OrgLandingEditor },
     ];
 
     return (

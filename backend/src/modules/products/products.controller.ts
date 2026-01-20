@@ -4,7 +4,7 @@ import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
 import { RolesGuard } from '@/common/guards/roles.guard';
 import { StoreAuthGuard } from '@/common/guards/store-auth.guard';
 import { Roles } from '@/common/decorators/roles.decorator';
-import { CurrentOrganization } from '@/common/decorators/user.decorator';
+import { CurrentOrganization, CurrentUser } from '@/common/decorators/user.decorator';
 import { UserRole } from '@prisma/client';
 
 @Controller('products')
@@ -34,8 +34,9 @@ export class ProductsController {
     async create(
         @Body() data: any,
         @CurrentOrganization() organizationId: string,
+        @CurrentUser() user: any,
     ) {
-        return this.productsService.create(data, organizationId);
+        return this.productsService.create(data, organizationId, user.id);
     }
 
     @Patch(':id')

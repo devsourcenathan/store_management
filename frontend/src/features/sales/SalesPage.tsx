@@ -224,7 +224,7 @@ export function SalesPage() {
                                     </div>
                                     <div className="flex items-end justify-end space-x-2">
                                         <button
-                                            onClick={() => printer.printInvoice(sale, currentStore?.name)}
+                                            onClick={() => printer.printInvoice(sale, currentStore?.name, t)}
                                             className="px-3 py-1.5 text-xs bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors"
                                         >
                                             Print
@@ -277,7 +277,7 @@ export function SalesPage() {
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                             <button
-                                                onClick={() => printer.printInvoice(sale, currentStore?.name)}
+                                                onClick={() => printer.printInvoice(sale, currentStore?.name, t)}
                                                 className="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 mr-3"
                                             >
                                                 {t('suppliers.print_order', 'Print')}
