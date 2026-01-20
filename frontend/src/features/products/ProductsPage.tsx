@@ -5,6 +5,13 @@ import { Package, Image as ImageIcon, Edit, Trash2, Plus } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { MediaSelector } from '@/features/media/components/MediaSelector';
 import { mediaService, Media } from '@/services/mediaService';
+import {
+    Sheet,
+    SheetContent,
+    SheetDescription,
+    SheetHeader,
+    SheetTitle,
+} from "@/components/ui/sheet";
 
 interface Product {
     id: string;
@@ -12,6 +19,7 @@ interface Product {
     sku: string;
     description?: string;
     basePrice: number;
+    costPrice: number;
     minStock: number;
     isActive: boolean;
     categoryId?: string;
@@ -30,7 +38,7 @@ interface Product {
 export function ProductsPage() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingProduct, setEditingProduct] = useState<Product | null>(null);
-    const [formData, setFormData] = useState({ name: '', sku: '', basePrice: 0, minStock: 10, categoryId: '' });
+    const [formData, setFormData] = useState({ name: '', sku: '', basePrice: 0, costPrice: 0, minStock: 10, initialStock: 0, categoryId: '' });
     const [selectedStoreId, setSelectedStoreId] = useState<string>('');
     const [selectedMedia, setSelectedMedia] = useState<Media[]>([]);
     const queryClient = useQueryClient();
@@ -122,7 +130,7 @@ export function ProductsPage() {
     });
 
     const resetForm = () => {
-        setFormData({ name: '', sku: '', basePrice: 0, minStock: 10, categoryId: '' });
+        setFormData({ name: '', sku: '', basePrice: 0, costPrice: 0, minStock: 10, initialStock: 0, categoryId: '' });
         setSelectedMedia([]);
         setEditingProduct(null);
     };
@@ -133,7 +141,9 @@ export function ProductsPage() {
             name: product.name,
             sku: product.sku,
             basePrice: Number(product.basePrice),
+            costPrice: Number(product.costPrice || 0),
             minStock: product.minStock || 10,
+            initialStock: 0,
             categoryId: product.categoryId || product.category?.id || '',
         });
         setSelectedMedia(product.media || []);
@@ -149,7 +159,7 @@ export function ProductsPage() {
         if (editingProduct) {
             updateProductMutation.mutate({ id: editingProduct.id, data: formData });
         } else {
-            createProductMutation.mutate(formData);
+            createProductMutation.mutate({ ...formData, storeId: selectedStoreId });
         }
     };
 
@@ -343,40 +353,38 @@ export function ProductsPage() {
                 </div>
             </div>
 
-            {/* Add/Edit Product Modal */}
-            {
-                isModalOpen && (
-                    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 dark:bg-gray-900 dark:bg-opacity-80 flex items-center justify-center z-50 transition-opacity">
-                        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-4 sm:p-6 w-[95vw] max-w-md sm:max-w-lg transition-colors border border-gray-200 dark:border-gray-700">
-                            <div className="flex justify-between items-center mb-4">
-                                <h3 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-gray-100">{editingProduct ? t('products.edit_product') : t('products.add_product')}</h3>
-                                <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
-                                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                    </svg>
-                                </button>
+            {/* Add/Edit Product Sheet */}
+            <Sheet open={isModalOpen} onOpenChange={setIsModalOpen}>
+                <SheetContent className="overflow-y-auto w-[400px] sm:w-[540px]">
+                    <SheetHeader>
+                        <SheetTitle>{editingProduct ? t('products.edit_product') : t('products.add_product')}</SheetTitle>
+                        <SheetDescription>
+                            {editingProduct ? t('products.edit_description', 'Edit product details below.') : t('products.add_description', 'Add a new product to your inventory.')}
+                        </SheetDescription>
+                    </SheetHeader>
+                    <div className="mt-6">
+                        <form onSubmit={handleSubmit} className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('products.fields.name')}</label>
+                                <input
+                                    type="text"
+                                    required
+                                    className="mt-1 block w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500"
+                                    value={formData.name}
+                                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                />
                             </div>
-                            <form onSubmit={handleSubmit} className="space-y-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('products.fields.name')}</label>
-                                    <input
-                                        type="text"
-                                        required
-                                        className="mt-1 block w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500"
-                                        value={formData.name}
-                                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('products.fields.sku')}</label>
-                                    <input
-                                        type="text"
-                                        required
-                                        className="mt-1 block w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500"
-                                        value={formData.sku}
-                                        onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
-                                    />
-                                </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('products.fields.sku')}</label>
+                                <input
+                                    type="text"
+                                    required
+                                    className="mt-1 block w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500"
+                                    value={formData.sku}
+                                    onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
+                                />
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('products.fields.base_price')}</label>
                                     <input
@@ -388,70 +396,88 @@ export function ProductsPage() {
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('products.fields.min_stock')}</label>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('products.fields.cost_price')}</label>
                                     <input
                                         type="number"
-                                        required
+                                        className="mt-1 block w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500"
+                                        value={formData.costPrice}
+                                        onChange={(e) => setFormData({ ...formData, costPrice: parseFloat(e.target.value) })}
+                                    />
+                                </div>
+                            </div>
+                            {!editingProduct && (
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('products.fields.initial_stock')}</label>
+                                    <input
+                                        type="number"
                                         min="0"
                                         className="mt-1 block w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500"
-                                        value={formData.minStock}
-                                        onChange={(e) => setFormData({ ...formData, minStock: parseInt(e.target.value) })}
+                                        value={formData.initialStock}
+                                        onChange={(e) => setFormData({ ...formData, initialStock: parseFloat(e.target.value) })}
                                     />
                                 </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('products.fields.category')}</label>
-                                    <select
-                                        className="mt-1 block w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500"
-                                        value={formData.categoryId}
-                                        onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
-                                    >
-                                        <option value="">{t('products.fields.select_category')}</option>
-                                        {categories?.map(cat => (
-                                            <option key={cat.id} value={cat.id}>{cat.name}</option>
-                                        ))}
-                                    </select>
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Image</label>
-                                    <MediaSelector
-                                        entityType="PRODUCT"
-                                        entityId={editingProduct?.id || ''}
-                                        selectedMedia={selectedMedia}
-                                        onSelect={async (media) => {
-                                            if (editingProduct) {
-                                                await mediaService.linkToEntity(media.id, 'PRODUCT', editingProduct.id);
-                                                queryClient.invalidateQueries({ queryKey: ['products'] });
-                                                // Refresh local state if needed, or query invalidation handles it via re-render of list, 
-                                                // but for modal we might want to update selectedMedia
-                                                setSelectedMedia(prev => [...prev, media]);
-                                            } else {
-                                                // Creation mode: just add to local state
-                                                setSelectedMedia(prev => [...prev, media]);
-                                            }
-                                        }}
-                                    />
-                                </div>
-                                <div className="flex justify-end space-x-3 mt-6">
-                                    <button
-                                        type="button"
-                                        onClick={() => setIsModalOpen(false)}
-                                        className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
-                                    >
-                                        {t('common.cancel')}
-                                    </button>
-                                    <button
-                                        type="submit"
-                                        disabled={createProductMutation.isPending || updateProductMutation.isPending}
-                                        className="px-4 py-2 btn-theme-primary rounded-md disabled:opacity-50"
-                                    >
-                                        {createProductMutation.isPending || updateProductMutation.isPending ? t('common.saving') : (editingProduct ? t('products.edit_product') : t('products.add_new_product'))}
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
+                            )}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('products.fields.min_stock')}</label>
+                                <input
+                                    type="number"
+                                    required
+                                    min="0"
+                                    className="mt-1 block w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500"
+                                    value={formData.minStock}
+                                    onChange={(e) => setFormData({ ...formData, minStock: parseInt(e.target.value) })}
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('products.fields.category')}</label>
+                                <select
+                                    className="mt-1 block w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500"
+                                    value={formData.categoryId}
+                                    onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
+                                >
+                                    <option value="">{t('products.fields.select_category')}</option>
+                                    {categories?.map(cat => (
+                                        <option key={cat.id} value={cat.id}>{cat.name}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Image</label>
+                                <MediaSelector
+                                    entityType="PRODUCT"
+                                    entityId={editingProduct?.id || ''}
+                                    selectedMedia={selectedMedia}
+                                    onSelect={async (media) => {
+                                        if (editingProduct) {
+                                            await mediaService.linkToEntity(media.id, 'PRODUCT', editingProduct.id);
+                                            queryClient.invalidateQueries({ queryKey: ['products'] });
+                                            setSelectedMedia(prev => [...prev, media]);
+                                        } else {
+                                            setSelectedMedia(prev => [...prev, media]);
+                                        }
+                                    }}
+                                />
+                            </div>
+                            <div className="flex justify-end space-x-3 mt-6 pt-4 border-t dark:border-gray-700">
+                                <button
+                                    type="button"
+                                    onClick={() => setIsModalOpen(false)}
+                                    className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                                >
+                                    {t('common.cancel')}
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={createProductMutation.isPending || updateProductMutation.isPending}
+                                    className="px-4 py-2 btn-theme-primary rounded-md disabled:opacity-50"
+                                >
+                                    {createProductMutation.isPending || updateProductMutation.isPending ? t('common.saving') : (editingProduct ? t('products.edit_product') : t('products.add_new_product'))}
+                                </button>
+                            </div>
+                        </form>
                     </div>
-                )
-            }
+                </SheetContent>
+            </Sheet>
         </div >
     );
 }

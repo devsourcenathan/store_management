@@ -56,15 +56,35 @@ export class ProductsService {
         return { ...product, media };
     }
 
-    async create(data: any, organizationId: string) {
-        return this.prisma.product.create({
-            data: {
-                ...data,
-                organizationId,
-            },
-            include: {
-                category: true,
-            },
+    async create(data: any, organizationId: string, userId: string) {
+        const { initialStock, storeId, ...productData } = data;
+
+        return this.prisma.$transaction(async (tx) => {
+            const product = await tx.product.create({
+                data: {
+                    ...productData,
+                    organizationId,
+                },
+                include: {
+                    category: true,
+                },
+            });
+
+            if (initialStock && initialStock > 0 && storeId) {
+                await tx.stockMovement.create({
+                    data: {
+                        productId: product.id,
+                        storeId: storeId,
+                        type: 'IN', // Using string directly or import enum. Let's rely on string if enum import is tricky, but preferably import.
+                        source: 'MANUAL',
+                        quantity: Number(initialStock),
+                        notes: 'Initial Stock',
+                        createdBy: userId,
+                    },
+                });
+            }
+
+            return product;
         });
     }
 

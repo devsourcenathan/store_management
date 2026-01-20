@@ -402,7 +402,7 @@ export function NewSubscriptionModal({ onClose, onSuccess }: NewSubscriptionModa
                                     </div>
                                 )}
 
-                                <div className="space-y-1.5 pt-2">
+                                {/* <div className="space-y-1.5 pt-2">
                                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Cash Payment</label>
                                     <div className="relative">
                                         <input
@@ -414,7 +414,7 @@ export function NewSubscriptionModal({ onClose, onSuccess }: NewSubscriptionModa
                                         />
                                         <span className="absolute right-4 top-4 text-sm text-gray-400 font-bold uppercase">FCFA</span>
                                     </div>
-                                </div>
+                                </div> */}
 
                                 {(balanceAmount + cashAmount) !== priceCalculation.totalPrice && (
                                     <div className="flex items-center text-orange-700 text-xs bg-orange-50 p-3 rounded-lg border border-orange-100 italic animate-pulse">

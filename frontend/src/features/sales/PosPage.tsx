@@ -220,20 +220,20 @@ export function PosPage() {
                 });
 
                 // 3. Print with the updated sale data
-                printer.printInvoice(updatedSaleRes.data, currentStore?.name);
+                printer.printInvoice(updatedSaleRes.data, currentStore?.name, t);
 
                 // Update local state to reflect the change (prevents asking again if they print again)
                 setLastSale(updatedSaleRes.data);
             } catch (error) {
                 console.error("Error assigning customer:", error);
                 toast.error("Failed to assign customer. Printing without name.");
-                printer.printInvoice(lastSale, currentStore?.name);
+                printer.printInvoice(lastSale, currentStore?.name, t);
             } finally {
                 setIsProcessingPrint(false);
             }
         } else {
             // Standard print
-            printer.printInvoice(lastSale, currentStore?.name);
+            printer.printInvoice(lastSale, currentStore?.name, t);
         }
     };
 

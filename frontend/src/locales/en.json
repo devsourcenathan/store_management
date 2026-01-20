@@ -212,7 +212,9 @@
             "stock": "Stock",
             "category": "Category",
             "select_category": "Select Category",
-            "actions": "Actions"
+            "actions": "Actions",
+            "cost_price": "Cost Price",
+            "initial_stock": "Initial Stock"
         },
         "product_name": "Product Name",
         "sku": "SKU",
@@ -451,5 +453,42 @@
             "OFFER": "Offer",
             "USER": "User"
         }
+    },
+    "offline": {
+        "indicator": {
+            "offline": "Offline Mode",
+            "syncing": "Syncing...",
+            "pending": "{{count}} pending operation(s)"
+        },
+        "sync": {
+            "syncing": "Synchronizing data...",
+            "offline": "Offline - Changes saved locally",
+            "pending": "{{count}} pending change(s)",
+            "upToDate": "All changes synced",
+            "lastSync": "Last sync:",
+            "syncNow": "Sync Now"
+        },
+        "pwa": {
+            "installTitle": "Install Stock App",
+            "installDescription": "Install this app on your device for quick access and offline functionality.",
+            "install": "Install",
+            "later": "Later"
+        }
+    },
+    "invoice": {
+        "title": "INVOICE",
+        "date": "Date",
+        "receipt": "Receipt",
+        "customer": "Customer",
+        "item": "Item",
+        "price": "Price",
+        "qty": "Qty",
+        "total": "Total",
+        "subtotal": "Subtotal",
+        "discount": "Discount",
+        "paid": "Paid",
+        "remaining": "Remaining",
+        "thank_you": "Thank you for your business!",
+        "powered_by": "Powered by StockManagement"
     }
 }

@@ -15,6 +15,7 @@ interface Customer {
 
 export function CustomersPage() {
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
     const [formData, setFormData] = useState({ name: '', email: '', phone: '', creditLimit: 0 });
     const { t } = useTranslation();
     const queryClient = useQueryClient();
@@ -38,9 +39,51 @@ export function CustomersPage() {
         },
     });
 
+    const updateCustomerMutation = useMutation({
+        mutationFn: async ({ id, data }: { id: string; data: any }) => {
+            return api.patch(`/customers/${id}`, data);
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['customers'] });
+            setIsModalOpen(false);
+            setFormData({ name: '', email: '', phone: '', creditLimit: 0 });
+            setEditingCustomer(null);
+        },
+    });
+
+    const deleteCustomerMutation = useMutation({
+        mutationFn: async (id: string) => {
+            if (!confirm(t('common.confirm_delete', 'Are you sure you want to delete this customer?'))) throw new Error('Cancelled');
+            return api.delete(`/customers/${id}`);
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['customers'] });
+        },
+    });
+
+    const handleEdit = (customer: Customer) => {
+        setEditingCustomer(customer);
+        setFormData({
+            name: customer.name,
+            email: customer.email || '',
+            phone: customer.phone || '',
+            creditLimit: customer.creditLimit || 0,
+        });
+        setIsModalOpen(true);
+    };
+
+    const handleDelete = (id: string, e: React.MouseEvent) => {
+        e.stopPropagation();
+        deleteCustomerMutation.mutate(id);
+    };
+
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        createCustomerMutation.mutate(formData);
+        if (editingCustomer) {
+            updateCustomerMutation.mutate({ id: editingCustomer.id, data: formData });
+        } else {
+            createCustomerMutation.mutate(formData);
+        }
     };
 
     const [searchQuery, setSearchQuery] = useState('');
@@ -149,16 +192,15 @@ export function CustomersPage() {
                                                 onClick={(e) => {
                                                     e.stopPropagation();
                                                     // Handle Edit
+                                                    e.stopPropagation();
+                                                    handleEdit(customer);
                                                 }}
                                             >
                                                 {t('common.edit')}
                                             </button>
                                             <button
                                                 className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 z-10 relative"
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    // Handle Delete
-                                                }}
+                                                onClick={(e) => handleDelete(customer.id, e)}
                                             >
                                                 {t('common.delete')}
                                             </button>
@@ -181,7 +223,7 @@ export function CustomersPage() {
             {isModalOpen && (
                 <div className="fixed inset-0 bg-gray-600 bg-opacity-50 dark:bg-black/80 flex items-center justify-center z-50">
                     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md border border-gray-200 dark:border-gray-700">
-                        <h3 className="text-xl font-bold mb-4 text-gray-900 dark:text-gray-100">{t('customers.add_customer')}</h3>
+                        <h3 className="text-xl font-bold mb-4 text-gray-900 dark:text-gray-100">{editingCustomer ? t('customers.edit_customer', 'Edit Customer') : t('customers.add_customer')}</h3>
                         <form onSubmit={handleSubmit} className="space-y-4">
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('common.name')}</label>
@@ -204,9 +246,9 @@ export function CustomersPage() {
                                     value={formData.creditLimit} onChange={(e) => setFormData({ ...formData, creditLimit: parseFloat(e.target.value) })} />
                             </div>
                             <div className="flex justify-end space-x-3 mt-6">
-                                <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">{t('common.cancel')}</button>
-                                <button type="submit" disabled={createCustomerMutation.isPending} className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
-                                    {createCustomerMutation.isPending ? t('common.processing') : t('customers.add_customer')}
+                                <button type="button" onClick={() => { setIsModalOpen(false); setEditingCustomer(null); setFormData({ name: '', email: '', phone: '', creditLimit: 0 }); }} className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">{t('common.cancel')}</button>
+                                <button type="submit" disabled={createCustomerMutation.isPending || updateCustomerMutation.isPending} className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                                    {createCustomerMutation.isPending || updateCustomerMutation.isPending ? t('common.processing') : (editingCustomer ? t('common.save') : t('customers.add_customer'))}
                                 </button>
                             </div>
                         </form>

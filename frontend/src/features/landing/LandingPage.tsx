@@ -15,8 +15,9 @@ export const LandingPage = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
+        const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
         // Fetch content from backend
-        fetch('http://localhost:3000/api/landing/content') // Adjust API URL as needed
+        fetch(`${API_BASE_URL}/landing/content`) // Adjust API URL as needed
             .then(res => res.json())
             .then(data => setContent(data))
             .catch(err => console.error('Failed to fetch landing content', err));

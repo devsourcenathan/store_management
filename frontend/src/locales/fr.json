@@ -212,7 +212,9 @@
             "stock": "Stock",
             "category": "Catégorie",
             "select_category": "Sélectionner Catégorie",
-            "actions": "Actions"
+            "actions": "Actions",
+            "cost_price": "Prix d'Achat",
+            "initial_stock": "Stock Initial"
         },
         "product_name": "Nom du Produit",
         "sku": "SKU",
@@ -451,5 +453,42 @@
             "OFFER": "Offre",
             "USER": "Utilisateur"
         }
+    },
+    "offline": {
+        "indicator": {
+            "offline": "Mode Hors Ligne",
+            "syncing": "Synchronisation...",
+            "pending": "{{count}} opération(s) en attente"
+        },
+        "sync": {
+            "syncing": "Synchronisation des données...",
+            "offline": "Hors ligne - Modifications sauvegardées localement",
+            "pending": "{{count}} modification(s) en attente",
+            "upToDate": "Toutes les modifications synchronisées",
+            "lastSync": "Dernière synchro :",
+            "syncNow": "Synchroniser"
+        },
+        "pwa": {
+            "installTitle": "Installer l'Application",
+            "installDescription": "Installez cette application sur votre appareil pour un accès rapide et un fonctionnement hors ligne.",
+            "install": "Installer",
+            "later": "Plus tard"
+        }
+    },
+    "invoice": {
+        "title": "FACTURE",
+        "date": "Date",
+        "receipt": "Reçu",
+        "customer": "Client",
+        "item": "Article",
+        "price": "Prix",
+        "qty": "Qté",
+        "total": "Total",
+        "subtotal": "Sous-total",
+        "discount": "Remise",
+        "paid": "Payé",
+        "remaining": "Reste à payer",
+        "thank_you": "Merci de votre confiance !",
+        "powered_by": "Propulsé par StockManagement"
     }
 }
