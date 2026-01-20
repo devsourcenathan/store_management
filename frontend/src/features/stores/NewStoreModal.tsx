@@ -10,7 +10,7 @@ import {
     SheetHeader,
     SheetTitle,
     SheetDescription,
-} from "@/components/ui/sheet";
+} from "@/components/ui/sheet.tsx";
 
 interface NewStoreModalProps {
     onClose: () => void;

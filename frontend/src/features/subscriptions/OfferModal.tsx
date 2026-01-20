@@ -30,7 +30,7 @@ import {
     SheetContent,
     SheetHeader,
     SheetTitle,
-} from '@/components/ui/sheet';
+} from '@/components/ui/sheet.tsx';
 
 export function OfferSheet({ serviceId, offer, onClose, onSuccess }: OfferModalProps) {
     const [name, setName] = useState(offer?.name || '');

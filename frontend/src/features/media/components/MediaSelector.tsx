@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { MediaGrid } from './MediaGrid';
 import { Button } from '@/components/ui/button';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet.tsx';
 import { Image as ImageIcon, Upload, Grid } from 'lucide-react';
 import { mediaService, Media } from '@/services/mediaService';
 import { MediaUpload } from './MediaUpload';
