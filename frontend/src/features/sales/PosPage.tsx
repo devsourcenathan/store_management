@@ -198,8 +198,41 @@ export function PosPage() {
         });
     };
 
-    const handlePrintInvoice = () => {
-        if (lastSale) {
+    const [customerNameForPrint, setCustomerNameForPrint] = useState('');
+    const [isProcessingPrint, setIsProcessingPrint] = useState(false);
+
+    const handlePrintInvoice = async () => {
+        if (!lastSale) return;
+
+        // If no customer is attached but a name is provided, create/assign customer first
+        if (!lastSale.customerId && customerNameForPrint.trim()) {
+            setIsProcessingPrint(true);
+            try {
+                // 1. Create the customer
+                const customerRes = await api.post('/customers', {
+                    name: customerNameForPrint
+                });
+                const newCustomer = customerRes.data;
+
+                // 2. Update the sale with the new customer
+                const updatedSaleRes = await api.patch(`/sales/${lastSale.id}`, {
+                    customerId: newCustomer.id
+                });
+
+                // 3. Print with the updated sale data
+                printer.printInvoice(updatedSaleRes.data, currentStore?.name);
+
+                // Update local state to reflect the change (prevents asking again if they print again)
+                setLastSale(updatedSaleRes.data);
+            } catch (error) {
+                console.error("Error assigning customer:", error);
+                toast.error("Failed to assign customer. Printing without name.");
+                printer.printInvoice(lastSale, currentStore?.name);
+            } finally {
+                setIsProcessingPrint(false);
+            }
+        } else {
+            // Standard print
             printer.printInvoice(lastSale, currentStore?.name);
         }
     };
@@ -207,6 +240,7 @@ export function PosPage() {
     const handleCloseSuccess = () => {
         setShowSuccessModal(false);
         setLastSale(null);
+        setCustomerNameForPrint('');
     };
 
     const getStockLevel = (productId: string) => {
@@ -628,12 +662,33 @@ export function PosPage() {
                         </DialogDescription>
                     </DialogHeader>
                     <div className="flex flex-col space-y-3 py-4">
+                        {!lastSale?.customer && (
+                            <div className="mb-2">
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                    Customer Name (for Invoice)
+                                </label>
+                                <input
+                                    type="text"
+                                    placeholder="Enter customer name (optional)"
+                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500"
+                                    value={customerNameForPrint}
+                                    onChange={(e) => setCustomerNameForPrint(e.target.value)}
+                                />
+                            </div>
+                        )}
                         <button
                             onClick={handlePrintInvoice}
-                            className="w-full flex items-center justify-center px-4 py-3 btn-theme-primary rounded-lg font-medium"
+                            disabled={isProcessingPrint}
+                            className="w-full flex items-center justify-center px-4 py-3 btn-theme-primary rounded-lg font-medium disabled:opacity-70"
                         >
-                            <Printer className="w-5 h-5 mr-2" />
-                            {t('pos.success.print')}
+                            {isProcessingPrint ? (
+                                <span className="animate-pulse">Processing...</span>
+                            ) : (
+                                <>
+                                    <Printer className="w-5 h-5 mr-2" />
+                                    {t('pos.success.print')}
+                                </>
+                            )}
                         </button>
                         <button
                             onClick={handleCloseSuccess}

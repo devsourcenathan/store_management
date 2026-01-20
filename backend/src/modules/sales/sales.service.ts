@@ -102,7 +102,17 @@ export class SalesService {
                 });
             }
 
-            return sale;
+            // 5. Return full sale object for receipt
+            return tx.sale.findUnique({
+                where: { id: sale.id },
+                include: {
+                    customer: true,
+                    items: {
+                        include: { product: true },
+                    },
+                    payments: true,
+                },
+            });
         });
 
         // 4. Trigger Stock Alerts (After transaction commit)
@@ -154,6 +164,20 @@ export class SalesService {
                     status: newStatus as any,
                 },
             });
+        });
+    }
+
+    async update(saleId: string, data: any) {
+        return this.prisma.sale.update({
+            where: { id: saleId },
+            data,
+            include: {
+                customer: true,
+                items: {
+                    include: { product: true },
+                },
+                payments: true,
+            },
         });
     }
 }

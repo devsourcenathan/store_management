@@ -32,9 +32,9 @@ export const printer = {
                 </div>
 
                 <div class="items">
-                    ${sale.items.map((item: any) => `
+                    ${(sale.items || []).map((item: any) => `
                         <div class="item">
-                            <span>${item.product.name} x${item.quantity}</span>
+                            <span>${item.product?.name || item.name || 'Unknown Item'} x${item.quantity}</span>
                             <span>${Number(item.total).toLocaleString()}</span>
                         </div>
                     `).join('')}

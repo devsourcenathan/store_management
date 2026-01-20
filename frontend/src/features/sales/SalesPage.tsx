@@ -23,35 +23,7 @@ interface Sale {
     customer?: { name: string };
     items: any[];
 }
-// ... (existing code)
-{
-    selectedSale.items.map((item: any, idx: number) => (
-        <div key={idx} className="flex justify-between items-center border-b border-gray-200 dark:border-gray-700 last:border-0 pb-3 last:pb-0">
-            <div>
-                <p className="font-medium text-gray-900 dark:text-gray-100">{item.product?.name || item.name || 'Unknown Product'}</p>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                    {item.quantity} x {item.unitPrice} F
-                    {item.discount > 0 && <span className="text-red-500 ml-2">(-{item.discount} F)</span>}
-                </p>
-            </div>
-            <p className="font-medium text-gray-900 dark:text-gray-100">
-                {(item.quantity * item.unitPrice) - (item.discount || 0)} F
-            </p>
-        </div>
-    ))
-}
-{
-    (selectedSale.discount || 0) > 0 && (
-        <div className="flex justify-between items-center pt-3 text-sm text-red-600 dark:text-red-400">
-            <span>Global Discount</span>
-            <span>-{selectedSale.discount} F</span>
-        </div>
-    )
-}
-<div className={`flex justify-between items-center pt-3 ${!(selectedSale.discount || 0) ? 'border-t border-gray-200 dark:border-gray-700' : ''} font-bold`}>
-    <span>Total</span>
-    <span>{selectedSale.totalAmount} F</span>
-</div>
+
 
 interface Product {
     id: string;
@@ -202,13 +174,13 @@ export function SalesPage() {
                     <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100">{t('sales.title')}</h2>
                     <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">{t('sales.subtitle')}</p>
                 </div>
-                <button
+                {/* <button
                     onClick={() => setIsModalOpen(true)}
                     className={getThemedButtonClasses("w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors whitespace-nowrap", !!themedButtonStyle.backgroundColor)}
                     style={themedButtonStyle}
                 >
                     {t('sales.new_sale')}
-                </button>
+                </button> */}
             </div>
 
             {/* Sales Display - Cards on Mobile, Table on Desktop */}
