@@ -49,7 +49,8 @@ export function AppRouter() {
                 <Route path="organizations" element={<OrgList />} />
             </Route>
 
-            <Route path="/" element={<LandingPage />} />
+            {/* <Route path="/" element={<LandingPage />} /> */}
+            <Route path="/" element={<Navigate to="/login" replace />} />
             <Route path="/register-org" element={<RegisterOrgPage />} />
             <Route path="/org/:subdomain" element={<OrgLandingPage />} />
             <Route path="/login" element={<LoginPage />} />
