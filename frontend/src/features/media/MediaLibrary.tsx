@@ -5,7 +5,7 @@ import { MediaGrid } from './components/MediaGrid';
 import { MediaUpload } from './components/MediaUpload';
 import { MediaFilters } from './components/MediaFilters';
 import { Button } from '@/components/ui/button';
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet.tsx';
 import { Upload, Image as ImageIcon } from 'lucide-react';
 import { mediaService } from '@/services/mediaService';
 

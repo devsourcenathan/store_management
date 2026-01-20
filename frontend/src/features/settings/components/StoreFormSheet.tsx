@@ -11,7 +11,7 @@ import {
     SheetDescription,
     SheetHeader,
     SheetTitle,
-} from '@/components/ui/sheet';
+} from '@/components/ui/sheet.tsx';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
