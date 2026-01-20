@@ -16,6 +16,8 @@ RUN npm ci
 # Copy source code
 COPY . .
 
+RUN ls -R src/components/ui
+
 # Build the application
 RUN npm run build
 
