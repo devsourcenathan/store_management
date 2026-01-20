@@ -11,7 +11,7 @@ import {
     SheetHeader,
     SheetTitle,
     SheetDescription,
-} from "@/components/ui/Sheet";
+} from "@/components/ui/sheet";
 
 interface Sale {
     id: string;
