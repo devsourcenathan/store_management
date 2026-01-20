@@ -5,6 +5,9 @@ import { api } from '@/services/api';
 import { Calendar, AlertCircle, CheckCircle, RefreshCw } from 'lucide-react';
 import { RenewSubscriptionModal } from './RenewSubscriptionModal';
 import { NewSubscriptionModal } from './NewSubscriptionModal';
+import { SubscriptionDetailsSheet } from './SubscriptionDetailsSheet';
+import { usePagination } from '@/hooks/usePagination';
+import { Pagination } from "@/components/ui/Pagination";
 
 interface CustomerSubscription {
     id: string;
@@ -38,6 +41,8 @@ export function SubscriptionsPage() {
     const [renewalModalOpen, setRenewalModalOpen] = useState(false);
     const [newSubscriptionModalOpen, setNewSubscriptionModalOpen] = useState(false);
     const [selectedSubscription, setSelectedSubscription] = useState<CustomerSubscription | null>(null);
+    const [viewingSubscription, setViewingSubscription] = useState<CustomerSubscription | null>(null);
+    const [detailsOpen, setDetailsOpen] = useState(false);
     const queryClient = useQueryClient();
 
     const { data: subscriptions, isLoading } = useQuery<CustomerSubscription[]>({
@@ -54,9 +59,26 @@ export function SubscriptionsPage() {
         },
     });
 
+    const {
+        currentItems,
+        currentPage,
+        totalPages,
+        goToPage: setPage,
+    } = usePagination({
+        totalItems: subscriptions?.length || 0,
+        itemsPerPage: 10,
+    });
+
+    const paginatedSubscriptions = subscriptions ? currentItems(subscriptions) : [];
+
     const handleRenew = (subscription: CustomerSubscription) => {
         setSelectedSubscription(subscription);
         setRenewalModalOpen(true);
+    };
+
+    const handleViewDetails = (subscription: CustomerSubscription) => {
+        setViewingSubscription(subscription);
+        setDetailsOpen(true);
     };
 
     const getStatusColor = (status: string) => {
@@ -137,14 +159,14 @@ export function SubscriptionsPage() {
                         </tr>
                     </thead>
                     <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                        {subscriptions?.length === 0 ? (
+                        {paginatedSubscriptions.length === 0 ? (
                             <tr>
                                 <td colSpan={6} className="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
                                     {t('subscriptions.no_subscriptions')}
                                 </td>
                             </tr>
                         ) : (
-                            subscriptions?.map((subscription) => (
+                            paginatedSubscriptions.map((subscription) => (
                                 <tr key={subscription.id} className={isExpiringSoon(subscription.endDate) ? 'bg-yellow-50 dark:bg-yellow-900/10' : ''}>
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <div>
@@ -188,7 +210,12 @@ export function SubscriptionsPage() {
                                             <RefreshCw className="w-4 h-4" />
                                             <span>{t('subscriptions.renew')}</span>
                                         </button>
-                                        <button className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-300">{t('common.details', 'Details')}</button>
+                                        <button
+                                            onClick={() => handleViewDetails(subscription)}
+                                            className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-300"
+                                        >
+                                            {t('common.details', 'Details')}
+                                        </button>
                                     </td>
                                 </tr>
                             ))
@@ -196,6 +223,13 @@ export function SubscriptionsPage() {
                     </tbody>
                 </table>
             </div>
+
+            {/* Pagination */}
+            <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={setPage}
+            />
 
             {/* Renewal Modal */}
             {renewalModalOpen && selectedSubscription && (
@@ -222,6 +256,16 @@ export function SubscriptionsPage() {
                     }}
                 />
             )}
+
+            {/* Details Sheet */}
+            <SubscriptionDetailsSheet
+                subscription={viewingSubscription}
+                isOpen={detailsOpen}
+                onClose={() => {
+                    setDetailsOpen(false);
+                    setViewingSubscription(null);
+                }}
+            />
         </div>
     );
 }

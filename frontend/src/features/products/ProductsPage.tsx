@@ -12,6 +12,8 @@ import {
     SheetHeader,
     SheetTitle,
 } from "@/components/ui/Sheet";
+import { Pagination } from "@/components/ui/Pagination";
+import { usePagination } from "@/hooks/usePagination";
 
 interface Product {
     id: string;
@@ -85,6 +87,19 @@ export function ProductsPage() {
             return response.data;
         },
     });
+
+
+    const {
+        currentItems,
+        currentPage,
+        totalPages,
+        goToPage: setPage,
+    } = usePagination({
+        totalItems: products?.length || 0,
+        itemsPerPage: 10,
+    });
+
+    const paginatedProducts = products ? currentItems(products) : [];
 
     const createProductMutation = useMutation({
         mutationFn: async (newProduct: any) => {
@@ -197,13 +212,14 @@ export function ProductsPage() {
             {/* Products Display - Cards on Mobile, Table on Desktop */}
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden transition-colors">
                 {/* Mobile Card View */}
+                {/* Product List with Pagination */}
                 <div className="md:hidden p-4 space-y-4">
-                    {products?.length === 0 ? (
+                    {paginatedProducts.length === 0 ? (
                         <div className="px-4 py-12 text-center text-gray-500 dark:text-gray-400">
                             {t('products.no_products')}
                         </div>
                     ) : (
-                        products?.map((product: any) => (
+                        paginatedProducts.map((product: any) => (
                             <div key={product.id} className="bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-xl p-4 shadow-sm hover:shadow-md hover:border-blue-300 dark:hover:border-blue-600 transition-all">
                                 {/* Product Header */}
                                 <div className="flex items-start justify-between mb-3">
@@ -293,14 +309,14 @@ export function ProductsPage() {
                             </tr>
                         </thead>
                         <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                            {products?.length === 0 ? (
+                            {paginatedProducts.length === 0 ? (
                                 <tr>
                                     <td colSpan={6} className="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
                                         {t('products.no_products')}
                                     </td>
                                 </tr>
                             ) : (
-                                products?.map((product: any) => (
+                                paginatedProducts.map((product: any) => (
                                     <tr key={product.id}>
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             <div className="flex items-center">
@@ -352,6 +368,13 @@ export function ProductsPage() {
                     </table>
                 </div>
             </div>
+
+            {/* Pagination */}
+            <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={setPage}
+            />
 
             {/* Add/Edit Product Sheet */}
             <Sheet open={isModalOpen} onOpenChange={setIsModalOpen}>
