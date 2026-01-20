@@ -6,7 +6,7 @@ import { useStore } from "../stores/StoreProvider";
 import { format } from "date-fns";
 import { ShoppingBag, Calendar, CreditCard, Printer } from "lucide-react";
 import { printer } from "@/services/printing";
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/Sheet";
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 
 interface CustomerDetailsSheetProps {
     customerId: string | null;

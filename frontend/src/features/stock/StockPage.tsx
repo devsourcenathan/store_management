@@ -12,7 +12,7 @@ import {
     SheetHeader,
     SheetTitle,
     SheetDescription,
-} from "@/components/ui/Sheet";
+} from "@/components/ui/sheet";
 
 interface StockMovement {
     id: string;
