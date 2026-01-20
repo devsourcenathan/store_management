@@ -3,6 +3,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/services/api';
 import { Plus, Pencil, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { usePagination } from '@/hooks/usePagination';
+import { Pagination } from "@/components/ui/Pagination";
 
 interface Category {
     id: string;
@@ -26,6 +28,18 @@ export function CategoriesPage() {
             return response.data;
         },
     });
+
+    const {
+        currentItems,
+        currentPage,
+        totalPages,
+        goToPage: setPage,
+    } = usePagination({
+        totalItems: categories?.length || 0,
+        itemsPerPage: 10,
+    });
+
+    const paginatedCategories = categories ? currentItems(categories) : [];
 
     const createCategoryMutation = useMutation({
         mutationFn: async (newCategory: any) => {
@@ -65,10 +79,10 @@ export function CategoriesPage() {
                 <div className="md:hidden p-4 space-y-4">
                     {isLoading ? (
                         <div className="px-4 py-12 text-center text-gray-500 dark:text-gray-400">{t('common.loading')}</div>
-                    ) : categories?.length === 0 ? (
+                    ) : paginatedCategories.length === 0 ? (
                         <div className="px-4 py-12 text-center text-gray-500 dark:text-gray-400">{t('products.no_categories')}</div>
                     ) : (
-                        categories?.map((category) => (
+                        paginatedCategories.map((category) => (
                             <div key={category.id} className="bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-xl p-4 shadow-sm hover:shadow-md hover:border-blue-300 dark:hover:border-blue-600 transition-all">
                                 <div className="flex items-start justify-between mb-3">
                                     <div className="flex-1">
@@ -107,10 +121,10 @@ export function CategoriesPage() {
                         <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                             {isLoading ? (
                                 <tr><td colSpan={4} className="px-6 py-4 text-center dark:text-gray-400">{t('common.loading')}</td></tr>
-                            ) : categories?.length === 0 ? (
+                            ) : paginatedCategories.length === 0 ? (
                                 <tr><td colSpan={4} className="px-6 py-12 text-center text-gray-500 dark:text-gray-400">{t('products.no_categories')}</td></tr>
                             ) : (
-                                categories?.map((category) => (
+                                paginatedCategories.map((category) => (
                                     <tr key={category.id}>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">{category.name}</td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{category.description || '-'}</td>
@@ -129,6 +143,13 @@ export function CategoriesPage() {
                         </tbody>
                     </table>
                 </div>
+
+                {/* Pagination */}
+                <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={setPage}
+                />
             </div>
 
             {isModalOpen && (

@@ -6,6 +6,8 @@ import { Plus, Edit2, Trash2, Layers, Settings, ChevronDown, ChevronRight } from
 import { ServiceModal } from './ServiceModal';
 import { OfferSheet } from './OfferModal';
 import { Media } from '@/services/mediaService';
+import { usePagination } from '@/hooks/usePagination';
+import { Pagination } from "@/components/ui/Pagination";
 
 interface Service {
     id: string;
@@ -46,6 +48,18 @@ export function OffersManagementPage() {
         queryFn: async () => (await api.get('/services')).data,
     });
 
+    const {
+        currentItems,
+        currentPage,
+        totalPages,
+        goToPage: setPage,
+    } = usePagination({
+        totalItems: services?.length || 0,
+        itemsPerPage: 10,
+    });
+
+    const paginatedServices = services ? currentItems(services) : [];
+
     // Fetch offers for all services (or could fetch on expand per service to optimize)
 
 
@@ -79,7 +93,7 @@ export function OffersManagementPage() {
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden border border-gray-100 dark:border-gray-700">
                 {isLoadingServices ? (
                     <div className="p-8 text-center text-gray-500 dark:text-gray-400">{t('common.loading')}</div>
-                ) : services?.length === 0 ? (
+                ) : paginatedServices.length === 0 ? (
                     <div className="p-12 text-center text-gray-500 dark:text-gray-400">
                         <Layers className="w-12 h-12 mx-auto text-gray-400 mb-4" />
                         <p className="text-lg font-medium">{t('offers.no_services')}</p>
@@ -87,7 +101,7 @@ export function OffersManagementPage() {
                     </div>
                 ) : (
                     <div className="divide-y divide-gray-200 dark:divide-gray-700">
-                        {services?.map(service => (
+                        {paginatedServices.map(service => (
                             <ServiceRow
                                 key={service.id}
                                 service={service}
@@ -104,25 +118,38 @@ export function OffersManagementPage() {
                 )}
             </div>
 
+
+
+            {/* Pagination */}
+            <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={setPage}
+            />
+
             {/* Service Modal */}
-            {isServiceModalOpen && (
-                <ServiceModal
-                    service={editingService}
-                    onClose={() => setIsServiceModalOpen(false)}
-                    onSuccess={() => setIsServiceModalOpen(false)}
-                />
-            )}
+            {
+                isServiceModalOpen && (
+                    <ServiceModal
+                        service={editingService}
+                        onClose={() => setIsServiceModalOpen(false)}
+                        onSuccess={() => setIsServiceModalOpen(false)}
+                    />
+                )
+            }
 
             {/* Offer Sheet */}
-            {isOfferModalOpen && selectedServiceId && (
-                <OfferSheet
-                    serviceId={selectedServiceId}
-                    offer={editingOffer}
-                    onClose={() => setIsOfferModalOpen(false)}
-                    onSuccess={() => setIsOfferModalOpen(false)}
-                />
-            )}
-        </div>
+            {
+                isOfferModalOpen && selectedServiceId && (
+                    <OfferSheet
+                        serviceId={selectedServiceId}
+                        offer={editingOffer}
+                        onClose={() => setIsOfferModalOpen(false)}
+                        onSuccess={() => setIsOfferModalOpen(false)}
+                    />
+                )
+            }
+        </div >
     );
 }
 

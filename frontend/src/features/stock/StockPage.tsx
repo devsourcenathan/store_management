@@ -13,6 +13,8 @@ import {
     SheetTitle,
     SheetDescription,
 } from "@/components/ui/Sheet";
+import { usePagination } from '@/hooks/usePagination';
+import { Pagination } from "@/components/ui/Pagination";
 
 interface StockMovement {
     id: string;
@@ -69,6 +71,20 @@ export function StockPage() {
         },
         enabled: !!currentStore?.id,
     });
+
+
+
+    const {
+        currentItems,
+        currentPage,
+        totalPages,
+        goToPage: setPage,
+    } = usePagination({
+        totalItems: movements?.length || 0,
+        itemsPerPage: 10,
+    });
+
+    const paginatedMovements = movements ? currentItems(movements) : [];
 
     const createMovementMutation = useMutation({
         mutationFn: async (newMovement: any) => {
@@ -162,27 +178,36 @@ export function StockPage() {
                             </tr>
                         </thead>
                         <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                            {isLoading ? (
-                                <tr><td colSpan={5} className="px-6 py-4 text-center dark:text-gray-400">{t('common.loading')}</td></tr>
-                            ) : movements?.length === 0 ? (
-                                <tr><td colSpan={5} className="px-6 py-12 text-center text-gray-500 dark:text-gray-400">{t('stock.no_movements')}</td></tr>
+                            {paginatedMovements.length === 0 ? (
+                                <tr>
+                                    <td colSpan={5} className="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-400">
+                                        {t('common.no_data')}
+                                    </td>
+                                </tr>
                             ) : (
-                                movements?.map((movement) => (
+                                paginatedMovements.map((movement) => (
                                     <tr key={movement.id}>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                                            {new Date(movement.createdAt).toLocaleDateString()}
+                                            {movement.createdAt ? new Date(movement.createdAt).toLocaleDateString() : '-'}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
-                                            {movement.product.name} ({movement.product.sku})
+                                            {movement.product?.name}
+                                            <span className="block text-xs text-gray-500">{movement.product?.sku}</span>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            <span className={`px-2 py-1 rounded text-xs font-medium ${['IN', 'RETURN', 'ADJUST', 'SUPPLY', 'TRANSFER_IN'].includes(movement.type) ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                                            <span className={`px-2 py-1 rounded text-xs font-medium ${['IN', 'RETURN', 'ADJUST', 'SUPPLY', 'TRANSFER_IN'].includes(movement.type)
+                                                ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
+                                                : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
                                                 }`}>
                                                 {movement.type} ({movement.source})
                                             </span>
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{movement.quantity}</td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{movement.reference || '-'}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                            {movement.quantity}
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                            {movement.reference || '-'}
+                                        </td>
                                     </tr>
                                 ))
                             )}
@@ -285,14 +310,16 @@ export function StockPage() {
             </Sheet>
 
             {/* Transfer Modal */}
-            {isTransferModalOpen && (
-                <TransferModal
-                    onClose={() => setIsTransferModalOpen(false)}
-                    onSuccess={() => {
-                        // Movements will be invalidated by the modal
-                    }}
-                />
-            )}
-        </div>
+            {
+                isTransferModalOpen && (
+                    <TransferModal
+                        onClose={() => setIsTransferModalOpen(false)}
+                        onSuccess={() => {
+                            // Movements will be invalidated by the modal
+                        }}
+                    />
+                )
+            }
+        </div >
     );
 }

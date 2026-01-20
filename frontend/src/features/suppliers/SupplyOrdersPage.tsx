@@ -9,6 +9,8 @@ import { Plus, Package, CheckCircle, Clock, Truck, MoreVertical, Calendar, Eye, 
 import { format } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
+import { usePagination } from '@/hooks/usePagination';
+import { Pagination } from "@/components/ui/Pagination";
 
 export function SupplyOrdersPage() {
     const { t } = useTranslation();
@@ -28,6 +30,18 @@ export function SupplyOrdersPage() {
             return res.data;
         }
     });
+
+    const {
+        currentItems,
+        currentPage,
+        totalPages,
+        goToPage: setPage,
+    } = usePagination({
+        totalItems: orders?.length || 0,
+        itemsPerPage: 10,
+    });
+
+    const paginatedOrders = orders ? currentItems(orders) : [];
 
     const deleteMutation = useMutation({
         mutationFn: async (id: string) => {
@@ -112,7 +126,7 @@ export function SupplyOrdersPage() {
                 <div className="flex justify-center py-20">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
                 </div>
-            ) : orders?.length === 0 ? (
+            ) : paginatedOrders.length === 0 ? (
                 <motion.div
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
@@ -131,7 +145,7 @@ export function SupplyOrdersPage() {
                     animate="show"
                     className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
                 >
-                    {orders.map((order: any) => (
+                    {paginatedOrders.map((order: any) => (
                         <motion.div
                             key={order.id}
                             variants={item}
@@ -243,6 +257,15 @@ export function SupplyOrdersPage() {
                 </motion.div>
             )}
 
+
+
+            {/* Pagination */}
+            <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={setPage}
+            />
+
             <CreateSupplyOrderSheet
                 isOpen={isSheetOpen}
                 onClose={() => setIsSheetOpen(false)}
@@ -255,6 +278,6 @@ export function SupplyOrdersPage() {
                 onClose={() => setOrderToReceive(null)}
                 order={orderToReceive}
             />
-        </div>
+        </div >
     );
 }
