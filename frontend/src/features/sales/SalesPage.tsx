@@ -18,10 +18,12 @@ interface Sale {
     createdAt: string;
     totalAmount: number;
     paidAmount: number;
+    discount?: number;
     status: string;
     customer?: { name: string };
     items: any[];
 }
+
 
 interface Product {
     id: string;
@@ -45,6 +47,12 @@ export function SalesPage() {
         items: [] as any[],
         notes: ''
     });
+
+    const [selectedSale, setSelectedSale] = useState<Sale | null>(null);
+    const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+    const [paymentAmount, setPaymentAmount] = useState<number>(0);
+    const [paymentMethod, setPaymentMethod] = useState<'CASH' | 'CARD' | 'MOBILE'>('CASH');
+    const [isAddingPayment, setIsAddingPayment] = useState(false);
 
     const queryClient = useQueryClient();
 
@@ -96,6 +104,18 @@ export function SalesPage() {
         },
     });
 
+    const addPaymentMutation = useMutation({
+        mutationFn: async (data: any) => {
+            return api.post(`/sales/${selectedSale?.id}/payments`, data);
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['sales'] });
+            setIsAddingPayment(false);
+            setPaymentAmount(0);
+            setIsDetailsOpen(false);
+        },
+    });
+
     const handleAddItem = (productId: string) => {
         const product = products?.find(p => p.id === productId);
         if (!product) return;
@@ -129,6 +149,24 @@ export function SalesPage() {
         createSaleMutation.mutate(newSale);
     };
 
+    const handleViewDetails = (sale: Sale) => {
+        setSelectedSale(sale);
+        setIsDetailsOpen(true);
+        setIsAddingPayment(false);
+    };
+
+    const handleAddPayment = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!selectedSale) return;
+        addPaymentMutation.mutate({
+            amount: paymentAmount,
+            method: paymentMethod,
+            notes: 'Payment added via Sales History'
+        });
+    };
+
+    const remainingBalance = selectedSale ? selectedSale.totalAmount - selectedSale.paidAmount : 0;
+
     return (
         <div className="space-y-6">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -136,13 +174,13 @@ export function SalesPage() {
                     <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100">{t('sales.title')}</h2>
                     <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">{t('sales.subtitle')}</p>
                 </div>
-                <button
+                {/* <button
                     onClick={() => setIsModalOpen(true)}
                     className={getThemedButtonClasses("w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors whitespace-nowrap", !!themedButtonStyle.backgroundColor)}
                     style={themedButtonStyle}
                 >
                     {t('sales.new_sale')}
-                </button>
+                </button> */}
             </div>
 
             {/* Sales Display - Cards on Mobile, Table on Desktop */}
@@ -166,7 +204,10 @@ export function SalesPage() {
                                             {new Date(sale.createdAt).toLocaleDateString()}
                                         </p>
                                     </div>
-                                    <span className="px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 rounded-full text-xs font-medium">
+                                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${sale.status === 'PAID' ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300' :
+                                        sale.status === 'PARTIAL' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300' :
+                                            'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300'
+                                        }`}>
                                         {sale.status}
                                     </span>
                                 </div>
@@ -175,10 +216,10 @@ export function SalesPage() {
                                 <div className="grid grid-cols-2 gap-3 mt-3 pt-3 border-t-2 border-gray-200 dark:border-gray-700">
                                     <div>
                                         <p className="text-xs text-gray-500 dark:text-gray-400 mb-1 font-medium">
-                                            Total
+                                            Total / Paid
                                         </p>
                                         <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">
-                                            {sale.totalAmount} FCFA
+                                            {sale.totalAmount} / {sale.paidAmount}
                                         </p>
                                     </div>
                                     <div className="flex items-end justify-end space-x-2">
@@ -188,7 +229,10 @@ export function SalesPage() {
                                         >
                                             Print
                                         </button>
-                                        <button className="px-3 py-1.5 text-xs bg-gray-50 text-gray-600 dark:bg-gray-700 dark:text-gray-400 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors">
+                                        <button
+                                            onClick={() => handleViewDetails(sale)}
+                                            className="px-3 py-1.5 text-xs bg-gray-50 text-gray-600 dark:bg-gray-700 dark:text-gray-400 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
+                                        >
                                             View
                                         </button>
                                     </div>
@@ -206,23 +250,30 @@ export function SalesPage() {
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.date', 'Date')}</th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.customer', 'Customer')}</th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.total', 'Total')}</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.paid', 'Paid')}</th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.status', 'Status')}</th>
                                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.actions', 'Actions')}</th>
                             </tr>
                         </thead>
                         <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                             {isLoading ? (
-                                <tr><td colSpan={5} className="px-6 py-4 text-center dark:text-gray-400">Loading...</td></tr>
+                                <tr><td colSpan={6} className="px-6 py-4 text-center dark:text-gray-400">Loading...</td></tr>
                             ) : sales?.length === 0 ? (
-                                <tr><td colSpan={5} className="px-6 py-12 text-center text-gray-500 dark:text-gray-400">No sales found.</td></tr>
+                                <tr><td colSpan={6} className="px-6 py-12 text-center text-gray-500 dark:text-gray-400">No sales found.</td></tr>
                             ) : (
                                 sales?.map((sale) => (
                                     <tr key={sale.id}>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{new Date(sale.createdAt).toLocaleDateString()}</td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">{sale.customer?.name || 'Walk-in'}</td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{sale.totalAmount} FCFA</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{sale.paidAmount} FCFA</td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                                            <span className="px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 rounded-full text-xs font-medium">{sale.status}</span>
+                                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${sale.status === 'PAID' ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300' :
+                                                sale.status === 'PARTIAL' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300' :
+                                                    'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300'
+                                                }`}>
+                                                {sale.status}
+                                            </span>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                             <button
@@ -231,7 +282,12 @@ export function SalesPage() {
                                             >
                                                 {t('suppliers.print_order', 'Print')}
                                             </button>
-                                            <button className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-300">{t('common.view_details', 'View')}</button>
+                                            <button
+                                                onClick={() => handleViewDetails(sale)}
+                                                className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-300"
+                                            >
+                                                {t('common.view_details', 'View')}
+                                            </button>
                                         </td>
                                     </tr>
                                 ))
@@ -241,7 +297,133 @@ export function SalesPage() {
                 </div>
             </div>
 
-            {/* New Sale Sheet */}
+            {/* Sale Details Sheet */}
+            <Sheet open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
+                <SheetContent side="right" className="sm:max-w-2xl overflow-y-auto w-full">
+                    {selectedSale && (
+                        <>
+                            <SheetHeader className="mb-6">
+                                <SheetTitle className="flex justify-between items-center">
+                                    <span>Sale Details</span>
+                                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${selectedSale.status === 'PAID' ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300' :
+                                        selectedSale.status === 'PARTIAL' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300' :
+                                            'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300'
+                                        }`}>
+                                        {selectedSale.status}
+                                    </span>
+                                </SheetTitle>
+                                <SheetDescription>
+                                    Ref: {selectedSale.id.substring(0, 8)} • {new Date(selectedSale.createdAt).toLocaleString()}
+                                </SheetDescription>
+                            </SheetHeader>
+
+                            <div className="space-y-6">
+                                {/* Items List */}
+                                <div>
+                                    <h4 className="font-semibold text-gray-900 dark:text-gray-100 mb-3">Items</h4>
+                                    <div className="bg-gray-50 dark:bg-gray-900/50 rounded-lg p-4 space-y-3">
+                                        {selectedSale.items.map((item: any, idx: number) => (
+                                            <div key={idx} className="flex justify-between items-center border-b border-gray-200 dark:border-gray-700 last:border-0 pb-3 last:pb-0">
+                                                <div>
+                                                    <p className="font-medium text-gray-900 dark:text-gray-100">{item.product?.name || item.name || 'Unknown Product'}</p>
+                                                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                                                        {item.quantity} x {item.unitPrice} F
+                                                        {item.discount > 0 && <span className="text-red-500 ml-2">(-{item.discount} F)</span>}
+                                                    </p>
+                                                </div>
+                                                <p className="font-medium text-gray-900 dark:text-gray-100">
+                                                    {(item.quantity * item.unitPrice) - (item.discount || 0)} F
+                                                </p>
+                                            </div>
+                                        ))}
+                                        {(selectedSale.discount || 0) > 0 && (
+                                            <div className="flex justify-between items-center pt-3 text-sm text-red-600 dark:text-red-400">
+                                                <span>Global Discount</span>
+                                                <span>-{selectedSale.discount} F</span>
+                                            </div>
+                                        )}
+                                        <div className={`flex justify-between items-center pt-3 ${!(selectedSale.discount || 0) ? 'border-t border-gray-200 dark:border-gray-700' : ''} font-bold`}>
+                                            <span>Total</span>
+                                            <span>{selectedSale.totalAmount} F</span>
+                                        </div>
+                                        <div className="flex justify-between items-center text-sm">
+                                            <span>Paid Amount</span>
+                                            <span>{selectedSale.paidAmount} F</span>
+                                        </div>
+                                        {remainingBalance > 0 && (
+                                            <div className="flex justify-between items-center text-red-600 dark:text-red-400 font-bold">
+                                                <span>Balance Due</span>
+                                                <span>{remainingBalance} F</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Add Payment Section */}
+                                {remainingBalance > 0 && (
+                                    <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
+                                        {!isAddingPayment ? (
+                                            <button
+                                                onClick={() => {
+                                                    setPaymentAmount(remainingBalance);
+                                                    setIsAddingPayment(true);
+                                                }}
+                                                className="w-full btn-theme-primary py-3 rounded-lg font-medium"
+                                            >
+                                                Add Payment ({remainingBalance} F)
+                                            </button>
+                                        ) : (
+                                            <form onSubmit={handleAddPayment} className="bg-gray-50 dark:bg-gray-900/50 rounded-lg p-4 space-y-4">
+                                                <h4 className="font-semibold text-gray-900 dark:text-gray-100">Record New Payment</h4>
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Amount</label>
+                                                    <input
+                                                        type="number"
+                                                        max={remainingBalance}
+                                                        value={paymentAmount}
+                                                        onChange={(e) => setPaymentAmount(Number(e.target.value))}
+                                                        className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md shadow-sm p-2 dark:bg-gray-800 dark:text-white"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Method</label>
+                                                    <select
+                                                        value={paymentMethod}
+                                                        onChange={(e) => setPaymentMethod(e.target.value as any)}
+                                                        className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md shadow-sm p-2 dark:bg-gray-800 dark:text-white"
+                                                    >
+                                                        <option value="CASH">Cash</option>
+                                                        <option value="CARD">Card</option>
+                                                        <option value="MOBILE">Mobile Money</option>
+                                                    </select>
+                                                </div>
+                                                <div className="flex gap-3 pt-2">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setIsAddingPayment(false)}
+                                                        className="flex-1 px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg font-medium hover:bg-gray-300 dark:hover:bg-gray-600"
+                                                    >
+                                                        Cancel
+                                                    </button>
+                                                    <button
+                                                        type="submit"
+                                                        disabled={addPaymentMutation.isPending}
+                                                        className="flex-1 btn-theme-primary px-4 py-2 rounded-lg font-medium disabled:opacity-50"
+                                                    >
+                                                        {addPaymentMutation.isPending ? 'Processing...' : 'Confirm Payment'}
+                                                    </button>
+                                                </div>
+                                            </form>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                        </>
+                    )}
+                </SheetContent>
+            </Sheet>
+
+            {/* New Sale Sheet (Existing) */}
             <Sheet open={isModalOpen} onOpenChange={setIsModalOpen}>
                 <SheetContent side="right" className="sm:max-w-2xl overflow-y-auto">
                     <SheetHeader className="mb-6">

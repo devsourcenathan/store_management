@@ -27,12 +27,27 @@ export class SalesService {
     }
 
     async create(data: any, userId: string) {
-        const { storeId, customerId, items, notes } = data;
+        const { storeId, customerId, items, notes, discount = 0 } = data;
 
-        // Calculate total
-        const totalAmount = items.reduce((acc: number, item: any) => {
-            return acc + (item.quantity * item.unitPrice) - (item.discount || 0);
+        // Calculate items total
+        const itemsTotal = items.reduce((acc: number, item: any) => {
+            const itemTotal = (item.quantity * item.unitPrice) - (item.discount || 0);
+            return acc + itemTotal;
         }, 0);
+
+        // Apply global discount
+        const totalAmount = Math.max(0, itemsTotal - (discount || 0));
+
+        // Determine paid amount
+        const paidAmount = data.paidAmount !== undefined ? data.paidAmount : totalAmount;
+
+        // Determine status
+        let status = 'PAID';
+        if (paidAmount === 0 && totalAmount > 0) {
+            status = 'PENDING';
+        } else if (paidAmount < totalAmount) {
+            status = 'PARTIAL';
+        }
 
         // Use a transaction to create sale, payment, and stock movements
         const sale = await this.prisma.$transaction(async (tx) => {
@@ -42,8 +57,9 @@ export class SalesService {
                     storeId,
                     customerId,
                     totalAmount,
-                    paidAmount: totalAmount, // Assuming full payment for now
-                    status: 'PAID',
+                    paidAmount,
+                    discount,
+                    status: status as any,
                     notes,
                     createdBy: userId,
                     items: {
@@ -58,14 +74,15 @@ export class SalesService {
                 },
             });
 
-            // 2. Create Payment Record (if payment method is provided)
-            if (data.paymentMethod) {
+            // 2. Create Payment Record (only if there is a paid amount)
+            if (paidAmount > 0) {
                 await tx.payment.create({
                     data: {
                         saleId: sale.id,
-                        amount: totalAmount,
-                        method: data.paymentMethod,
+                        amount: paidAmount,
+                        method: data.paymentMethod || 'CASH', // Default to CASH if paying
                         createdBy: userId,
+                        notes: 'Initial payment',
                     },
                 });
             }
@@ -85,16 +102,82 @@ export class SalesService {
                 });
             }
 
-            return sale;
+            // 5. Return full sale object for receipt
+            return tx.sale.findUnique({
+                where: { id: sale.id },
+                include: {
+                    customer: true,
+                    items: {
+                        include: { product: true },
+                    },
+                    payments: true,
+                },
+            });
         });
 
         // 4. Trigger Stock Alerts (After transaction commit)
-        // We do this outside the transaction to avoid locking implementation issues with Prisma
-        // and because alerts are "side effects" that can be eventually consistent.
         for (const item of items) {
             await this.stockService.checkStockAndAlert(item.productId, storeId);
         }
 
         return sale;
+    }
+
+    async addPayment(saleId: string, data: { amount: number; method: string; notes?: string }, userId: string) {
+        return this.prisma.$transaction(async (tx) => {
+            const sale = await tx.sale.findUnique({ where: { id: saleId } });
+            if (!sale) throw new Error('Sale not found');
+
+            const currentPaid = Number(sale.paidAmount);
+            const total = Number(sale.totalAmount);
+            const newPaymentAmount = Number(data.amount);
+
+            if (currentPaid + newPaymentAmount > total) {
+                throw new Error('Payment amount exceeds remaining balance');
+            }
+
+            // Create Payment
+            await tx.payment.create({
+                data: {
+                    saleId,
+                    amount: newPaymentAmount,
+                    method: data.method as any,
+                    notes: data.notes,
+                    createdBy: userId,
+                },
+            });
+
+            // Update Sale
+            const newPaidAmount = currentPaid + newPaymentAmount;
+            let newStatus = sale.status;
+
+            if (newPaidAmount >= total) {
+                newStatus = 'PAID';
+            } else if (newPaidAmount > 0) {
+                newStatus = 'PARTIAL';
+            }
+
+            return tx.sale.update({
+                where: { id: saleId },
+                data: {
+                    paidAmount: newPaidAmount,
+                    status: newStatus as any,
+                },
+            });
+        });
+    }
+
+    async update(saleId: string, data: any) {
+        return this.prisma.sale.update({
+            where: { id: saleId },
+            data,
+            include: {
+                customer: true,
+                items: {
+                    include: { product: true },
+                },
+                payments: true,
+            },
+        });
     }
 }
