@@ -68,11 +68,27 @@ export function OrganizationSettings() {
         }
     }, [org]);
 
-    const handleLogoUpload = (media: any) => {
+    const handleLogoUpload = async (media: any) => {
         if (media?.url) {
-            setFormData(prev => ({ ...prev, logoUrl: media.url }));
-            setShowLogoUpload(false);
-            toast.success(t('settings.org.logo_uploaded'));
+            try {
+                // Immediately save the logo URL to the backend
+                await api.put('/organizations/me', { logoUrl: media.url });
+
+                // Update local state
+                setFormData(prev => ({ ...prev, logoUrl: media.url }));
+                setShowLogoUpload(false);
+
+                // Invalidate queries to refresh data
+                queryClient.invalidateQueries({ queryKey: ['organization'] });
+
+                // Refetch organization context to update logo everywhere
+                await refetch();
+
+                toast.success(t('settings.org.logo_uploaded'));
+            } catch (error) {
+                console.error('Failed to save logo:', error);
+                toast.error(t('settings.org.logo_upload_error', 'Failed to save logo'));
+            }
         }
     };
 
@@ -88,8 +104,9 @@ export function OrganizationSettings() {
 
     const updateMutation = useMutation({
         mutationFn: async (data: any) => api.put('/organizations/me', data),
-        onSuccess: () => {
+        onSuccess: async () => {
             queryClient.invalidateQueries({ queryKey: ['organization'] });
+            await refetch(); // Refetch organization context
             toast.success(t('settings.org.success'));
         },
         onError: () => {
