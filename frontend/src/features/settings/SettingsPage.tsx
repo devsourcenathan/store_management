@@ -20,48 +20,47 @@ export function SettingsPage() {
     ];
 
     return (
-        <div className="space-y-6">
-            <div>
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{t('settings.title')}</h2>
-                <p className="text-gray-600 dark:text-gray-400">{t('settings.subtitle')}</p>
+        <div className="space-y-4 sm:space-y-6 pb-6">
+            {/* Header */}
+            <div className="px-4 sm:px-0">
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100">{t('settings.title')}</h2>
+                <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">{t('settings.subtitle')}</p>
             </div>
 
-            <div className="flex flex-col md:flex-row gap-8">
-                {/* Sidebar */}
-                <aside className="w-full md:w-64 flex-shrink-0">
-                    <nav className="space-y-1">
-                        {tabs.map((tab) => {
-                            const Icon = tab.icon;
-                            return (
-                                <button
-                                    key={tab.id}
-                                    onClick={() => setActiveTab(tab.id as Tab)}
-                                    className={`w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md transition-colors ${activeTab === tab.id
-                                        ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
-                                        : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'
-                                        }`}
-                                >
-                                    <Icon className="w-5 h-5" />
-                                    {tab.label}
-                                </button>
-                            );
-                        })}
-                    </nav>
-                </aside>
-
-                {/* Content */}
-                <main className="flex-1">
+            {/* Tabs - Horizontal on all screens */}
+            <div className="border-b border-gray-200 dark:border-gray-700">
+                <nav className="flex overflow-x-auto scrollbar-hide -mb-px px-4 sm:px-0" aria-label="Tabs">
                     {tabs.map((tab) => {
-                        if (tab.id !== activeTab) return null;
-                        const Component = tab.component;
+                        const Icon = tab.icon;
                         return (
-                            <div key={tab.id}>
-                                <Component />
-                            </div>
+                            <button
+                                key={tab.id}
+                                onClick={() => setActiveTab(tab.id as Tab)}
+                                className={`flex items-center gap-2 whitespace-nowrap py-3 px-4 sm:px-6 border-b-2 font-medium text-sm transition-colors ${activeTab === tab.id
+                                        ? 'border-blue-600 dark:border-blue-400 text-blue-600 dark:text-blue-400'
+                                        : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'
+                                    }`}
+                            >
+                                <Icon className="w-5 h-5" />
+                                <span>{tab.label}</span>
+                            </button>
                         );
                     })}
-                </main>
+                </nav>
             </div>
+
+            {/* Content */}
+            <main className="px-4 sm:px-0">
+                {tabs.map((tab) => {
+                    if (tab.id !== activeTab) return null;
+                    const Component = tab.component;
+                    return (
+                        <div key={tab.id} className="animate-fadeIn">
+                            <Component />
+                        </div>
+                    );
+                })}
+            </main>
         </div>
     );
 }
