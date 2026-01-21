@@ -9,8 +9,7 @@ COPY package*.json ./
 RUN npm ci
 
 COPY . .
-RUN npx prisma generate 
-RUN npx prisma db push
+RUN npx prisma generate  
 RUN npm run build
 
 FROM node:20-slim
