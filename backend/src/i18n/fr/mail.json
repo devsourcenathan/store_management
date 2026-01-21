@@ -1,0 +1,40 @@
+{
+    "reports": {
+        "daily": {
+            "title": "Rapport Journalier des Ventes",
+            "greeting": "Bonjour",
+            "intro": "Voici le résumé de vos ventes pour la journée d'hier :",
+            "revenue": "Chiffre d'Affaires",
+            "profit": "Bénéfice",
+            "sales_count": "Nombre de Ventes",
+            "top_products": "Top 5 Produits",
+            "store_performance": "Performance des Boutiques",
+            "low_stock": "Alertes Stock Faible",
+            "low_stock_intro": "Les produits suivants sont presque en rupture :",
+            "product": "Produit",
+            "qty": "Quantité",
+            "store": "Boutique",
+            "sales": "Ventes",
+            "vs_previous": "vs jour précédent",
+            "footer": "Ceci est un rapport automatisé de votre Système de Gestion de Stock",
+            "view_dashboard": "Voir le Tableau de Bord",
+            "manage_settings": "Gérer les Paramètres"
+        },
+        "weekly": {
+            "title": "Rapport Hebdomadaire des Ventes",
+            "greeting": "Bonjour",
+            "intro": "Voici l'aperçu de votre performance pour cette semaine :",
+            "revenue": "Chiffre d'Affaires",
+            "profit": "Bénéfice",
+            "total_sales": "Total Ventes",
+            "top_products": "Top 10 Produits les Plus Vendus",
+            "top_customers": "Top 10 Clients",
+            "product": "Produit",
+            "qty": "Qté",
+            "customer": "Client",
+            "orders": "Commandes",
+            "total_spent": "Total Dépensé",
+            "footer": "Rapport Hebdomadaire Automatisé | Système de Gestion de Stock"
+        }
+    }
+}

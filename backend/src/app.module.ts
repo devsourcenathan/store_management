@@ -23,6 +23,9 @@ import { AdminModule } from './modules/admin/admin.module';
 import { OrganizationLandingModule } from './modules/organization-landing/organization-landing.module';
 import { AnalyticsModule } from './modules/analytics/analytics.module';
 import { HealthController } from './health/health.controller';
+import { MailModule } from './modules/mail/mail.module';
+import { ReportsModule } from './modules/reports/reports.module';
+import { SchedulerModule } from './modules/scheduler/scheduler.module';
 
 @Module({
     imports: [
@@ -60,6 +63,9 @@ import { HealthController } from './health/health.controller';
         LandingModule,
         AdminModule,
         OrganizationLandingModule,
+        MailModule,
+        ReportsModule,
+        SchedulerModule,
     ],
     controllers: [HealthController],
     providers: [],

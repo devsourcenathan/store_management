@@ -71,6 +71,7 @@ model User {
   role           UserRole
   organizationId String
   isActive       Boolean  @default(true)
+  locale         String   @default("fr") // 'en' or 'fr'
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
