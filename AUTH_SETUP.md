@@ -11,7 +11,7 @@ Ensure your `.env` file has the following JWT configuration:
 
 ```env
 JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
-JWT_REFRESH_SECRET=your-super-secret-refresh-key-change-this-in-production
+JWT_REFRESH_SECRET=your-secret-refresh-key-change-this-in-production
 JWT_EXPIRATION=15m
 JWT_REFRESH_EXPIRATION=7d
 ```
