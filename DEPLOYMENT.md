@@ -319,7 +319,9 @@ npx prisma migrate reset --force
 # Ou appliquer les migrations
 npx prisma migrate deploy
 
+#Update seulement le schema
 npx prisma db push
+
 ```
 
 ## 🔐 Sécurité
