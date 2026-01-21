@@ -147,7 +147,8 @@
         "no_subscriptions": "Aucun abonnement trouvé. Cliquez sur 'Nouvel Abonnement'.",
         "offer": "Offre",
         "duration": "Durée",
-        "renewal": "Renouvellement"
+        "renewal": "Renouvellement",
+        "price": "Prix"
     },
     "offers": {
         "title": "Offres & Services",

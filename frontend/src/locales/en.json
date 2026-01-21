@@ -147,7 +147,9 @@
         "no_subscriptions": "No subscriptions found. Click 'New Subscription' to create one.",
         "offer": "Offer",
         "duration": "Duration",
-        "renewal": "Renewal"
+        "renewal": "Renewal",
+        "price": "Price",
+        "status": "Status"
     },
     "offers": {
         "title": "Offers & Services",
