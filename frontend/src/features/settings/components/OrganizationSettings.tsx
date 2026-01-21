@@ -29,8 +29,10 @@ export function OrganizationSettings() {
             primaryColor: '',
             secondaryColor: '',
             accentColor: '',
-            sidebarBg: '',
-            navbarBg: ''
+            sidebarBgLight: '',
+            sidebarBgDark: '',
+            navbarBgLight: '',
+            navbarBgDark: ''
         }
     });
 
@@ -57,8 +59,10 @@ export function OrganizationSettings() {
                     primaryColor: '',
                     secondaryColor: '',
                     accentColor: '',
-                    sidebarBg: '',
-                    navbarBg: ''
+                    sidebarBgLight: '',
+                    sidebarBgDark: '',
+                    navbarBgLight: '',
+                    navbarBgDark: ''
                 }
             });
         }
@@ -333,37 +337,73 @@ export function OrganizationSettings() {
                     </div>
 
                     <div className="space-y-2">
-                        <Label>{t('settings.org.sidebar_bg')}</Label>
+                        <Label>{t('settings.org.sidebar_bg_light')}</Label>
                         <div className="flex gap-2">
                             <Input
                                 type="color"
-                                value={formData.themeConfig.sidebarBg || '#1f2937'}
-                                onChange={(e) => handleThemeColorChange('sidebarBg', e.target.value)}
+                                value={formData.themeConfig.sidebarBgLight || '#f9fafb'}
+                                onChange={(e) => handleThemeColorChange('sidebarBgLight', e.target.value)}
                                 className="w-16 h-10 cursor-pointer"
                             />
                             <Input
                                 type="text"
-                                value={formData.themeConfig.sidebarBg || ''}
-                                onChange={(e) => handleThemeColorChange('sidebarBg', e.target.value)}
+                                value={formData.themeConfig.sidebarBgLight || ''}
+                                onChange={(e) => handleThemeColorChange('sidebarBgLight', e.target.value)}
+                                placeholder="#f9fafb"
+                            />
+                        </div>
+                    </div>
+
+                    <div className="space-y-2">
+                        <Label>{t('settings.org.sidebar_bg_dark')}</Label>
+                        <div className="flex gap-2">
+                            <Input
+                                type="color"
+                                value={formData.themeConfig.sidebarBgDark || '#1f2937'}
+                                onChange={(e) => handleThemeColorChange('sidebarBgDark', e.target.value)}
+                                className="w-16 h-10 cursor-pointer"
+                            />
+                            <Input
+                                type="text"
+                                value={formData.themeConfig.sidebarBgDark || ''}
+                                onChange={(e) => handleThemeColorChange('sidebarBgDark', e.target.value)}
                                 placeholder="#1f2937"
                             />
                         </div>
                     </div>
 
                     <div className="space-y-2">
-                        <Label>{t('settings.org.navbar_bg')}</Label>
+                        <Label>{t('settings.org.navbar_bg_light')}</Label>
                         <div className="flex gap-2">
                             <Input
                                 type="color"
-                                value={formData.themeConfig.navbarBg || '#ffffff'}
-                                onChange={(e) => handleThemeColorChange('navbarBg', e.target.value)}
+                                value={formData.themeConfig.navbarBgLight || '#ffffff'}
+                                onChange={(e) => handleThemeColorChange('navbarBgLight', e.target.value)}
                                 className="w-16 h-10 cursor-pointer"
                             />
                             <Input
                                 type="text"
-                                value={formData.themeConfig.navbarBg || ''}
-                                onChange={(e) => handleThemeColorChange('navbarBg', e.target.value)}
+                                value={formData.themeConfig.navbarBgLight || ''}
+                                onChange={(e) => handleThemeColorChange('navbarBgLight', e.target.value)}
                                 placeholder="#ffffff"
+                            />
+                        </div>
+                    </div>
+
+                    <div className="space-y-2">
+                        <Label>{t('settings.org.navbar_bg_dark')}</Label>
+                        <div className="flex gap-2">
+                            <Input
+                                type="color"
+                                value={formData.themeConfig.navbarBgDark || '#1f2937'}
+                                onChange={(e) => handleThemeColorChange('navbarBgDark', e.target.value)}
+                                className="w-16 h-10 cursor-pointer"
+                            />
+                            <Input
+                                type="text"
+                                value={formData.themeConfig.navbarBgDark || ''}
+                                onChange={(e) => handleThemeColorChange('navbarBgDark', e.target.value)}
+                                placeholder="#1f2937"
                             />
                         </div>
                     </div>

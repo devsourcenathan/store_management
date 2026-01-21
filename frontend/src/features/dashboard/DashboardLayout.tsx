@@ -3,6 +3,7 @@ import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/features/auth/useAuth';
 import { useSync } from '@/offline/SyncProvider';
 import { useOrganization } from '@/contexts/OrganizationContext';
+import { useTheme } from '@/components/ThemeProvider';
 import { StoreSelector } from '@/features/stores/StoreSelector';
 import { NoAccessPage } from '@/features/auth/NoAccessPage';
 import { ThemeToggle } from '@/components/ThemeToggle';
@@ -36,11 +37,15 @@ export function DashboardLayout() {
     const { user, logout } = useAuth();
     const { isOnline, isSyncing, pendingOperations, sync } = useSync();
     const { organization } = useOrganization();
+    const { theme } = useTheme();
     const location = useLocation();
     const { t } = useTranslation();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
     const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+
+    // Determine if dark mode is active
+    const isDark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
 
     const groupedNavigation = [
         {
@@ -120,7 +125,9 @@ export function DashboardLayout() {
             <nav
                 className="shadow-sm border-b border-gray-200 dark:border-gray-700 sticky top-0 z-30"
                 style={{
-                    backgroundColor: organization?.themeConfig?.navbarBg || undefined
+                    backgroundColor: isDark
+                        ? organization?.themeConfig?.navbarBgDark
+                        : organization?.themeConfig?.navbarBgLight
                 }}
             >
                 <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
@@ -365,7 +372,9 @@ export function DashboardLayout() {
                 <aside
                     className="w-64 border-r border-gray-200 dark:border-gray-700 min-h-[calc(100vh-4rem)] hidden md:block"
                     style={{
-                        backgroundColor: organization?.themeConfig?.sidebarBg || undefined
+                        backgroundColor: isDark
+                            ? organization?.themeConfig?.sidebarBgDark
+                            : organization?.themeConfig?.sidebarBgLight
                     }}
                 >
                     <nav className="p-4 overflow-y-auto">

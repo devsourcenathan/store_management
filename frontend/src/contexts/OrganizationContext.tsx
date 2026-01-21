@@ -6,8 +6,10 @@ interface ThemeConfig {
     primaryColor?: string;
     secondaryColor?: string;
     accentColor?: string;
-    sidebarBg?: string;
-    navbarBg?: string;
+    sidebarBgLight?: string;
+    sidebarBgDark?: string;
+    navbarBgLight?: string;
+    navbarBgDark?: string;
 }
 
 interface Organization {
@@ -68,11 +70,17 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
                 root.style.setProperty('--theme-accent', hexToRgb(theme.accentColor));
                 root.style.setProperty('--color-accent', theme.accentColor);
             }
-            if (theme.sidebarBg) {
-                root.style.setProperty('--color-sidebar-bg', theme.sidebarBg);
+            if (theme.sidebarBgLight) {
+                root.style.setProperty('--color-sidebar-bg-light', theme.sidebarBgLight);
             }
-            if (theme.navbarBg) {
-                root.style.setProperty('--color-navbar-bg', theme.navbarBg);
+            if (theme.sidebarBgDark) {
+                root.style.setProperty('--color-sidebar-bg-dark', theme.sidebarBgDark);
+            }
+            if (theme.navbarBgLight) {
+                root.style.setProperty('--color-navbar-bg-light', theme.navbarBgLight);
+            }
+            if (theme.navbarBgDark) {
+                root.style.setProperty('--color-navbar-bg-dark', theme.navbarBgDark);
             }
         }
     }, [organization]);
