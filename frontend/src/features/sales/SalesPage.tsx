@@ -12,6 +12,7 @@ import {
     SheetTitle,
     SheetDescription,
 } from "@/components/ui/Sheet";
+import { ExportButton } from '@/components/ExportButton';
 
 interface Sale {
     id: string;
@@ -173,6 +174,36 @@ export function SalesPage() {
                 <div>
                     <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100">{t('sales.title')}</h2>
                     <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">{t('sales.subtitle')}</p>
+                </div>
+                <div className="flex gap-2">
+                    <ExportButton
+                        data={sales || []}
+                        columns={[
+                            { header: t('common.date'), key: 'createdAt' },
+                            { header: t('invoice.customer'), key: 'customer.name' },
+                            { header: t('invoice.total'), key: 'totalAmount' },
+                            { header: t('invoice.paid'), key: 'paidAmount' },
+                            { header: t('common.status'), key: 'status' },
+                        ]}
+                        title={t('sales.title')}
+                        format="pdf"
+                        variant="outline"
+                        size="sm"
+                    />
+                    <ExportButton
+                        data={sales || []}
+                        columns={[
+                            { header: t('common.date'), key: 'createdAt' },
+                            { header: t('invoice.customer'), key: 'customer.name' },
+                            { header: t('invoice.total'), key: 'totalAmount' },
+                            { header: t('invoice.paid'), key: 'paidAmount' },
+                            { header: t('common.status'), key: 'status' },
+                        ]}
+                        title={t('sales.title')}
+                        format="excel"
+                        variant="outline"
+                        size="sm"
+                    />
                 </div>
                 {/* <button
                     onClick={() => setIsModalOpen(true)}

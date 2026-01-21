@@ -17,6 +17,7 @@ import { OffersManagementPage } from '@/features/subscriptions/OffersManagementP
 import { SupplyOrdersPage } from '@/features/suppliers/SupplyOrdersPage';
 import { SettingsPage } from '@/features/settings/SettingsPage';
 import { MediaLibrary } from '@/features/media/MediaLibrary';
+import { OwnerStatisticsPage } from '@/features/statistics/OwnerStatisticsPage';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
     const { user, isLoading } = useAuth();
@@ -78,6 +79,7 @@ export function AppRouter() {
                 <Route path="settings" element={<SettingsPage />} />
                 <Route path="settings/landing" element={<OrgLandingEditor />} />
                 <Route path="media" element={<MediaLibrary />} />
+                <Route path="statistics" element={<OwnerStatisticsPage />} />
             </Route>
         </Routes>
     );

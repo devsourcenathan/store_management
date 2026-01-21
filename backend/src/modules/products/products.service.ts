@@ -89,9 +89,12 @@ export class ProductsService {
     }
 
     async update(id: string, data: any, organizationId: string) {
+        // Remove fields that don't exist in Product model
+        const { initialStock, storeId, ...updateData } = data;
+
         return this.prisma.product.update({
             where: { id },
-            data,
+            data: updateData,
             include: {
                 category: true,
             },

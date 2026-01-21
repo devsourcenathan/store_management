@@ -34,4 +34,31 @@ export class AnalyticsController {
     ) {
         return this.analyticsService.getTopProducts(storeId, startDate, endDate);
     }
+
+    @Get('owner/aggregated')
+    getOwnerAggregatedStats(
+        @Query('organizationId') organizationId: string,
+        @Query('startDate') startDate?: string,
+        @Query('endDate') endDate?: string
+    ) {
+        return this.analyticsService.getOwnerAggregatedStats(organizationId, startDate, endDate);
+    }
+
+    @Get('owner/by-store')
+    getOwnerStatsByStore(
+        @Query('organizationId') organizationId: string,
+        @Query('startDate') startDate?: string,
+        @Query('endDate') endDate?: string
+    ) {
+        return this.analyticsService.getOwnerStatsByStore(organizationId, startDate, endDate);
+    }
+
+    @Get('owner/comparison')
+    getStoreComparison(
+        @Query('organizationId') organizationId: string,
+        @Query('startDate') startDate?: string,
+        @Query('endDate') endDate?: string
+    ) {
+        return this.analyticsService.getStoreComparison(organizationId, startDate, endDate);
+    }
 }

@@ -8,6 +8,7 @@ import { NewSubscriptionModal } from './NewSubscriptionModal';
 import { SubscriptionDetailsSheet } from './SubscriptionDetailsSheet';
 import { usePagination } from '@/hooks/usePagination';
 import { Pagination } from "@/components/ui/Pagination";
+import { ExportButton } from '@/components/ExportButton';
 
 interface CustomerSubscription {
     id: string;
@@ -125,6 +126,34 @@ export function SubscriptionsPage() {
                     <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">{t('subscriptions.subtitle')}</p>
                 </div>
                 <div className="flex flex-row gap-2 sm:gap-3">
+                    <ExportButton
+                        data={subscriptions || []}
+                        columns={[
+                            { header: t('common.customer'), key: 'customer.name' },
+                            { header: t('common.service'), key: 'offer.service.name' },
+                            { header: t('subscriptions.offer'), key: 'offer.name' },
+                            { header: t('common.status'), key: 'status' },
+                            { header: t('common.end_date'), key: 'endDate' },
+                        ]}
+                        title={t('subscriptions.title')}
+                        format="pdf"
+                        variant="outline"
+                        size="sm"
+                    />
+                    <ExportButton
+                        data={subscriptions || []}
+                        columns={[
+                            { header: t('common.customer'), key: 'customer.name' },
+                            { header: t('common.service'), key: 'offer.service.name' },
+                            { header: t('subscriptions.offer'), key: 'offer.name' },
+                            { header: t('common.status'), key: 'status' },
+                            { header: t('common.end_date'), key: 'endDate' },
+                        ]}
+                        title={t('subscriptions.title')}
+                        format="excel"
+                        variant="outline"
+                        size="sm"
+                    />
                     <select
                         className="w-full xs:w-auto border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                         value={selectedStatus}

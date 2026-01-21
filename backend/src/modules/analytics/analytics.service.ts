@@ -187,4 +187,201 @@ export class AnalyticsService {
                 : value
         ));
     }
+
+    /**
+     * Get aggregated statistics across all stores for an organization (OWNER)
+     */
+    async getOwnerAggregatedStats(organizationId: string, startDate?: string, endDate?: string) {
+        let dateFilter: any = {};
+
+        if (startDate && endDate) {
+            dateFilter = {
+                createdAt: {
+                    gte: new Date(startDate),
+                    lte: new Date(endDate)
+                }
+            };
+        } else {
+            // Default to current month
+            const now = new Date();
+            dateFilter = {
+                createdAt: {
+                    gte: new Date(now.getFullYear(), now.getMonth(), 1),
+                    lte: now
+                }
+            };
+        }
+
+        // Get all stores for this organization
+        const stores = await this.prisma.store.findMany({
+            where: { organizationId },
+            select: { id: true }
+        });
+
+        const storeIds = stores.map(s => s.id);
+
+        const [totalSalesRevenue, totalSalesCount, totalProducts, totalCustomers, salesWithItems] = await Promise.all([
+            // Total Sales Revenue (prix de vente total)
+            this.prisma.sale.aggregate({
+                where: {
+                    storeId: { in: storeIds },
+                    status: 'PAID',
+                    ...dateFilter
+                },
+                _sum: {
+                    totalAmount: true
+                }
+            }),
+
+            // Total number of sales
+            this.prisma.sale.count({
+                where: {
+                    storeId: { in: storeIds },
+                    status: 'PAID',
+                    ...dateFilter
+                }
+            }),
+
+            // Total active products
+            this.prisma.product.count({
+                where: { isActive: true }
+            }),
+
+            // Total customers
+            this.prisma.customer.count({
+                where: { organizationId }
+            }),
+
+            // Get all sales with items to calculate profit
+            this.prisma.sale.findMany({
+                where: {
+                    storeId: { in: storeIds },
+                    status: 'PAID',
+                    ...dateFilter
+                },
+                include: {
+                    items: {
+                        include: {
+                            product: {
+                                select: {
+                                    costPrice: true
+                                }
+                            }
+                        }
+                    }
+                }
+            })
+        ]);
+
+
+        // Calculate net profit (Chiffre d'affaires réel - Coût total d'achat)
+        let totalCostOfGoodsSold = 0;
+        salesWithItems.forEach(sale => {
+            sale.items.forEach(item => {
+                const costPrice = Number(item.product?.costPrice || 0);
+                const quantity = item.quantity;
+                totalCostOfGoodsSold += costPrice * quantity;
+            });
+        });
+
+        // Net Profit = Total Sales Revenue (with discounts applied) - Total Cost of Goods Sold
+        const actualSalesRevenue = Number(totalSalesRevenue._sum.totalAmount || 0);
+        const totalProfit = actualSalesRevenue - totalCostOfGoodsSold;
+
+        return {
+            totalSalesRevenue: actualSalesRevenue,
+            totalProfit: totalProfit,
+            totalSales: totalSalesCount,
+            totalProducts,
+            totalCustomers,
+            totalStores: stores.length
+        };
+    }
+
+    /**
+     * Get statistics broken down by individual store (OWNER)
+     */
+    async getOwnerStatsByStore(organizationId: string, startDate?: string, endDate?: string) {
+        let dateFilter: any = {};
+
+        if (startDate && endDate) {
+            dateFilter = {
+                createdAt: {
+                    gte: new Date(startDate),
+                    lte: new Date(endDate)
+                }
+            };
+        } else {
+            // Default to current month
+            const now = new Date();
+            dateFilter = {
+                createdAt: {
+                    gte: new Date(now.getFullYear(), now.getMonth(), 1),
+                    lte: now
+                }
+            };
+        }
+
+        const stores = await this.prisma.store.findMany({
+            where: { organizationId },
+            select: {
+                id: true,
+                name: true,
+                address: true
+            }
+        });
+
+        const statsPromises = stores.map(async (store) => {
+            const [revenue, salesCount, productCount] = await Promise.all([
+                this.prisma.sale.aggregate({
+                    where: {
+                        storeId: store.id,
+                        status: 'PAID',
+                        ...dateFilter
+                    },
+                    _sum: {
+                        totalAmount: true
+                    }
+                }),
+                this.prisma.sale.count({
+                    where: {
+                        storeId: store.id,
+                        status: 'PAID',
+                        ...dateFilter
+                    }
+                }),
+                this.prisma.stockMovement.groupBy({
+                    by: ['productId'],
+                    where: {
+                        storeId: store.id
+                    }
+                }).then(result => result.length)
+            ]);
+
+            return {
+                storeId: store.id,
+                storeName: store.name,
+                storeAddress: store.address,
+                revenue: revenue._sum.totalAmount || 0,
+                salesCount,
+                productCount
+            };
+        });
+
+        return Promise.all(statsPromises);
+    }
+
+    /**
+     * Get store comparison data for charts (OWNER)
+     */
+    async getStoreComparison(organizationId: string, startDate?: string, endDate?: string) {
+        const statsByStore = await this.getOwnerStatsByStore(organizationId, startDate, endDate);
+
+        return {
+            stores: statsByStore.map(s => s.storeName),
+            revenues: statsByStore.map(s => s.revenue),
+            sales: statsByStore.map(s => s.salesCount),
+            products: statsByStore.map(s => s.productCount)
+        };
+    }
 }

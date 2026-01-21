@@ -44,7 +44,8 @@
         "online": "En ligne",
         "offline": "Hors ligne",
         "logout": "Déconnexion",
-        "media": "Média"
+        "media": "Média",
+        "statistics": "Statistiques"
     },
     "dashboard": {
         "title": "Tableau de bord",
@@ -288,8 +289,10 @@
             "primary_color": "Couleur Primaire",
             "secondary_color": "Couleur Secondaire",
             "accent_color": "Couleur d'Accent",
-            "sidebar_bg": "Arrière-plan Barre Latérale",
-            "navbar_bg": "Arrière-plan Barre de Navigation",
+            "sidebar_bg_light": "Arrière-plan Barre Latérale (Mode Clair)",
+            "sidebar_bg_dark": "Arrière-plan Barre Latérale (Mode Sombre)",
+            "navbar_bg_light": "Arrière-plan Barre de Navigation (Mode Clair)",
+            "navbar_bg_dark": "Arrière-plan Barre de Navigation (Mode Sombre)",
             "saving": "Enregistrement...",
             "save": "Enregistrer",
             "success": "Paramètres de l'organisation mis à jour",
@@ -301,6 +304,7 @@
             "add_store": "Ajouter Magasin",
             "new_store": "Nouveau Magasin",
             "edit_store": "Modifier Magasin",
+            "store_name": "Nom du Magasin",
             "delete_confirm": "Êtes-vous sûr de vouloir supprimer ce magasin ? Cette action est irréversible.",
             "form": {
                 "name": "Nom du Magasin",
@@ -363,6 +367,24 @@
                 "delete_success": "Utilisateur retiré avec succès"
             }
         }
+    },
+    "users": {
+        "title": "Gestion des Utilisateurs",
+        "subtitle": "Gérer les utilisateurs et permissions de l'organisation",
+        "add_user": "Ajouter Utilisateur",
+        "edit_user": "Éditer Utilisateur",
+        "deactivate_user": "Désactiver Utilisateur",
+        "activate_user": "Activer Utilisateur",
+        "reset_password": "Réinitialiser Mot de Passe",
+        "new_password": "Nouveau Mot de Passe",
+        "confirm_password": "Confirmer Mot de Passe",
+        "password_reset_success": "Mot de passe réinitialisé avec succès",
+        "deactivate_confirm": "Êtes-vous sûr de vouloir désactiver cet utilisateur ?",
+        "activate_confirm": "Êtes-vous sûr de vouloir activer cet utilisateur ?",
+        "status_updated": "Statut utilisateur mis à jour avec succès",
+        "password_mismatch": "Les mots de passe ne correspondent pas",
+        "user_inactive": "Inactif",
+        "user_active": "Actif"
     },
     "stores": {
         "title": "Magasins",
@@ -490,5 +512,29 @@
         "remaining": "Reste à payer",
         "thank_you": "Merci de votre confiance !",
         "powered_by": "Propulsé par StockManagement"
+    },
+    "statistics": {
+        "title": "Statistiques Propriétaire",
+        "subtitle": "Vue d'ensemble des performances de toutes vos boutiques",
+        "aggregated": "Vue Agrégée",
+        "by_store": "Par Boutique",
+        "comparison": "Comparaison des Boutiques",
+        "total_sales_revenue": "Chiffre d'Affaires Total",
+        "total_profit": "Bénéfice Net",
+        "total_revenue": "Revenu Total",
+        "total_sales": "Ventes Totales",
+        "total_products": "Produits Totaux",
+        "total_customers": "Clients Totaux",
+        "best_performing_store": "Meilleure Boutique",
+        "revenue_by_store": "Revenu par Boutique",
+        "sales_by_store": "Ventes par Boutique",
+        "no_data": "Aucune donnée disponible pour la période sélectionnée"
+    },
+    "export": {
+        "pdf": "Exporter PDF",
+        "excel": "Exporter Excel",
+        "csv": "Exporter CSV",
+        "success": "Export réussi",
+        "error": "Échec de l'export"
     }
 }

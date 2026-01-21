@@ -39,6 +39,27 @@ export class UsersController {
         return this.usersService.update(id, data, organizationId);
     }
 
+    @Patch(':id/toggle-status')
+    @Roles(UserRole.OWNER, UserRole.MANAGER)
+    async toggleStatus(
+        @Param('id') id: string,
+        @Request() req: any,
+        @CurrentOrganization() organizationId: string
+    ) {
+        return this.usersService.toggleUserStatus(id, req.user.id, organizationId);
+    }
+
+    @Patch(':id/reset-password')
+    @Roles(UserRole.OWNER, UserRole.MANAGER)
+    async resetPassword(
+        @Param('id') id: string,
+        @Body() data: { newPassword: string },
+        @Request() req: any,
+        @CurrentOrganization() organizationId: string
+    ) {
+        return this.usersService.resetUserPassword(id, data.newPassword, req.user.id, organizationId);
+    }
+
     @Delete(':id')
     @Roles(UserRole.OWNER)
     async remove(@Param('id') id: string, @CurrentOrganization() organizationId: string) {

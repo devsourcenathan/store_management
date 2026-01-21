@@ -34,12 +34,18 @@ api.interceptors.response.use(
         // Handle offline/network errors
         if (!error.response && (error.code === 'ERR_NETWORK' || !navigator.onLine)) {
             const config = error.config;
+            const url = config.url || '';
+
+            // Skip offline handling for user management endpoints (sensitive operations)
+            if (url.includes('/users/') || url.includes('/auth/')) {
+                toast.error('No internet connection. User management requires online access.');
+                return Promise.reject(error);
+            }
 
             // Only handle write operations (POST, PATCH, PUT, DELETE)
             if (['post', 'patch', 'put', 'delete'].includes(config.method?.toLowerCase() || '')) {
                 try {
                     // Extract entity from URL
-                    const url = config.url || '';
                     const entity = extractEntityFromUrl(url);
                     const data = config.data ? JSON.parse(config.data) : {};
 
@@ -77,7 +83,6 @@ api.interceptors.response.use(
             } else {
                 // For read operations, try to get from IndexedDB
                 try {
-                    const url = config.url || '';
                     const entity = extractEntityFromUrl(url);
                     const table = getTableForEntity(entity);
 

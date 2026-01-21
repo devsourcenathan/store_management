@@ -10,8 +10,7 @@ export class UsersService {
     async findAll(organizationId: string) {
         return this.prisma.user.findMany({
             where: {
-                organizationId,
-                isActive: true
+                organizationId
             },
             include: {
                 stores: {
@@ -152,6 +151,63 @@ export class UsersService {
         return this.prisma.user.update({
             where: { id },
             data: { isActive: false }
+        });
+    }
+
+    async toggleUserStatus(userId: string, requestingUserId: string, organizationId: string) {
+        // Prevent users from deactivating themselves
+        if (userId === requestingUserId) {
+            throw new ConflictException('You cannot deactivate your own account');
+        }
+
+        const user = await this.prisma.user.findFirst({
+            where: { id: userId, organizationId }
+        });
+
+        if (!user) {
+            throw new NotFoundException('User not found');
+        }
+
+        // Get requesting user to check role hierarchy
+        const requestingUser = await this.prisma.user.findUnique({
+            where: { id: requestingUserId }
+        });
+
+        // Prevent MANAGER from deactivating OWNER
+        if (requestingUser.role === UserRole.MANAGER && user.role === UserRole.OWNER) {
+            throw new ConflictException('Managers cannot deactivate owners');
+        }
+
+        return this.prisma.user.update({
+            where: { id: userId },
+            data: { isActive: !user.isActive }
+        });
+    }
+
+    async resetUserPassword(userId: string, newPassword: string, requestingUserId: string, organizationId: string) {
+        const user = await this.prisma.user.findFirst({
+            where: { id: userId, organizationId }
+        });
+
+        if (!user) {
+            throw new NotFoundException('User not found');
+        }
+
+        // Get requesting user to check role hierarchy
+        const requestingUser = await this.prisma.user.findUnique({
+            where: { id: requestingUserId }
+        });
+
+        // Prevent MANAGER from resetting OWNER password
+        if (requestingUser.role === UserRole.MANAGER && user.role === UserRole.OWNER) {
+            throw new ConflictException('Managers cannot reset owner passwords');
+        }
+
+        const passwordHash = await bcrypt.hash(newPassword, 10);
+
+        return this.prisma.user.update({
+            where: { id: userId },
+            data: { passwordHash }
         });
     }
 }
