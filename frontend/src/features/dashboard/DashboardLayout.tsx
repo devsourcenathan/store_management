@@ -85,14 +85,18 @@ export function DashboardLayout() {
             items: [
                 { name: t('nav.media'), href: '/media', icon: Image },
             ]
-        },
-        {
+        }
+    ];
+
+    // Settings - Only for OWNER and MANAGER
+    if (user?.role === 'OWNER' || user?.role === 'MANAGER') {
+        groupedNavigation.push({
             title: 'Settings',
             items: [
                 { name: t('nav.settings'), href: '/settings', icon: Settings },
             ]
-        }
-    ];
+        });
+    }
 
     if (user?.role === 'GLOBAL_ADMIN') {
         groupedNavigation.push({

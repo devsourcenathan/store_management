@@ -368,6 +368,24 @@
             }
         }
     },
+    "users": {
+        "title": "Users Management",
+        "subtitle": "Manage organization users and permissions",
+        "add_user": "Add User",
+        "edit_user": "Edit User",
+        "deactivate_user": "Deactivate User",
+        "activate_user": "Activate User",
+        "reset_password": "Reset Password",
+        "new_password": "New Password",
+        "confirm_password": "Confirm Password",
+        "password_reset_success": "Password reset successfully",
+        "deactivate_confirm": "Are you sure you want to deactivate this user?",
+        "activate_confirm": "Are you sure you want to activate this user?",
+        "status_updated": "User status updated successfully",
+        "password_mismatch": "Passwords do not match",
+        "user_inactive": "Inactive",
+        "user_active": "Active"
+    },
     "stores": {
         "title": "Stores",
         "subtitle": "Manage your store locations",

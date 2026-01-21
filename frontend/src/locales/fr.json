@@ -368,6 +368,24 @@
             }
         }
     },
+    "users": {
+        "title": "Gestion des Utilisateurs",
+        "subtitle": "Gérer les utilisateurs et permissions de l'organisation",
+        "add_user": "Ajouter Utilisateur",
+        "edit_user": "Éditer Utilisateur",
+        "deactivate_user": "Désactiver Utilisateur",
+        "activate_user": "Activer Utilisateur",
+        "reset_password": "Réinitialiser Mot de Passe",
+        "new_password": "Nouveau Mot de Passe",
+        "confirm_password": "Confirmer Mot de Passe",
+        "password_reset_success": "Mot de passe réinitialisé avec succès",
+        "deactivate_confirm": "Êtes-vous sûr de vouloir désactiver cet utilisateur ?",
+        "activate_confirm": "Êtes-vous sûr de vouloir activer cet utilisateur ?",
+        "status_updated": "Statut utilisateur mis à jour avec succès",
+        "password_mismatch": "Les mots de passe ne correspondent pas",
+        "user_inactive": "Inactif",
+        "user_active": "Actif"
+    },
     "stores": {
         "title": "Magasins",
         "subtitle": "Gérer vos points de vente",

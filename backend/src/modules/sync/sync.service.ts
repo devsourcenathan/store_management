@@ -63,6 +63,7 @@ export class SyncService {
             'subscriptionOffers': 'subscriptionOffer',
             'subscriptionRenewals': 'subscriptionRenewal',
             'subscriptionBalanceEntries': 'subscriptionBalanceEntry',
+            'users': 'user',
         };
 
         if (entity === 'sync') {
