@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/services/api';
 import { CustomerDetailsSheet } from './CustomerDetailsSheet';
+import { ExportButton } from '@/components/ExportButton';
 
 interface Customer {
     id: string;
@@ -103,12 +104,42 @@ export function CustomersPage() {
                     <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100">{t('customers.title')}</h2>
                     <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">{t('customers.subtitle')}</p>
                 </div>
-                <button
-                    onClick={() => setIsModalOpen(true)}
-                    className="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors whitespace-nowrap"
-                >
-                    {t('customers.add_customer')}
-                </button>
+                <div className="flex gap-2">
+                    <ExportButton
+                        data={customers || []}
+                        columns={[
+                            { header: t('common.name'), key: 'name' },
+                            { header: t('common.email'), key: 'email' },
+                            { header: t('common.phone'), key: 'phone' },
+                            { header: t('customers.credit_limit'), key: 'creditLimit' },
+                            { header: t('customers.current_credit'), key: 'currentCredit' },
+                        ]}
+                        title={t('customers.title')}
+                        format="pdf"
+                        variant="outline"
+                        size="sm"
+                    />
+                    <ExportButton
+                        data={customers || []}
+                        columns={[
+                            { header: t('common.name'), key: 'name' },
+                            { header: t('common.email'), key: 'email' },
+                            { header: t('common.phone'), key: 'phone' },
+                            { header: t('customers.credit_limit'), key: 'creditLimit' },
+                            { header: t('customers.current_credit'), key: 'currentCredit' },
+                        ]}
+                        title={t('customers.title')}
+                        format="excel"
+                        variant="outline"
+                        size="sm"
+                    />
+                    <button
+                        onClick={() => setIsModalOpen(true)}
+                        className="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors whitespace-nowrap"
+                    >
+                        {t('customers.add_customer')}
+                    </button>
+                </div>
             </div>
 
             {/* Search Bar */}

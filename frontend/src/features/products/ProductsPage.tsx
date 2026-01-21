@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/Sheet";
 import { Pagination } from "@/components/ui/Pagination";
 import { usePagination } from "@/hooks/usePagination";
+import { ExportButton } from '@/components/ExportButton';
 
 interface Product {
     id: string;
@@ -188,6 +189,34 @@ export function ProductsPage() {
                     <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">{t('products.subtitle')}</p>
                 </div>
                 <div className="flex flex-row gap-2 sm:gap-3">
+                    <ExportButton
+                        data={products || []}
+                        columns={[
+                            { header: t('products.fields.name'), key: 'name' },
+                            { header: t('products.fields.sku'), key: 'sku' },
+                            { header: t('products.fields.category'), key: 'category.name' },
+                            { header: t('products.fields.price'), key: 'basePrice' },
+                            { header: t('products.fields.stock'), key: 'quantity' },
+                        ]}
+                        title={t('products.title')}
+                        format="pdf"
+                        variant="outline"
+                        size="sm"
+                    />
+                    <ExportButton
+                        data={products || []}
+                        columns={[
+                            { header: t('products.fields.name'), key: 'name' },
+                            { header: t('products.fields.sku'), key: 'sku' },
+                            { header: t('products.fields.category'), key: 'category.name' },
+                            { header: t('products.fields.price'), key: 'basePrice' },
+                            { header: t('products.fields.stock'), key: 'quantity' },
+                        ]}
+                        title={t('products.title')}
+                        format="excel"
+                        variant="outline"
+                        size="sm"
+                    />
                     {stores && (
                         <select
                             className="border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg px-2 sm:px-3 py-2 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-full xs:w-auto"

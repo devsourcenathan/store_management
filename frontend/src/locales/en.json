@@ -44,7 +44,8 @@
         "online": "Online",
         "offline": "Offline",
         "logout": "Logout",
-        "media": "Media"
+        "media": "Media",
+        "statistics": "Statistics"
     },
     "dashboard": {
         "title": "Dashboard",
@@ -303,6 +304,7 @@
             "add_store": "Add Store",
             "new_store": "New Store",
             "edit_store": "Edit Store",
+            "store_name": "Store Name",
             "delete_confirm": "Are you sure you want to delete this store? This action cannot be undone.",
             "form": {
                 "name": "Store Name",
@@ -492,5 +494,29 @@
         "remaining": "Remaining",
         "thank_you": "Thank you for your business!",
         "powered_by": "Powered by StockManagement"
+    },
+    "statistics": {
+        "title": "Owner Statistics",
+        "subtitle": "Overview of all your stores performance",
+        "aggregated": "Aggregated View",
+        "by_store": "By Store",
+        "comparison": "Store Comparison",
+        "total_sales_revenue": "Total Sales Revenue",
+        "total_profit": "Net Profit",
+        "total_revenue": "Total Revenue",
+        "total_sales": "Total Sales",
+        "total_products": "Total Products",
+        "total_customers": "Total Customers",
+        "best_performing_store": "Best Performing Store",
+        "revenue_by_store": "Revenue by Store",
+        "sales_by_store": "Sales by Store",
+        "no_data": "No data available for the selected period"
+    },
+    "export": {
+        "pdf": "Export PDF",
+        "excel": "Export Excel",
+        "csv": "Export CSV",
+        "success": "Export successful",
+        "error": "Export failed"
     }
 }

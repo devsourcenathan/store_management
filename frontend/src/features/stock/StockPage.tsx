@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/Sheet";
 import { usePagination } from '@/hooks/usePagination';
 import { Pagination } from "@/components/ui/Pagination";
+import { ExportButton } from '@/components/ExportButton';
 
 interface StockMovement {
     id: string;
@@ -115,6 +116,34 @@ export function StockPage() {
                     <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">{t('stock.subtitle')}</p>
                 </div>
                 <div className="flex flex-row gap-2 sm:gap-3">
+                    <ExportButton
+                        data={movements || []}
+                        columns={[
+                            { header: t('common.date'), key: 'createdAt' },
+                            { header: t('products.fields.product'), key: 'product.name' },
+                            { header: t('stock.movement_type'), key: 'type' },
+                            { header: t('stock.quantity'), key: 'quantity' },
+                            { header: t('stock.reference'), key: 'reference' },
+                        ]}
+                        title={t('stock.title')}
+                        format="pdf"
+                        variant="outline"
+                        size="sm"
+                    />
+                    <ExportButton
+                        data={movements || []}
+                        columns={[
+                            { header: t('common.date'), key: 'createdAt' },
+                            { header: t('products.fields.product'), key: 'product.name' },
+                            { header: t('stock.movement_type'), key: 'type' },
+                            { header: t('stock.quantity'), key: 'quantity' },
+                            { header: t('stock.reference'), key: 'reference' },
+                        ]}
+                        title={t('stock.title')}
+                        format="excel"
+                        variant="outline"
+                        size="sm"
+                    />
                     <button
                         onClick={() => setIsTransferModalOpen(true)}
                         className="w-full xs:w-auto px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors whitespace-nowrap"

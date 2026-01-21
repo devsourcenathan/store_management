@@ -44,7 +44,8 @@
         "online": "En ligne",
         "offline": "Hors ligne",
         "logout": "Déconnexion",
-        "media": "Média"
+        "media": "Média",
+        "statistics": "Statistiques"
     },
     "dashboard": {
         "title": "Tableau de bord",
@@ -303,6 +304,7 @@
             "add_store": "Ajouter Magasin",
             "new_store": "Nouveau Magasin",
             "edit_store": "Modifier Magasin",
+            "store_name": "Nom du Magasin",
             "delete_confirm": "Êtes-vous sûr de vouloir supprimer ce magasin ? Cette action est irréversible.",
             "form": {
                 "name": "Nom du Magasin",
@@ -492,5 +494,29 @@
         "remaining": "Reste à payer",
         "thank_you": "Merci de votre confiance !",
         "powered_by": "Propulsé par StockManagement"
+    },
+    "statistics": {
+        "title": "Statistiques Propriétaire",
+        "subtitle": "Vue d'ensemble des performances de toutes vos boutiques",
+        "aggregated": "Vue Agrégée",
+        "by_store": "Par Boutique",
+        "comparison": "Comparaison des Boutiques",
+        "total_sales_revenue": "Chiffre d'Affaires Total",
+        "total_profit": "Bénéfice Net",
+        "total_revenue": "Revenu Total",
+        "total_sales": "Ventes Totales",
+        "total_products": "Produits Totaux",
+        "total_customers": "Clients Totaux",
+        "best_performing_store": "Meilleure Boutique",
+        "revenue_by_store": "Revenu par Boutique",
+        "sales_by_store": "Ventes par Boutique",
+        "no_data": "Aucune donnée disponible pour la période sélectionnée"
+    },
+    "export": {
+        "pdf": "Exporter PDF",
+        "excel": "Exporter Excel",
+        "csv": "Exporter CSV",
+        "success": "Export réussi",
+        "error": "Échec de l'export"
     }
 }

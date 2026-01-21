@@ -5,6 +5,7 @@ import { api } from '@/services/api';
 import { Plus, Pencil, Trash2, Mail, Phone, MapPin } from 'lucide-react';
 import { usePagination } from '@/hooks/usePagination';
 import { Pagination } from "@/components/ui/Pagination";
+import { ExportButton } from '@/components/ExportButton';
 
 interface Supplier {
     id: string;
@@ -113,13 +114,41 @@ export function SuppliersPage() {
                     <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100">{t('suppliers.management_title')}</h2>
                     <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">{t('suppliers.management_subtitle')}</p>
                 </div>
-                <button
-                    onClick={openNewModal}
-                    className="w-full sm:w-auto flex items-center justify-center space-x-2 px-4 py-2 btn-theme-primary rounded-lg transition-colors whitespace-nowrap"
-                >
-                    <Plus className="w-4 h-4" />
-                    <span>{t('common.create', 'Create')} {t('suppliers.supplier')}</span>
-                </button>
+                <div className="flex gap-2">
+                    <ExportButton
+                        data={suppliers || []}
+                        columns={[
+                            { header: t('common.name'), key: 'name' },
+                            { header: t('common.email'), key: 'email' },
+                            { header: t('common.phone'), key: 'phone' },
+                            { header: t('common.address'), key: 'address' },
+                        ]}
+                        title={t('suppliers.management_title')}
+                        format="pdf"
+                        variant="outline"
+                        size="sm"
+                    />
+                    <ExportButton
+                        data={suppliers || []}
+                        columns={[
+                            { header: t('common.name'), key: 'name' },
+                            { header: t('common.email'), key: 'email' },
+                            { header: t('common.phone'), key: 'phone' },
+                            { header: t('common.address'), key: 'address' },
+                        ]}
+                        title={t('suppliers.management_title')}
+                        format="excel"
+                        variant="outline"
+                        size="sm"
+                    />
+                    <button
+                        onClick={openNewModal}
+                        className="w-full sm:w-auto flex items-center justify-center space-x-2 px-4 py-2 btn-theme-primary rounded-lg transition-colors whitespace-nowrap"
+                    >
+                        <Plus className="w-4 h-4" />
+                        <span>{t('common.create', 'Create')} {t('suppliers.supplier')}</span>
+                    </button>
+                </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

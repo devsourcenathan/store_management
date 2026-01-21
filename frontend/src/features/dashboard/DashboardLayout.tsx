@@ -31,6 +31,7 @@ import {
     Menu,
     Shield,
     Image,
+    BarChart3
 } from 'lucide-react';
 
 export function DashboardLayout() {
@@ -97,6 +98,13 @@ export function DashboardLayout() {
         groupedNavigation.push({
             title: 'Admin',
             items: [{ name: 'Admin Panel', href: '/admin', icon: Shield }]
+        });
+    }
+
+    if (user?.role === 'OWNER') {
+        groupedNavigation.splice(1, 0, {
+            title: 'Analytics',
+            items: [{ name: t('nav.statistics'), href: '/statistics', icon: BarChart3 }]
         });
     }
 

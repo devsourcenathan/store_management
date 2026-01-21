@@ -17,6 +17,7 @@ interface Category {
 
 export function CategoriesPage() {
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [editingCategory, setEditingCategory] = useState<Category | null>(null);
     const [formData, setFormData] = useState({ name: '', description: '' });
     const { t } = useTranslation();
     const queryClient = useQueryClient();
@@ -52,9 +53,60 @@ export function CategoriesPage() {
         },
     });
 
+    const updateCategoryMutation = useMutation({
+        mutationFn: async ({ id, data }: { id: string; data: any }) => {
+            return api.patch(`/categories/${id}`, data);
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['categories'] });
+            setIsModalOpen(false);
+            setFormData({ name: '', description: '' });
+            setEditingCategory(null);
+        },
+    });
+
+    const deleteCategoryMutation = useMutation({
+        mutationFn: async (id: string) => {
+            if (!confirm(t('common.confirm_delete', 'Are you sure you want to delete this category?'))) {
+                throw new Error('Cancelled');
+            }
+            return api.delete(`/categories/${id}`);
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['categories'] });
+        },
+        onError: (error: any) => {
+            if (error.message !== 'Cancelled') {
+                alert(t('common.error', 'An error occurred'));
+            }
+        }
+    });
+
+    const handleEdit = (category: Category) => {
+        setEditingCategory(category);
+        setFormData({
+            name: category.name,
+            description: category.description || '',
+        });
+        setIsModalOpen(true);
+    };
+
+    const handleDelete = (id: string) => {
+        deleteCategoryMutation.mutate(id);
+    };
+
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        createCategoryMutation.mutate(formData);
+        if (editingCategory) {
+            updateCategoryMutation.mutate({ id: editingCategory.id, data: formData });
+        } else {
+            createCategoryMutation.mutate(formData);
+        }
+    };
+
+    const resetForm = () => {
+        setFormData({ name: '', description: '' });
+        setEditingCategory(null);
     };
 
     return (
@@ -65,7 +117,7 @@ export function CategoriesPage() {
                     <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">{t('products.categories_subtitle')}</p>
                 </div>
                 <button
-                    onClick={() => setIsModalOpen(true)}
+                    onClick={() => { resetForm(); setIsModalOpen(true); }}
                     className="w-full sm:w-auto flex items-center justify-center space-x-2 px-4 py-2 btn-theme-primary rounded-lg transition-colors whitespace-nowrap"
                 >
                     <Plus className="w-4 h-4" />
@@ -90,10 +142,16 @@ export function CategoriesPage() {
                                         <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{category.description || '-'}</p>
                                     </div>
                                     <div className="flex items-center space-x-2 ml-2">
-                                        <button className="p-2 text-theme-primary hover:bg-theme-primary/10 rounded-lg transition-colors">
+                                        <button
+                                            onClick={() => handleEdit(category)}
+                                            className="p-2 text-theme-primary hover:bg-theme-primary/10 rounded-lg transition-colors"
+                                        >
                                             <Pencil className="w-4 h-4" />
                                         </button>
-                                        <button className="p-2 text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/30 rounded-lg transition-colors">
+                                        <button
+                                            onClick={() => handleDelete(category.id)}
+                                            className="p-2 text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/30 rounded-lg transition-colors"
+                                        >
                                             <Trash2 className="w-4 h-4" />
                                         </button>
                                     </div>
@@ -130,10 +188,16 @@ export function CategoriesPage() {
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{category.description || '-'}</td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{category._count?.products || 0}</td>
                                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                            <button className="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 mr-3">
+                                            <button
+                                                onClick={() => handleEdit(category)}
+                                                className="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 mr-3"
+                                            >
                                                 <Pencil className="w-4 h-4" />
                                             </button>
-                                            <button className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300">
+                                            <button
+                                                onClick={() => handleDelete(category.id)}
+                                                className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300"
+                                            >
                                                 <Trash2 className="w-4 h-4" />
                                             </button>
                                         </td>
@@ -155,7 +219,9 @@ export function CategoriesPage() {
             {isModalOpen && (
                 <div className="fixed inset-0 bg-gray-600 bg-opacity-50 dark:bg-black/80 flex items-center justify-center z-50">
                     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md border border-gray-200 dark:border-gray-700">
-                        <h3 className="text-xl font-bold mb-4 text-gray-900 dark:text-gray-100">{t('products.add_category')}</h3>
+                        <h3 className="text-xl font-bold mb-4 text-gray-900 dark:text-gray-100">
+                            {editingCategory ? t('common.edit') + ' ' + t('products.category_name') : t('products.add_category')}
+                        </h3>
                         <form onSubmit={handleSubmit} className="space-y-4">
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('products.category_name')}</label>
@@ -176,9 +242,22 @@ export function CategoriesPage() {
                                 />
                             </div>
                             <div className="flex justify-end space-x-3 mt-6">
-                                <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">{t('common.cancel')}</button>
-                                <button type="submit" disabled={createCategoryMutation.isPending} className="px-4 py-2 btn-theme-primary rounded-md">
-                                    {createCategoryMutation.isPending ? t('common.processing') : t('products.add_category')}
+                                <button
+                                    type="button"
+                                    onClick={() => { setIsModalOpen(false); resetForm(); }}
+                                    className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                                >
+                                    {t('common.cancel')}
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={createCategoryMutation.isPending || updateCategoryMutation.isPending}
+                                    className="px-4 py-2 btn-theme-primary rounded-md disabled:opacity-50"
+                                >
+                                    {createCategoryMutation.isPending || updateCategoryMutation.isPending
+                                        ? t('common.processing')
+                                        : (editingCategory ? t('common.save') : t('products.add_category'))
+                                    }
                                 </button>
                             </div>
                         </form>
