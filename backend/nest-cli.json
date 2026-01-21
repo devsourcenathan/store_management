@@ -9,6 +9,10 @@
             {
                 "include": "i18n/**/*",
                 "watchAssets": true
+            },
+            {
+                "include": "**/*.hbs",
+                "watchAssets": true
             }
         ]
     }

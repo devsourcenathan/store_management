@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{t.title}}</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+
+        .container {
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+        }
+
+        .header p {
+            margin: 10px 0 0 0;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .metric-card {
+            background: #f8f9fa;
+            border-left: 4px solid #3b82f6;
+            padding: 20px;
+            border-radius: 4px;
+        }
+
+        .metric-label {
+            font-size: 12px;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .metric-value {
+            font-size: 28px;
+            font-weight: bold;
+            color: #1f2937;
+        }
+
+        .metric-comparison {
+            font-size: 12px;
+            margin-top: 5px;
+        }
+
+        .text-green {
+            color: #10b981;
+        }
+
+        .text-red {
+            color: #ef4444;
+        }
+
+        .section {
+            margin: 30px 0;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #1f2937;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 10px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        th {
+            background-color: #f3f4f6;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #374151;
+            border-bottom: 2px solid #e5e7eb;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        tr:hover {
+            background-color: #f9fafb;
+        }
+
+        .alert-box {
+            background-color: #fef2f2;
+            border: 1px solid #fee2e2;
+            border-radius: 6px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+
+        .alert-title {
+            color: #991b1b;
+            font-weight: 600;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+
+        .footer {
+            background-color: #f9fafb;
+            padding: 20px 30px;
+            text-align: center;
+            color: #6b7280;
+            font-size: 14px;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .footer a {
+            color: #3b82f6;
+            text-decoration: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>� {{t.title}}</h1>
+            <p>{{organizationName}}</p>
+            <p>{{date}}</p>
+        </div>
+
+        <div class="content">
+            <p>{{t.greeting}} {{userName}},</p>
+            <p>{{t.intro}}</p>
+
+            <div class="metrics">
+                <div class="metric-card">
+                    <div class="metric-label">{{t.revenue}}</div>
+                    <div class="metric-value">{{revenue}} FCFA</div>
+                    <div class="metric-comparison">
+                        {{#if (gt revenue revenueComparison)}}
+                        <span class="text-green">▲ {{t.vs_previous}}</span>
+                        {{else}}
+                        <span class="text-red">▼ {{t.vs_previous}}</span>
+                        {{/if}}
+                    </div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-label">{{t.profit}}</div>
+                    <div class="metric-value">{{profit}} FCFA</div>
+                    <div class="metric-comparison">
+                        {{#if (gt profit profitComparison)}}
+                        <span class="text-green">▲ {{t.vs_previous}}</span>
+                        {{else}}
+                        <span class="text-red">▼ {{t.vs_previous}}</span>
+                        {{/if}}
+                    </div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-label">{{t.sales_count}}</div>
+                    <div class="metric-value">{{salesCount}}</div>
+                </div>
+            </div>
+
+            {{#if topProducts.length}}
+            <div class="section">
+                <div class="section-title">🔥 {{t.top_products}}</div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>{{t.product}}</th>
+                            <th>{{t.qty}}</th>
+                            <th>{{t.revenue}}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{#each topProducts}}
+                        <tr>
+                            <td>{{this.name}}</td>
+                            <td>{{this.quantity}}</td>
+                            <td>{{this.revenue}} FCFA</td>
+                        </tr>
+                        {{/each}}
+                    </tbody>
+                </table>
+            </div>
+            {{/if}}
+
+            {{#if storePerformance.length}}
+            <div class="section">
+                <div class="section-title">🏪 {{t.store_performance}}</div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>{{t.store}}</th>
+                            <th>{{t.sales}}</th>
+                            <th>{{t.revenue}}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{#each storePerformance}}
+                        <tr>
+                            <td>{{this.name}}</td>
+                            <td>{{this.salesCount}}</td>
+                            <td>{{this.revenue}} FCFA</td>
+                        </tr>
+                        {{/each}}
+                    </tbody>
+                </table>
+            </div>
+            {{/if}}
+
+            {{#if lowStockAlerts.length}}
+            <div class="alert-box">
+                <div class="alert-title">⚠️ {{t.low_stock}}</div>
+                <p>{{t.low_stock_intro}}</p>
+                <ul>
+                    {{#each lowStockAlerts}}
+                    <li><strong>{{this.product.name}}</strong> ({{this.store.name}}): {{this.currentLevel}} /
+                        {{this.threshold}}</li>
+                    {{/each}}
+                </ul>
+            </div>
+            {{/if}}
+        </div>
+
+        <div class="footer">
+            <p>{{t.footer}}</p>
+            <p>
+                <a href="#">{{t.view_dashboard}}</a> •
+                <a href="#">{{t.manage_settings}}</a>
+            </p>
+        </div>
+    </div>
+</body>
+
+</html>

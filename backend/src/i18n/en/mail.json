@@ -1,0 +1,40 @@
+{
+    "reports": {
+        "daily": {
+            "title": "Daily Sales Report",
+            "greeting": "Hello",
+            "intro": "Here is your daily sales summary for yesterday:",
+            "revenue": "Revenue",
+            "profit": "Profit",
+            "sales_count": "Sales Count",
+            "top_products": "Top 5 Products",
+            "store_performance": "Store Performance",
+            "low_stock": "Low Stock Alerts",
+            "low_stock_intro": "The following products are running low:",
+            "product": "Product",
+            "qty": "Quantity",
+            "store": "Store",
+            "sales": "Sales",
+            "vs_previous": "vs previous day",
+            "footer": "This is an automated report from your Stock Management System",
+            "view_dashboard": "View Dashboard",
+            "manage_settings": "Manage Settings"
+        },
+        "weekly": {
+            "title": "Weekly Sales Report",
+            "greeting": "Hello",
+            "intro": "Here is the overview of your sales performance for this week:",
+            "revenue": "Revenue",
+            "profit": "Profit",
+            "total_sales": "Total Sales",
+            "top_products": "Top 10 Best Selling Products",
+            "top_customers": "Top 10 Customers",
+            "product": "Product",
+            "qty": "Qty",
+            "customer": "Customer",
+            "orders": "Orders",
+            "total_spent": "Total Spent",
+            "footer": "Automated Weekly Report | Stock Management System"
+        }
+    }
+}
