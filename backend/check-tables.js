@@ -11,7 +11,7 @@ async function checkTables() {
             ORDER BY table_name
         `;
         
-        console.log('Tables in database:');
+        console.log('Tables:');
         tables.forEach(t => console.log(`  - ${t.table_name}`));
         
         // Check if subscription_accounts exists
