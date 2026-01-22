@@ -1,46 +1,24 @@
 import { Module } from '@nestjs/common';
-import { MailerModule } from '@nestjs-modules/mailer';
-import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-import { join } from 'path';
+import { ConfigModule } from '@nestjs/config';
 import { MailService } from './mail.service';
+import { MailController } from './mail.controller';
+import { TemplateRendererService } from './services/template-renderer.service';
+import { SesMailProvider } from './providers/ses-mail.provider';
+import { ResendMailProvider } from './providers/resend-mail.provider';
+import { LogMailProvider } from './providers/log-mail.provider';
+import { MailProviderFactory } from './providers/mail-provider.factory';
 
 @Module({
-    imports: [
-        MailerModule.forRootAsync({
-            imports: [ConfigModule],
-            useFactory: async (configService: ConfigService) => ({
-                transport: {
-                    host: 'email-smtp.' + configService.get('AWS_REGION') + '.amazonaws.com',
-                    port: 587,
-                    secure: false,
-                    auth: {
-                        user: configService.get('AWS_SES_SMTP_USERNAME'),
-                        pass: configService.get('AWS_SES_SMTP_PASSWORD'),
-                    },
-                },
-                defaults: {
-                    from: `"${configService.get('AWS_SES_FROM_NAME')}" <${configService.get('AWS_SES_FROM_EMAIL')}>`,
-                },
-                template: {
-                    dir: join(__dirname, 'templates'),
-                    adapter: new HandlebarsAdapter({
-                        gt: (a, b) => a > b,
-                        lt: (a, b) => a < b,
-                        eq: (a, b) => a === b,
-                        ne: (a, b) => a !== b,
-                        gte: (a, b) => a >= b,
-                        lte: (a, b) => a <= b,
-                    }),
-                    options: {
-                        strict: true,
-                    },
-                },
-            }),
-            inject: [ConfigService],
-        }),
+    imports: [ConfigModule],
+    controllers: [MailController],
+    providers: [
+        TemplateRendererService,
+        SesMailProvider,
+        ResendMailProvider,
+        LogMailProvider,
+        MailProviderFactory,
+        MailService,
     ],
-    providers: [MailService],
     exports: [MailService],
 })
 export class MailModule { }

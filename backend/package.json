@@ -53,6 +53,7 @@
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
     "reflect-metadata": "^0.1.13",
+    "resend": "^6.8.0",
     "rxjs": "^7.8.1",
     "sharp": "^0.33.1",
     "uuid": "^9.0.1"

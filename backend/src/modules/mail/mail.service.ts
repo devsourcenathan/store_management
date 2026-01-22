@@ -1,9 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { MailerService } from '@nestjs-modules/mailer';
 import { ConfigService } from '@nestjs/config';
 import { I18nService } from 'nestjs-i18n';
+import { MailProviderFactory } from './providers/mail-provider.factory';
+import { EmailOptions } from './providers/mail-provider.interface';
 
-interface EmailOptions {
+interface LegacyEmailOptions {
     to: string;
     subject: string;
     template: string;
@@ -21,33 +22,69 @@ export class MailService {
     private readonly enableEmails: boolean;
 
     constructor(
-        private readonly mailerService: MailerService,
+        private readonly providerFactory: MailProviderFactory,
         private readonly configService: ConfigService,
         private readonly i18n: I18nService,
     ) {
         this.enableEmails = this.configService.get('ENABLE_EMAILS') === 'true';
     }
 
-    async sendEmail(options: EmailOptions): Promise<boolean> {
+    /**
+     * Send an email with automatic fallback support
+     */
+    private async sendEmailWithFallback(options: EmailOptions): Promise<boolean> {
         if (!this.enableEmails) {
             this.logger.warn(`Emails are disabled. Would have sent email to ${options.to} with subject: ${options.subject}`);
             return true;
         }
 
-        try {
-            await this.mailerService.sendMail({
-                to: options.to,
-                subject: options.subject,
-                template: `./${options.template}`,
-                context: options.context,
-                attachments: options.attachments,
-            });
-            this.logger.log(`Email sent to ${options.to}`);
+        const primaryProvider = this.providerFactory.getPrimaryProvider();
+        const result = await primaryProvider.sendEmail(options);
+
+        if (result.success) {
+            this.logger.log(`Email sent to ${options.to} via ${result.provider}`);
             return true;
-        } catch (error) {
-            this.logger.error(`Failed to send email to ${options.to}:`, error);
+        }
+
+        // Try fallback if enabled
+        if (this.providerFactory.isFallbackEnabled()) {
+            const fallbackProvider = this.providerFactory.getFallbackProvider();
+            this.logger.warn(
+                `Primary provider (${primaryProvider.getName()}) failed, attempting fallback to ${fallbackProvider.getName()}`,
+            );
+
+            const fallbackResult = await fallbackProvider.sendEmail(options);
+
+            if (fallbackResult.success) {
+                this.logger.log(`Email sent to ${options.to} via fallback provider ${fallbackResult.provider}`);
+                return true;
+            }
+
+            this.logger.error(
+                `Both primary and fallback providers failed to send email to ${options.to}`,
+            );
             return false;
         }
+
+        this.logger.error(`Failed to send email to ${options.to}: ${result.error}`);
+        return false;
+    }
+
+    /**
+     * Legacy sendEmail method for backward compatibility
+     */
+    async sendEmail(options: LegacyEmailOptions): Promise<boolean> {
+        const emailOptions: EmailOptions = {
+            to: options.to,
+            subject: options.subject,
+            template: {
+                name: options.template,
+                context: options.context,
+            },
+            attachments: options.attachments,
+        };
+
+        return this.sendEmailWithFallback(emailOptions);
     }
 
     async sendDailyReport(to: string, reportData: any, lang: string = 'fr'): Promise<boolean> {
@@ -127,7 +164,7 @@ export class MailService {
     }
 
     async sendInvoiceEmail(to: string, data: any, attachmentPath?: string): Promise<boolean> {
-        const options: any = {
+        const options: LegacyEmailOptions = {
             to,
             subject: `Invoice #${data.invoiceNumber}`,
             template: 'invoice',
@@ -135,21 +172,10 @@ export class MailService {
         };
 
         if (attachmentPath) {
-            try {
-                await this.mailerService.sendMail({
-                    ...options,
-                    template: `./${options.template}`,
-                    attachments: [{
-                        path: attachmentPath,
-                        filename: `Invoice-${data.invoiceNumber}.pdf`
-                    }]
-                });
-                this.logger.log(`Invoice sent to ${to}`);
-                return true;
-            } catch (error) {
-                this.logger.error(`Failed to send invoice to ${to}`, error);
-                return false;
-            }
+            options.attachments = [{
+                path: attachmentPath,
+                filename: `Invoice-${data.invoiceNumber}.pdf`
+            }];
         }
 
         return this.sendEmail(options);
@@ -179,8 +205,6 @@ export class MailService {
             content: pdfBuffer,
         }] : undefined;
 
-        // Use mailerService directly for attachments if needed or ensure sendEmail handles it.
-        // Since we updated sendEmail to handle attachments, we can use it.
         return this.sendEmail({
             to,
             subject: `Invoice #${invoiceData.invoiceNumber}`,
