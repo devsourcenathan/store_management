@@ -15,6 +15,7 @@ export class SesMailProvider implements MailProviderInterface {
     private transporter: Transporter;
     private readonly fromEmail: string;
     private readonly fromName: string;
+    private isConfigured = false;
 
     constructor(
         private readonly configService: ConfigService,
@@ -31,7 +32,8 @@ export class SesMailProvider implements MailProviderInterface {
         const password = this.configService.get<string>('AWS_SES_SMTP_PASSWORD');
 
         if (!region || !username || !password) {
-            throw new Error('Missing required AWS SES configuration');
+            this.logger.warn('AWS SES configuration missing. SES provider will be disabled.');
+            return;
         }
 
         this.transporter = nodemailer.createTransport({
@@ -44,10 +46,19 @@ export class SesMailProvider implements MailProviderInterface {
             },
         });
 
+        this.isConfigured = true;
         this.logger.log('SES Mail Provider initialized');
     }
 
     async sendEmail(options: EmailOptions): Promise<EmailResult> {
+        if (!this.isConfigured) {
+            return {
+                success: false,
+                provider: this.getName(),
+                error: 'AWS SES is not configured',
+            };
+        }
+
         try {
             let html = options.html;
             let text = options.text;
@@ -102,6 +113,9 @@ export class SesMailProvider implements MailProviderInterface {
     }
 
     async isHealthy(): Promise<boolean> {
+        if (!this.isConfigured) {
+            return false;
+        }
         try {
             await this.transporter.verify();
             return true;

@@ -14,6 +14,7 @@ export class ResendMailProvider implements MailProviderInterface {
     private resend: Resend;
     private readonly fromEmail: string;
     private readonly fromName: string;
+    private isConfigured = false;
 
     constructor(
         private readonly configService: ConfigService,
@@ -28,14 +29,24 @@ export class ResendMailProvider implements MailProviderInterface {
         const apiKey = this.configService.get<string>('RESEND_API_KEY');
 
         if (!apiKey) {
-            throw new Error('Missing required Resend API key (RESEND_API_KEY)');
+            this.logger.warn('Resend API key missing (RESEND_API_KEY). Resend provider will be disabled.');
+            return;
         }
 
         this.resend = new Resend(apiKey);
+        this.isConfigured = true;
         this.logger.log('Resend Mail Provider initialized');
     }
 
     async sendEmail(options: EmailOptions): Promise<EmailResult> {
+        if (!this.isConfigured) {
+            return {
+                success: false,
+                provider: this.getName(),
+                error: 'Resend is not configured',
+            };
+        }
+
         try {
             let html = options.html;
             let text = options.text;
@@ -101,14 +112,6 @@ export class ResendMailProvider implements MailProviderInterface {
     }
 
     async isHealthy(): Promise<boolean> {
-        try {
-            // Resend doesn't have a dedicated health check endpoint
-            // We'll just verify that the API key is set
-            const apiKey = this.configService.get<string>('RESEND_API_KEY');
-            return !!apiKey;
-        } catch (error) {
-            this.logger.error('Resend health check failed:', error);
-            return false;
-        }
+        return this.isConfigured;
     }
 }
