@@ -1,0 +1,58 @@
+### Multi-Provider Email System Tests
+### Base URL
+@baseUrl = http://localhost:3000
+
+###############################################
+# 1. Get Provider Information
+###############################################
+GET {{baseUrl}}/mail/provider-info
+Content-Type: application/json
+
+###############################################
+# 2. Health Check
+###############################################
+GET {{baseUrl}}/mail/health
+Content-Type: application/json
+
+###############################################
+# 3. Send Test Email (Replace with your email)
+###############################################
+POST {{baseUrl}}/mail/test
+Content-Type: application/json
+
+{
+  "to": "your-email@example.com"
+}
+
+###############################################
+# Test Scenarios
+###############################################
+
+# Scenario 1: Test with SES Provider
+# Set in .env: MAIL_PROVIDER=ses
+# Then run: GET {{baseUrl}}/mail/provider-info
+# Expected: { "primaryProvider": "ses", ... }
+
+# Scenario 2: Test with Resend Provider
+# Set in .env: MAIL_PROVIDER=resend
+# Then run: GET {{baseUrl}}/mail/provider-info
+# Expected: { "primaryProvider": "resend", ... }
+
+# Scenario 3: Test with Log Provider (Debug)
+# Set in .env: MAIL_PROVIDER=log
+# Then run: POST {{baseUrl}}/mail/test
+# Expected: Email logged to console, not sent
+
+# Scenario 4: Test Fallback
+# Set in .env:
+#   MAIL_PROVIDER=ses
+#   MAIL_FALLBACK_ENABLED=true
+#   MAIL_FALLBACK_PROVIDER=resend
+# Temporarily break SES credentials
+# Then run: POST {{baseUrl}}/mail/test
+# Expected: Email sent via Resend (fallback)
+
+# Scenario 5: Test Invalid Provider
+# Set in .env: MAIL_PROVIDER=invalid
+# Restart server
+# Expected: Error on startup with clear message

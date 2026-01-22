@@ -15,6 +15,14 @@ export class SchedulerService {
         private readonly prisma: PrismaService,
     ) { }
 
+    /**
+     * Pause utility function
+     * @param ms milliseconds to wait
+     */
+    private async sleep(ms: number): Promise<void> {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
     // Daily report at 7:00 AM (for previous day)
     @Cron('0 7 * * *', {
         name: 'daily-sales-report',
@@ -54,6 +62,9 @@ export class SchedulerService {
                                 owner.locale || 'fr'
                             );
                             this.logger.log(`Daily report sent to ${owner.email} for ${org.name}`);
+
+                            // Pause de 2 secondes après chaque email
+                            await this.sleep(2000);
                         }
                     }
                 } catch (error) {
@@ -103,6 +114,9 @@ export class SchedulerService {
                                 user.locale || 'fr'
                             );
                             this.logger.log(`Weekly report sent to ${user.email} for ${org.name}`);
+
+                            // Pause de 2 secondes après chaque email
+                            await this.sleep(2000);
                         }
                     }
                 } catch (error) {
@@ -152,6 +166,9 @@ export class SchedulerService {
                                 owner.locale || 'fr'
                             );
                             this.logger.log(`Monthly report sent to ${owner.email} for ${org.name}`);
+
+                            // Pause de 2 secondes après chaque email
+                            await this.sleep(2000);
                         }
                     }
                 } catch (error) {
@@ -201,6 +218,9 @@ export class SchedulerService {
                                 owner.locale || 'fr'
                             );
                             this.logger.log(`Quarterly report sent to ${owner.email} for ${org.name}`);
+
+                            // Pause de 2 secondes après chaque email
+                            await this.sleep(2000);
                         }
                     }
                 } catch (error) {
@@ -250,6 +270,9 @@ export class SchedulerService {
                                 owner.locale || 'fr'
                             );
                             this.logger.log(`Yearly report sent to ${owner.email} for ${org.name}`);
+
+                            // Pause de 2 secondes après chaque email
+                            await this.sleep(2000);
                         }
                     }
                 } catch (error) {
