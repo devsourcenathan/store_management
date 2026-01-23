@@ -16,7 +16,7 @@ NC='\033[0m' # No Color
 # Configuration
 VPS_USER="${VPS_USER:-root}"
 VPS_HOST="${VPS_HOST:-your-vps-ip}"
-PROJECT_PATH="${PROJECT_PATH:-/apps/store_management}"
+PROJECT_PATH="${PROJECT_PATH:~/apps/store_management}"
 
 echo -e "${YELLOW}⚠️  Please ensure you have set the following environment variables:${NC}"
 echo "   VPS_USER (default: root)"
