@@ -266,7 +266,8 @@
         "tabs": {
             "organization": "Organisation",
             "stores": "Magasins",
-            "team": "Équipe"
+            "team": "Équipe",
+            "notifications": "Notifications"
         },
         "org": {
             "title": "Détails de l'Organisation",
@@ -367,6 +368,33 @@
                 "update_success": "Utilisateur mis à jour avec succès",
                 "delete_success": "Utilisateur retiré avec succès"
             }
+        },
+        "notifications": {
+            "title": "Notifications par Email",
+            "subtitle": "Gérer vos préférences de notifications par email",
+            "emailEnabled": {
+                "label": "Activer les Notifications par Email",
+                "description": "Recevoir des notifications par email pour les rapports et alertes"
+            },
+            "dailyReport": {
+                "label": "Rapport Journalier",
+                "description": "Recevoir un résumé quotidien des ventes et du stock"
+            },
+            "weeklyReport": {
+                "label": "Rapport Hebdomadaire",
+                "description": "Recevoir un résumé hebdomadaire des performances"
+            },
+            "monthlyReport": {
+                "label": "Rapport Mensuel",
+                "description": "Recevoir un résumé mensuel et des analyses"
+            },
+            "yearlyReport": {
+                "label": "Rapport Annuel",
+                "description": "Recevoir un résumé annuel et des analyses"
+            },
+            "save": "Enregistrer les Préférences",
+            "success": "Préférences de notifications mises à jour avec succès",
+            "error": "Échec de la mise à jour des préférences de notifications"
         }
     },
     "users": {

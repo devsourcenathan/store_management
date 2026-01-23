@@ -210,4 +210,25 @@ export class UsersService {
             data: { passwordHash }
         });
     }
+
+    async updateNotificationPreferences(userId: string, data: any, organizationId: string) {
+        const user = await this.prisma.user.findFirst({
+            where: { id: userId, organizationId }
+        });
+
+        if (!user) {
+            throw new NotFoundException('User not found');
+        }
+
+        return this.prisma.user.update({
+            where: { id: userId },
+            data: {
+                emailNotificationsEnabled: data.emailNotificationsEnabled,
+                dailyReportEnabled: data.dailyReportEnabled,
+                weeklyReportEnabled: data.weeklyReportEnabled,
+                monthlyReportEnabled: data.monthlyReportEnabled,
+                yearlyReportEnabled: data.yearlyReportEnabled,
+            }
+        });
+    }
 }

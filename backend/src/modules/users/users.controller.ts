@@ -60,6 +60,20 @@ export class UsersController {
         return this.usersService.resetUserPassword(id, data.newPassword, req.user.id, organizationId);
     }
 
+    @Patch(':id/notification-preferences')
+    async updateNotificationPreferences(
+        @Param('id') id: string,
+        @Body() data: any,
+        @Request() req: any,
+        @CurrentOrganization() organizationId: string
+    ) {
+        // Users can only update their own notification preferences
+        if (id !== req.user.id) {
+            throw new Error('You can only update your own notification preferences');
+        }
+        return this.usersService.updateNotificationPreferences(id, data, organizationId);
+    }
+
     @Delete(':id')
     @Roles(UserRole.OWNER)
     async remove(@Param('id') id: string, @CurrentOrganization() organizationId: string) {

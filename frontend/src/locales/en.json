@@ -267,7 +267,8 @@
         "tabs": {
             "organization": "Organization",
             "stores": "Stores",
-            "team": "Team"
+            "team": "Team",
+            "notifications": "Notifications"
         },
         "org": {
             "title": "Organization Details",
@@ -368,6 +369,33 @@
                 "update_success": "User updated successfully",
                 "delete_success": "User removed successfully"
             }
+        },
+        "notifications": {
+            "title": "Email Notifications",
+            "subtitle": "Manage your email notification preferences",
+            "emailEnabled": {
+                "label": "Enable Email Notifications",
+                "description": "Receive email notifications for reports and alerts"
+            },
+            "dailyReport": {
+                "label": "Daily Report",
+                "description": "Receive a daily summary of sales and stock"
+            },
+            "weeklyReport": {
+                "label": "Weekly Report",
+                "description": "Receive a weekly summary of performance"
+            },
+            "monthlyReport": {
+                "label": "Monthly Report",
+                "description": "Receive a monthly summary and analytics"
+            },
+            "yearlyReport": {
+                "label": "Yearly Report",
+                "description": "Receive an annual summary and analytics"
+            },
+            "save": "Save Preferences",
+            "success": "Notification preferences updated successfully",
+            "error": "Failed to update notification preferences"
         }
     },
     "users": {

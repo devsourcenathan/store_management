@@ -9,7 +9,12 @@ interface User {
     role: string;
     organizationId: string;
     stores?: any[]; // Array of { store: Store }
-    organizationName?: string
+    organizationName?: string;
+    emailNotificationsEnabled?: boolean;
+    dailyReportEnabled?: boolean;
+    weeklyReportEnabled?: boolean;
+    monthlyReportEnabled?: boolean;
+    yearlyReportEnabled?: boolean;
 }
 
 interface AuthContextType {

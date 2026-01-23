@@ -39,6 +39,8 @@ export class SchedulerService {
                         where: {
                             role: UserRole.OWNER,
                             isActive: true,
+                            emailNotificationsEnabled: true,
+                            dailyReportEnabled: true,
                         },
                     },
                 },
@@ -93,6 +95,8 @@ export class SchedulerService {
                         where: {
                             role: { in: [UserRole.OWNER, UserRole.MANAGER] },
                             isActive: true,
+                            emailNotificationsEnabled: true,
+                            weeklyReportEnabled: true,
                         },
                     },
                 },
@@ -145,6 +149,8 @@ export class SchedulerService {
                         where: {
                             role: UserRole.OWNER,
                             isActive: true,
+                            emailNotificationsEnabled: true,
+                            monthlyReportEnabled: true,
                         },
                     },
                 },
@@ -249,6 +255,8 @@ export class SchedulerService {
                         where: {
                             role: UserRole.OWNER,
                             isActive: true,
+                            emailNotificationsEnabled: true,
+                            yearlyReportEnabled: true,
                         },
                     },
                 },

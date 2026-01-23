@@ -2,11 +2,12 @@ import { useState } from 'react';
 import { OrganizationSettings } from './components/OrganizationSettings';
 import { StoreList } from './components/StoreList';
 import { UserList } from './components/UserList';
+import { NotificationSettings } from './components/NotificationSettings';
 import { OrgLandingEditor } from '@/features/org-landing/OrgLandingEditor';
-import { Building, Store as StoreIcon, Users, Globe } from 'lucide-react';
+import { Building, Store as StoreIcon, Users, Globe, Bell } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
-type Tab = 'organization' | 'stores' | 'team';
+type Tab = 'organization' | 'stores' | 'team' | 'notifications';
 
 export function SettingsPage() {
     const { t } = useTranslation();
@@ -16,6 +17,7 @@ export function SettingsPage() {
         { id: 'organization', label: t('settings.tabs.organization'), icon: Building, component: OrganizationSettings },
         { id: 'stores', label: t('settings.tabs.stores'), icon: StoreIcon, component: StoreList },
         { id: 'team', label: t('settings.tabs.team'), icon: Users, component: UserList },
+        { id: 'notifications', label: t('settings.tabs.notifications'), icon: Bell, component: NotificationSettings },
         // { id: 'landing', label: 'Landing Page', icon: Globe, component: OrgLandingEditor },
     ];
 
@@ -37,8 +39,8 @@ export function SettingsPage() {
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id as Tab)}
                                 className={`flex items-center gap-2 whitespace-nowrap py-3 px-4 sm:px-6 border-b-2 font-medium text-sm transition-colors ${activeTab === tab.id
-                                        ? 'border-blue-600 dark:border-blue-400 text-blue-600 dark:text-blue-400'
-                                        : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'
+                                    ? 'border-blue-600 dark:border-blue-400 text-blue-600 dark:text-blue-400'
+                                    : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'
                                     }`}
                             >
                                 <Icon className="w-5 h-5" />

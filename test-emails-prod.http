@@ -1,0 +1,18 @@
+### Test Email Reports in Production
+### Use this file with REST Client extension in VS Code
+
+@baseUrl = https://stockapi.sekuu.com/api
+
+### Test Daily Report
+POST {{baseUrl}}/scheduler/trigger/daily
+Content-Type: application/json
+
+### Test Weekly Report
+POST {{baseUrl}}/scheduler/trigger/weekly
+Content-Type: application/json
+
+### Test Monthly Report
+POST {{baseUrl}}/scheduler/trigger/monthly
+Content-Type: application/json
+
+###
