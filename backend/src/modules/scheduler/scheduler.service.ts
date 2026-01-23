@@ -3,7 +3,12 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { MailService } from '../mail/mail.service';
 import { ReportsService } from '../reports/reports.service';
 import { PrismaService } from '../../common/prisma/prisma.service';
-import { UserRole } from '@prisma/client';
+import { Prisma, UserRole } from '@prisma/client';
+
+// Type for Organization with included users
+type OrganizationWithUsers = Prisma.OrganizationGetPayload<{
+    include: { users: true };
+}>;
 
 @Injectable()
 export class SchedulerService {
@@ -44,7 +49,7 @@ export class SchedulerService {
                         },
                     },
                 },
-            });
+            }) as OrganizationWithUsers[];
 
             for (const org of organizations) {
                 try {
@@ -61,7 +66,8 @@ export class SchedulerService {
                                     organizationName: org.name,
                                     ownerName: `${owner.firstName} ${owner.lastName}`,
                                 },
-                                owner.locale || 'fr'
+                                owner.locale || 'fr',
+                                org.name
                             );
                             this.logger.log(`Daily report sent to ${owner.email} for ${org.name}`);
 
@@ -100,7 +106,7 @@ export class SchedulerService {
                         },
                     },
                 },
-            });
+            }) as OrganizationWithUsers[];
 
             for (const org of organizations) {
                 try {
@@ -115,7 +121,8 @@ export class SchedulerService {
                                     organizationName: org.name,
                                     userName: `${user.firstName} ${user.lastName}`,
                                 },
-                                user.locale || 'fr'
+                                user.locale || 'fr',
+                                org.name
                             );
                             this.logger.log(`Weekly report sent to ${user.email} for ${org.name}`);
 
@@ -154,7 +161,7 @@ export class SchedulerService {
                         },
                     },
                 },
-            });
+            }) as OrganizationWithUsers[];
 
             for (const org of organizations) {
                 try {
@@ -169,7 +176,8 @@ export class SchedulerService {
                                     organizationName: org.name,
                                     ownerName: `${owner.firstName} ${owner.lastName}`,
                                 },
-                                owner.locale || 'fr'
+                                owner.locale || 'fr',
+                                org.name
                             );
                             this.logger.log(`Monthly report sent to ${owner.email} for ${org.name}`);
 
@@ -206,7 +214,7 @@ export class SchedulerService {
                         },
                     },
                 },
-            });
+            }) as OrganizationWithUsers[];
 
             for (const org of organizations) {
                 try {
@@ -260,7 +268,7 @@ export class SchedulerService {
                         },
                     },
                 },
-            });
+            }) as OrganizationWithUsers[];
 
             for (const org of organizations) {
                 try {
@@ -275,7 +283,8 @@ export class SchedulerService {
                                     organizationName: org.name,
                                     ownerName: `${owner.firstName} ${owner.lastName}`,
                                 },
-                                owner.locale || 'fr'
+                                owner.locale || 'fr',
+                                org.name
                             );
                             this.logger.log(`Yearly report sent to ${owner.email} for ${org.name}`);
 

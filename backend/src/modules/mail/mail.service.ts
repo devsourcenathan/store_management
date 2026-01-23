@@ -87,34 +87,87 @@ export class MailService {
         return this.sendEmailWithFallback(emailOptions);
     }
 
-    async sendDailyReport(to: string, reportData: any, lang: string = 'fr'): Promise<boolean> {
+    async sendDailyReport(to: string, reportData: any, lang: string = 'fr', organizationName?: string): Promise<boolean> {
         const t: any = await this.i18n.translate('mail.reports.daily', { lang });
-        return this.sendEmail({
+
+        const emailOptions: LegacyEmailOptions = {
             to,
             subject: `${t.title} - ${reportData.date}`,
             template: 'daily-report',
             context: { ...reportData, t },
-        });
+        };
+
+        // If organizationName is provided, use it as the from name
+        if (organizationName) {
+            const emailOptionsWithFrom: EmailOptions = {
+                ...emailOptions,
+                from: {
+                    name: organizationName,
+                    email: this.configService.get<string>('RESEND_FROM_EMAIL') || this.configService.get<string>('AWS_SES_FROM_EMAIL'),
+                },
+                template: {
+                    name: emailOptions.template,
+                    context: emailOptions.context,
+                },
+            };
+            return this.sendEmailWithFallback(emailOptionsWithFrom);
+        }
+
+        return this.sendEmail(emailOptions);
     }
 
-    async sendWeeklyReport(to: string, reportData: any, lang: string = 'fr'): Promise<boolean> {
+    async sendWeeklyReport(to: string, reportData: any, lang: string = 'fr', organizationName?: string): Promise<boolean> {
         const t: any = await this.i18n.translate('mail.reports.weekly', { lang });
-        return this.sendEmail({
+
+        const emailOptions: LegacyEmailOptions = {
             to,
             subject: `${t.title} - ${reportData.week}`,
             template: 'weekly-report',
             context: { ...reportData, t },
-        });
+        };
+
+        if (organizationName) {
+            const emailOptionsWithFrom: EmailOptions = {
+                ...emailOptions,
+                from: {
+                    name: organizationName,
+                    email: this.configService.get<string>('RESEND_FROM_EMAIL') || this.configService.get<string>('AWS_SES_FROM_EMAIL'),
+                },
+                template: {
+                    name: emailOptions.template,
+                    context: emailOptions.context,
+                },
+            };
+            return this.sendEmailWithFallback(emailOptionsWithFrom);
+        }
+
+        return this.sendEmail(emailOptions);
     }
 
-    async sendMonthlyReport(to: string, reportData: any, lang: string = 'fr'): Promise<boolean> {
-        // Placeholder for monthly report translation if needed
-        return this.sendEmail({
+    async sendMonthlyReport(to: string, reportData: any, lang: string = 'fr', organizationName?: string): Promise<boolean> {
+        const emailOptions: LegacyEmailOptions = {
             to,
             subject: `Monthly Sales Report - ${reportData.month}`,
             template: 'monthly-report',
             context: reportData,
-        });
+        };
+
+        if (organizationName) {
+            const emailOptionsWithFrom: EmailOptions = {
+                ...emailOptions,
+                from: {
+                    name: organizationName,
+                    email: this.configService.get<string>('RESEND_FROM_EMAIL') || this.configService.get<string>('AWS_SES_FROM_EMAIL'),
+                },
+                template: {
+                    name: emailOptions.template,
+                    context: emailOptions.context,
+                },
+            };
+            return this.sendEmailWithFallback(emailOptionsWithFrom);
+        }
+
+        return this.sendEmail(emailOptions);
     }
 
     async sendQuarterlyReport(to: string, reportData: any, lang: string = 'fr'): Promise<boolean> {
@@ -126,13 +179,30 @@ export class MailService {
         });
     }
 
-    async sendYearlyReport(to: string, reportData: any, lang: string = 'fr'): Promise<boolean> {
-        return this.sendEmail({
+    async sendYearlyReport(to: string, reportData: any, lang: string = 'fr', organizationName?: string): Promise<boolean> {
+        const emailOptions: LegacyEmailOptions = {
             to,
             subject: `Annual Sales Report - ${reportData.year}`,
             template: 'yearly-report',
             context: reportData,
-        });
+        };
+
+        if (organizationName) {
+            const emailOptionsWithFrom: EmailOptions = {
+                ...emailOptions,
+                from: {
+                    name: organizationName,
+                    email: this.configService.get<string>('RESEND_FROM_EMAIL') || this.configService.get<string>('AWS_SES_FROM_EMAIL'),
+                },
+                template: {
+                    name: emailOptions.template,
+                    context: emailOptions.context,
+                },
+            };
+            return this.sendEmailWithFallback(emailOptionsWithFrom);
+        }
+
+        return this.sendEmail(emailOptions);
     }
 
     async sendLowStockAlert(to: string, alertData: any, lang: string = 'fr'): Promise<boolean> {
