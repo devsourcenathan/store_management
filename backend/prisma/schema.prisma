@@ -66,6 +66,8 @@ model User {
   id             String   @id @default(uuid())
   email          String   @unique
   passwordHash   String
+  resetPasswordToken   String?   @unique
+  resetPasswordExpires DateTime?
   firstName      String
   lastName       String
   role           UserRole

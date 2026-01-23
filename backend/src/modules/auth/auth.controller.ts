@@ -27,4 +27,16 @@ export class AuthController {
     async getMe(@Request() req: any) {
         return this.authService.getUserWithStores(req.user.id);
     }
+
+    @Post('forgot-password')
+    @HttpCode(HttpStatus.OK)
+    async forgotPassword(@Body() body: { email: string; origin: string }) {
+        return this.authService.forgotPassword(body.email, body.origin);
+    }
+
+    @Post('reset-password')
+    @HttpCode(HttpStatus.OK)
+    async resetPassword(@Body() body: any) {
+        return this.authService.resetPassword(body.token, body.password);
+    }
 }

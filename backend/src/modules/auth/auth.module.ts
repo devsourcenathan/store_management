@@ -5,6 +5,7 @@ import { ConfigService } from '@nestjs/config';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { JwtStrategy } from './strategies/jwt.strategy';
+import { MailModule } from '../mail/mail.module';
 
 @Module({
     imports: [
@@ -16,6 +17,7 @@ import { JwtStrategy } from './strategies/jwt.strategy';
                 signOptions: { expiresIn: config.get('JWT_EXPIRATION') || '15m' },
             }),
         }),
+        MailModule,
     ],
     controllers: [AuthController],
     providers: [AuthService, JwtStrategy],

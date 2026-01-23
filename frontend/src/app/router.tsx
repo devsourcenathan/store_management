@@ -2,6 +2,8 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from '@/features/auth/useAuth';
 import { LoginPage } from '@/features/auth/LoginPage';
 import { RegisterPage } from '@/features/auth/RegisterPage';
+import { ForgotPasswordPage } from '@/features/auth/ForgotPasswordPage';
+import { ResetPasswordPage } from '@/features/auth/ResetPasswordPage';
 import { DashboardLayout } from '@/features/dashboard/DashboardLayout';
 import { DashboardPage } from '@/features/dashboard/DashboardPage';
 import { ProductsPage } from '@/features/products/ProductsPage';
@@ -56,6 +58,8 @@ export function AppRouter() {
             <Route path="/org/:subdomain" element={<OrgLandingPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            <Route path="/reset-password" element={<ResetPasswordPage />} />
 
             <Route
                 element={

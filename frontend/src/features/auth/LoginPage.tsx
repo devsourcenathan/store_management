@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from './useAuth';
 import { useTranslation } from 'react-i18next';
 import { ThemeToggle } from '@/components/ThemeToggle';
@@ -13,6 +13,12 @@ export function LoginPage() {
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+
+    const [searchParams] = useSearchParams();
+    const fromParam = searchParams.get('from');
+    const showRegister = fromParam === 'landing';
+    const forgotPasswordLink = fromParam ? `/forgot-password?from=${fromParam}` : '/forgot-password';
+    const registerLink = fromParam ? `/register?from=${fromParam}` : '/register';
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -69,9 +75,16 @@ export function LoginPage() {
                         </div>
 
                         <div>
-                            <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                {t('auth.password')}
-                            </label>
+                            <div className="flex items-center justify-between">
+                                <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                    {t('auth.password')}
+                                </label>
+                                <div className="text-sm">
+                                    <Link to={forgotPasswordLink} className="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300">
+                                        {t('auth.forgot_password', 'Forgot your password?')}
+                                    </Link>
+                                </div>
+                            </div>
                             <input
                                 id="password"
                                 type="password"
@@ -92,27 +105,20 @@ export function LoginPage() {
                         </button>
                     </form>
 
-                    {/* Demo Credentials */}
-                    {/* <div className="mt-6 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-                        <p className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2">Demo Credentials:</p>
-                        <div className="space-y-1 text-xs text-gray-600 dark:text-gray-400">
-                            <p>Owner: owner@demo.com / password123</p>
-                            <p>Manager: manager@demo.com / password123</p>
-                            <p>Staff: staff@demo.com / password123</p>
-                        </div>
-                    </div> */}
-
                     {/* Register Link */}
-                    <div className="mt-6 text-center">
-                        <p className="text-sm text-gray-600 dark:text-gray-400">
-                            {t('auth.no_account')}{' '}
-                            <Link to="/register" className="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300">
-                                {t('auth.register')}
-                            </Link>
-                        </p>
-                    </div>
+                    {showRegister && (
+                        <div className="mt-6 text-center">
+                            <p className="text-sm text-gray-600 dark:text-gray-400">
+                                {t('auth.no_account')}{' '}
+                                <Link to={registerLink} className="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300">
+                                    {t('auth.register')}
+                                </Link>
+                            </p>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>
+
     );
 }

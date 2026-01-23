@@ -4,24 +4,26 @@ import { PrismaService } from '@/common/prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
 import { defaultLandingTemplate } from '../organization-landing/templates/default';
 import { randomBytes } from 'crypto';
+import { MailService } from '../mail/mail.service';
 
 // Helper to generate a URL-friendly slug
 const slugify = (text: string) =>
-  text
-    .toString()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
-    .trim()
-    .replace(/\s+/g, '-')
-    .replace(/[^\w-]+/g, '')
-    .replace(/--+/g, '-');
+    text
+        .toString()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase()
+        .trim()
+        .replace(/\s+/g, '-')
+        .replace(/[^\w-]+/g, '')
+        .replace(/--+/g, '-');
 
 @Injectable()
 export class AuthService {
     constructor(
         private prisma: PrismaService,
         private jwtService: JwtService,
+        private mailService: MailService,
     ) { }
 
     async validateUser(email: string, password: string) {
@@ -96,7 +98,7 @@ export class AuthService {
                     organizationId: organization.id,
                 },
             });
-            
+
             // Create a default landing page for the new organization
             const subdomain = `${slugify(data.organizationName)}-${randomBytes(4).toString('hex')}`;
             await tx.organizationLanding.create({
@@ -111,6 +113,77 @@ export class AuthService {
         });
 
         return this.login(result.user);
+    }
+
+    async forgotPassword(email: string, origin?: string) {
+        const user = await this.prisma.user.findUnique({
+            where: { email },
+        });
+
+        if (!user) {
+            // Return true even if user not found to prevent enumeration
+            return true;
+        }
+
+        const token = randomBytes(32).toString('hex');
+        const expires = new Date();
+        expires.setHours(expires.getHours() + 1);
+
+        await this.prisma.user.update({
+            where: { id: user.id },
+            data: {
+                resetPasswordToken: token,
+                resetPasswordExpires: expires,
+            },
+        });
+
+        // Determine frontend URL
+        let frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+
+        if (origin) {
+            const corsOrigins = process.env.CORS_ORIGIN?.split(',').map(o => o.trim()) || [];
+            // Also allow localhost for development testing if not explicitly restricted
+            if (corsOrigins.includes(origin) || (process.env.NODE_ENV !== 'production' && origin.includes('localhost'))) {
+                frontendUrl = origin;
+            }
+        }
+
+        const resetUrl = `${frontendUrl}/reset-password?token=${token}`;
+
+        await this.mailService.sendPasswordResetEmail(user.email, {
+            name: user.firstName,
+            resetUrl,
+        });
+
+        return { message: 'Password reset email sent' };
+    }
+
+    async resetPassword(token: string, password: string) {
+        const user = await this.prisma.user.findFirst({
+            where: {
+                resetPasswordToken: token,
+                resetPasswordExpires: {
+                    gt: new Date(),
+                },
+            },
+        });
+
+        if (!user) {
+            throw new UnauthorizedException('Invalid or expired token');
+        }
+
+        const passwordHash = await bcrypt.hash(password, 10);
+
+        await this.prisma.user.update({
+            where: { id: user.id },
+            data: {
+                passwordHash,
+                resetPasswordToken: null,
+                resetPasswordExpires: null,
+            },
+        });
+
+        return { message: 'Password successfully reset' };
     }
 
     async getUserWithStores(userId: string) {
