@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, ReactNode } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/services/api';
+import { useAuth } from '@/features/auth/useAuth';
 
 interface ThemeConfig {
     primaryColor?: string;
@@ -42,6 +43,8 @@ function hexToRgb(hex: string): string {
 }
 
 export function OrganizationProvider({ children }: { children: ReactNode }) {
+    const { user } = useAuth();
+
     const { data: organization, isLoading, refetch } = useQuery({
         queryKey: ['organization'],
         queryFn: async () => {
@@ -49,6 +52,7 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
             return res.data;
         },
         staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+        enabled: !!user,
     });
 
     // Apply theme colors to CSS variables
