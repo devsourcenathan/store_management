@@ -5,6 +5,11 @@ import './styles/globals.css';
 import './lib/i18n';
 import { ThemeProvider } from '@/components/ThemeProvider';
 import * as Sentry from "@sentry/react";
+import { clarity } from 'react-microsoft-clarity';
+
+if (import.meta.env.VITE_CLARITY_PROJECT_ID) {
+    clarity.init(import.meta.env.VITE_CLARITY_PROJECT_ID);
+}
 
 Sentry.init({
     dsn: import.meta.env.VITE_SENTRY_DSN,
