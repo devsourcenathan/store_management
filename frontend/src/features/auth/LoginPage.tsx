@@ -41,9 +41,16 @@ export function LoginPage() {
                 <LanguageSelector />
                 <ThemeToggle />
             </div>
-
             <div className="max-w-md w-full space-y-8">
                 <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 transition-colors">
+                    <button
+                        className="hidden"
+                        onClick={() => {
+                            throw new Error("Sentry Test Error from Frontend Login Page");
+                        }}
+                    >
+                        Break the world
+                    </button>
                     {/* Header */}
                     <div className="text-center mb-8">
                         <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Stock Management</h1>
