@@ -4,6 +4,7 @@ import { api } from '@/services/api';
 import { Package, Image as ImageIcon, Edit, Trash2, Plus } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { MediaSelector } from '@/features/media/components/MediaSelector';
+import { toast } from 'sonner';
 import { mediaService, Media } from '@/services/mediaService';
 import {
     Sheet,
@@ -172,6 +173,13 @@ export function ProductsPage() {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+
+        // Client-side validation
+        if (!formData.categoryId) {
+            toast.error(t('products.errors.category_required') || 'Please select a category');
+            return;
+        }
+
         if (editingProduct) {
             updateProductMutation.mutate({ id: editingProduct.id, data: formData });
         } else {

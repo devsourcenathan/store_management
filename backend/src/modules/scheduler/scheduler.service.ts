@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { MailService } from '../mail/mail.service';
 import { ReportsService } from '../reports/reports.service';
@@ -11,8 +11,13 @@ type OrganizationWithUsers = Prisma.OrganizationGetPayload<{
 }>;
 
 @Injectable()
-export class SchedulerService {
+export class SchedulerService implements OnModuleInit {
     private readonly logger = new Logger(SchedulerService.name);
+
+    async onModuleInit() {
+        this.logger.log('SchedulerService initialized');
+        this.logger.log('Scheduled jobs: daily-sales-report (0 7 * * * Africa/Douala), weekly-sales-report (0 8 * * 1 Africa/Douala), monthly-sales-report (0 8 1 * * Africa/Douala)');
+    }
 
     constructor(
         private readonly mailService: MailService,
