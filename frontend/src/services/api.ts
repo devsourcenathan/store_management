@@ -116,6 +116,16 @@ api.interceptors.response.use(
             }
         } else if (error.response?.status === 403) {
             toast.error('Access Denied: You do not have permission to perform this action.');
+        } else if (error.response?.status === 400) {
+            const message = error.response.data?.message;
+            if (Array.isArray(message)) {
+                // NestJS class-validator returns an array of errors
+                message.forEach((msg) => toast.error(msg));
+            } else if (typeof message === 'string') {
+                toast.error(message);
+            } else {
+                toast.error('Validation Error: Please check your input.');
+            }
         } else if (error.response?.status >= 500) {
             toast.error('Server Error: Something went wrong. Please try again later.');
         }
