@@ -175,10 +175,10 @@ export function ProductsPage() {
         e.preventDefault();
 
         // Client-side validation
-        if (!formData.categoryId) {
-            toast.error(t('products.errors.category_required') || 'Please select a category');
-            return;
-        }
+        // if (!formData.categoryId) {
+        //     toast.error(t('products.errors.category_required') || 'Please select a category');
+        //     return;
+        // }
 
         if (editingProduct) {
             updateProductMutation.mutate({ id: editingProduct.id, data: formData });
@@ -415,7 +415,7 @@ export function ProductsPage() {
 
             {/* Add/Edit Product Sheet */}
             <Sheet open={isModalOpen} onOpenChange={setIsModalOpen}>
-                <SheetContent className="overflow-y-auto w-[400px] sm:w-[540px]">
+                <SheetContent className="overflow-y-auto w-[400px] sm:w-[700px]">
                     <SheetHeader>
                         <SheetTitle>{editingProduct ? t('products.edit_product') : t('products.add_product')}</SheetTitle>
                         <SheetDescription>
@@ -489,7 +489,7 @@ export function ProductsPage() {
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('products.fields.category')}</label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('products.fields.category')} <span className="text-gray-400 font-normal text-xs">(Optional)</span></label>
                                 <select
                                     className="mt-1 block w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500"
                                     value={formData.categoryId}
