@@ -87,7 +87,7 @@ export function RegisterPage() {
                                     required
                                     value={formData.firstName}
                                     onChange={handleChange}
-                                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
                                 />
                             </div>
 
@@ -102,7 +102,7 @@ export function RegisterPage() {
                                     required
                                     value={formData.lastName}
                                     onChange={handleChange}
-                                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
                                 />
                             </div>
                         </div>
@@ -118,7 +118,7 @@ export function RegisterPage() {
                                 required
                                 value={formData.organizationName}
                                 onChange={handleChange}
-                                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
                                 placeholder="Your Company"
                             />
                         </div>
@@ -134,7 +134,7 @@ export function RegisterPage() {
                                 required
                                 value={formData.email}
                                 onChange={handleChange}
-                                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
                                 placeholder="you@example.com"
                             />
                         </div>
@@ -150,7 +150,7 @@ export function RegisterPage() {
                                 required
                                 value={formData.password}
                                 onChange={handleChange}
-                                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
                                 placeholder="••••••••"
                             />
                             <p className="mt-1 text-xs text-gray-500">Minimum 6 characters</p>
@@ -167,7 +167,7 @@ export function RegisterPage() {
                                 required
                                 value={formData.confirmPassword}
                                 onChange={handleChange}
-                                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
                                 placeholder="••••••••"
                             />
                         </div>
