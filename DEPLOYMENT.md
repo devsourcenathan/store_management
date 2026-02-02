@@ -322,6 +322,8 @@ npx prisma migrate deploy
 #Update seulement le schema
 npx prisma db push
 
+npx prisma db seed
+
 ```
 
 ## 🔐 Sécurité
