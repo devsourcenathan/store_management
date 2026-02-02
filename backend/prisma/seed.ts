@@ -61,7 +61,7 @@ async function main() {
     console.log('✅ Created stores:', store1.name, store2.name);
 
     // Create Users
-    const passwordHash = await bcrypt.hash('password123', 10);
+    const passwordHash = await bcrypt.hash('Sekuu@13', 10);
 
     const owner = await prisma.user.create({
         data: {
@@ -95,7 +95,18 @@ async function main() {
             organizationId: organization.id,
         },
     });
-    console.log('✅ Created users: owner, manager, staff');
+
+    const admin = await prisma.user.create({
+        data: {
+            email: 'admin@prod.com',
+            passwordHash,
+            firstName: 'Super',
+            lastName: 'Admin',
+            role: UserRole.GLOBAL_ADMIN,
+            organizationId: organization.id,
+        },
+    });
+    console.log('✅ Created users: owner, manager, staff, admin');
 
     // Assign users to stores
     await prisma.userStore.createMany({
@@ -430,10 +441,12 @@ async function main() {
     console.log('');
     console.log('🎉 Seed completed successfully!');
     console.log('');
+    console.log('');
     console.log('📝 Test credentials:');
-    console.log('   Owner:   owner@demo.com / password123');
-    console.log('   Manager: manager@demo.com / password123');
-    console.log('   Staff:   staff@demo.com / password123');
+    console.log('   Global Admin: admin@demo.com / password123');
+    console.log('   Owner:        owner@demo.com / password123');
+    console.log('   Manager:      manager@demo.com / password123');
+    console.log('   Staff:        staff@demo.com / password123');
     console.log('');
 }
 

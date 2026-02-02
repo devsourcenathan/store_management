@@ -11,6 +11,7 @@ RUN npm ci
 COPY . .
 RUN npx prisma generate  
 RUN npm run build
+RUN npx tsc prisma/seed.ts --outDir dist/prisma --skipLibCheck --module commonjs --target es2021 --esModuleInterop
 
 FROM node:20-slim
 

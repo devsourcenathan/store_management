@@ -31,7 +31,8 @@ import {
     Menu,
     Shield,
     Image,
-    BarChart3
+    BarChart3,
+    Store
 } from 'lucide-react';
 
 export function DashboardLayout() {
