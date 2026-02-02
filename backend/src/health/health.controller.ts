@@ -24,4 +24,9 @@ export class HealthController {
             };
         }
     }
+
+    @Get('debug-sentry')
+    getError() {
+        throw new Error('Sentry Test Error from Backend Health Check');
+    }
 }

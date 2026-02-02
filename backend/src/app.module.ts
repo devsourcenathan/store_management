@@ -2,6 +2,9 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { AcceptLanguageResolver, I18nModule, QueryResolver } from 'nestjs-i18n';
 import * as path from 'path';
+import { APP_FILTER } from '@nestjs/core';
+// import { SentryGlobalFilter } from '@sentry/nestjs'; // Removed due to import issues
+import { SentryFilter } from './common/filters/sentry.filter';
 import { PrismaModule } from './common/prisma/prisma.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { OrganizationsModule } from './modules/organizations/organizations.module';
@@ -68,6 +71,11 @@ import { SchedulerModule } from './modules/scheduler/scheduler.module';
         SchedulerModule,
     ],
     controllers: [HealthController],
-    providers: [],
+    providers: [
+        {
+            provide: APP_FILTER,
+            useClass: SentryFilter,
+        },
+    ],
 })
 export class AppModule { }
