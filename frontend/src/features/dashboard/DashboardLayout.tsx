@@ -111,6 +111,13 @@ export function DashboardLayout() {
             title: 'Analytics',
             items: [{ name: t('nav.statistics'), href: '/statistics', icon: BarChart3 }]
         });
+
+        groupedNavigation.push({
+            title: 'Billing',
+            items: [
+                { name: t('nav.my_plan', 'My Plan'), href: '/billing/subscription', icon: CreditCard }
+            ]
+        });
     }
 
     const isActive = (href: string) => {

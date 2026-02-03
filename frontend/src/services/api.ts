@@ -451,3 +451,155 @@ export const syncApi = {
         return response.data;
     },
 };
+
+// ============================================
+// BILLING API
+// ============================================
+
+export interface PlatformPlan {
+    id: string;
+    name: string;
+    type: 'FREE' | 'PRO' | 'BUSINESS';
+    monthlyPrice: number;
+    semiAnnualPrice: number;
+    annualPrice: number;
+    maxStores: number | null;
+    maxProducts: number | null;
+    maxUsers: number | null;
+    features: Record<string, any> | null;
+    trialDays: number;
+    isActive: boolean;
+}
+
+export interface OrganizationSubscription {
+    id: string;
+    organizationId: string;
+    planId: string;
+    status: 'TRIALING' | 'ACTIVE' | 'LIFETIME' | 'PAST_DUE' | 'CANCELLED' | 'EXPIRED';
+    billingCycle: 'MONTHLY' | 'SEMI_ANNUAL' | 'ANNUAL' | null;
+    isLifetime: boolean;
+    hideBillingUI: boolean;
+    currentPeriodStart: string;
+    currentPeriodEnd: string | null;
+    trialEndsAt: string | null;
+    plan: PlatformPlan;
+}
+
+export interface BillingInvoice {
+    id: string;
+    invoiceNumber: string;
+    amount: number;
+    discount: number;
+    finalAmount: number;
+    status: 'PENDING' | 'PAID' | 'FAILED' | 'CANCELLED';
+    dueDate: string;
+    paidAt: string | null;
+    paymentUrl: string | null;
+    createdAt: string;
+}
+
+export const billingApi = {
+    // Public
+    getPlans: async (): Promise<PlatformPlan[]> => {
+        const response = await api.get('/billing/plans');
+        return response.data;
+    },
+
+    getConfig: async () => {
+        const response = await api.get('/billing/config');
+        return response.data;
+    },
+
+    // Authenticated
+    getSubscription: async (): Promise<OrganizationSubscription | null> => {
+        const response = await api.get('/billing/subscription');
+        return response.data;
+    },
+
+    subscribe: async (planId: string, billingCycle: 'MONTHLY' | 'SEMI_ANNUAL' | 'ANNUAL', callback?: string) => {
+        const params = callback ? { callback } : {};
+        const response = await api.post('/billing/subscribe', { planId, billingCycle }, { params });
+        return response.data;
+    },
+
+    getInvoices: async (): Promise<BillingInvoice[]> => {
+        const response = await api.get('/billing/invoices');
+        return response.data;
+    },
+
+    getInvoice: async (id: string): Promise<BillingInvoice> => {
+        const response = await api.get(`/billing/invoices/${id}`);
+        return response.data;
+    },
+
+    handleCallback: async (reference: string) => {
+        const response = await api.get('/billing/callback', { params: { reference } });
+        return response.data;
+    },
+};
+
+// ============================================
+// ADMIN BILLING API
+// ============================================
+
+export const adminBillingApi = {
+    // Plans
+    getPlans: async (includeInactive = false): Promise<PlatformPlan[]> => {
+        const response = await api.get('/admin/billing/plans', { params: { includeInactive } });
+        return response.data;
+    },
+
+    getPlan: async (id: string): Promise<PlatformPlan> => {
+        const response = await api.get(`/admin/billing/plans/${id}`);
+        return response.data;
+    },
+
+    createPlan: async (data: Partial<PlatformPlan>) => {
+        const response = await api.post('/admin/billing/plans', data);
+        return response.data;
+    },
+
+    updatePlan: async (id: string, data: Partial<PlatformPlan>) => {
+        const response = await api.patch(`/admin/billing/plans/${id}`, data);
+        return response.data;
+    },
+
+    deletePlan: async (id: string) => {
+        const response = await api.delete(`/admin/billing/plans/${id}`);
+        return response.data;
+    },
+
+    // Subscriptions
+    getSubscriptions: async () => {
+        const response = await api.get('/admin/billing/subscriptions');
+        return response.data;
+    },
+
+    assignSubscription: async (data: {
+        organizationId: string;
+        planId: string;
+        billingCycle?: 'MONTHLY' | 'SEMI_ANNUAL' | 'ANNUAL';
+        isLifetime?: boolean;
+        hideBillingUI?: boolean;
+    }) => {
+        const response = await api.post('/admin/billing/subscriptions/assign', data);
+        return response.data;
+    },
+
+    updateSubscription: async (id: string, data: {
+        planId?: string;
+        billingCycle?: 'MONTHLY' | 'SEMI_ANNUAL' | 'ANNUAL';
+        isLifetime?: boolean;
+        hideBillingUI?: boolean;
+        extendDays?: number;
+    }) => {
+        const response = await api.patch(`/admin/billing/subscriptions/${id}`, data);
+        return response.data;
+    },
+
+    cancelSubscription: async (id: string) => {
+        const response = await api.delete(`/admin/billing/subscriptions/${id}`);
+        return response.data;
+    },
+};
+

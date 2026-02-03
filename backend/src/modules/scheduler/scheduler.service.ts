@@ -4,6 +4,7 @@ import { MailService } from '../mail/mail.service';
 import { ReportsService } from '../reports/reports.service';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { Prisma, UserRole } from '@prisma/client';
+import { BillingService } from '../billing/billing.service';
 
 // Type for Organization with included users
 type OrganizationWithUsers = Prisma.OrganizationGetPayload<{
@@ -23,6 +24,7 @@ export class SchedulerService implements OnModuleInit {
         private readonly mailService: MailService,
         private readonly reportsService: ReportsService,
         private readonly prisma: PrismaService,
+        private readonly billingService: BillingService,
     ) { }
 
     /**
@@ -305,6 +307,20 @@ export class SchedulerService implements OnModuleInit {
             this.logger.log('Yearly reports completed');
         } catch (error) {
             this.logger.error('Failed to send yearly reports:', error);
+        }
+    }
+
+    // Check for expired trials every hour
+    @Cron('0 * * * *', {
+        name: 'check-expired-trials',
+        timeZone: 'Africa/Douala',
+    })
+    async checkExpiredTrials() {
+        this.logger.log('Checking for expired trials...');
+        try {
+            await this.billingService.handleExpiredTrials();
+        } catch (error) {
+            this.logger.error('Failed to check expired trials:', error);
         }
     }
 }

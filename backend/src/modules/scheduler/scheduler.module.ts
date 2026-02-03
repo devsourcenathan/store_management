@@ -5,6 +5,7 @@ import { ReportsModule } from '../reports/reports.module';
 import { PrismaModule } from '../../common/prisma/prisma.module';
 import { SchedulerService } from './scheduler.service';
 import { SchedulerController } from './scheduler.controller';
+import { BillingModule } from '../billing/billing.module';
 
 @Module({
     imports: [
@@ -12,6 +13,7 @@ import { SchedulerController } from './scheduler.controller';
         MailModule,
         ReportsModule,
         PrismaModule,
+        BillingModule,
     ],
     controllers: [SchedulerController],
     providers: [SchedulerService],

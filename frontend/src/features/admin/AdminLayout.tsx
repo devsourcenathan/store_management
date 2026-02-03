@@ -2,7 +2,7 @@ import React from 'react';
 import { Outlet, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/features/auth/useAuth';
 import { Button } from '@/components/ui/button';
-import { LayoutDashboard, Users, LogOut } from 'lucide-react';
+import { LayoutDashboard, Users, LogOut, CreditCard } from 'lucide-react';
 
 export const AdminLayout = () => {
     const { user, logout } = useAuth();
@@ -32,6 +32,15 @@ export const AdminLayout = () => {
                     <Link to="/admin/organizations" className="flex items-center space-x-2 p-3 rounded-md hover:bg-slate-50 dark:hover:bg-slate-700">
                         <Users className="w-5 h-5" />
                         <span>Organizations</span>
+                    </Link>
+                    <div className="pt-4 pb-2 px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Billing</div>
+                    <Link to="/admin/billing/plans" className="flex items-center space-x-2 p-3 rounded-md hover:bg-slate-50 dark:hover:bg-slate-700">
+                        <CreditCard className="w-5 h-5" />
+                        <span>Plans</span>
+                    </Link>
+                    <Link to="/admin/billing/subscriptions" className="flex items-center space-x-2 p-3 rounded-md hover:bg-slate-50 dark:hover:bg-slate-700">
+                        <Users className="w-5 h-5" />
+                        <span>Subscriptions</span>
                     </Link>
                 </nav>
                 <div className="absolute bottom-0 w-64 p-4 border-t">
