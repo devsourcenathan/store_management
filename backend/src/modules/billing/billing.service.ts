@@ -495,8 +495,8 @@ export class BillingService {
                 await this.prisma.billingInvoice.create({
                     data: {
                         subscription: { connect: { id: sub.id } },
+                        plan: { connect: { id: plan.id } },
                         invoiceNumber: reference,
-                        planId: plan.id,
                         amount,
                         discount,
                         finalAmount: amount,

@@ -3,6 +3,10 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/services/api';
 import { Media } from '@/services/mediaService';
 import { useStore } from '../stores/StoreProvider';
+import { useSync } from '@/offline/SyncProvider';
+import { saveOffline } from '@/offline/offlineOperations';
+import { db } from '@/offline/db';
+import { v4 as uuidv4 } from 'uuid';
 import { Search, ShoppingCart, Trash2, Plus, Minus, CreditCard, Banknote, Smartphone, LayoutGrid, List, User, Printer } from 'lucide-react';
 import {
     Dialog,
@@ -37,6 +41,7 @@ interface CartItem {
 export function PosPage() {
     const { currentStore } = useStore();
     const queryClient = useQueryClient();
+    const { isOnline, isSyncing, pendingOperations } = useSync();
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedCategory, setSelectedCategory] = useState<string>('all');
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
@@ -97,10 +102,73 @@ export function PosPage() {
     });
 
     const createSaleMutation = useMutation({
+        networkMode: 'always', // CRITICAL: Execute mutation even when offline
         mutationFn: async (data: any) => {
-            return api.post('/sales', data);
+            console.log('🔍 ===== MUTATION FUNCTION STARTED =====');
+            console.log('🔍 Mutation started, navigator.onLine:', navigator.onLine);
+            console.log('📦 Mutation data:', data);
+
+            try {
+                // If offline, save locally
+                if (!navigator.onLine) {
+                    console.log('💾 Saving offline...');
+                    const saleId = uuidv4();
+                    const userId = localStorage.getItem('userId') || 'unknown';
+
+                    const saleData = {
+                        id: saleId,
+                        storeId: data.storeId,
+                        customerId: data.customerId,
+                        totalAmount: cartTotal,
+                        paidAmount: data.paidAmount,
+                        discount: data.discount || 0,
+                        status: (data.paidAmount >= cartTotal ? 'PAID' : 'PARTIAL') as 'PAID' | 'PARTIAL' | 'PENDING' | 'CANCELLED',
+                        notes: data.notes,
+                        createdBy: userId,
+                        createdAt: new Date().toISOString(),
+                        updatedAt: new Date().toISOString(),
+                        clientId: uuidv4(),
+                        items: data.items.map((item: any) => ({
+                            id: uuidv4(),
+                            saleId: saleId,
+                            productId: item.productId,
+                            quantity: item.quantity,
+                            unitPrice: item.unitPrice,
+                            discount: item.discount || 0,
+                            total: (item.quantity * item.unitPrice) - (item.discount || 0)
+                        }))
+                    };
+
+                    // Save to IndexedDB
+                    console.log('💾 Saving to IndexedDB...');
+                    await db.sales.add(saleData);
+                    console.log('💾 Saved to IndexedDB');
+
+                    // Add to sync queue
+                    console.log('💾 Adding to sync queue...');
+                    await saveOffline('sales', saleData, false);
+                    console.log('💾 Added to sync queue');
+
+                    console.log('✅ Offline save complete');
+                    return { data: saleData };
+                }
+
+                // If online, normal API request
+                console.log('🌐 Making online API request...');
+                console.log('🌐 API URL:', '/sales');
+                console.log('🌐 Request data:', data);
+
+                const response = await api.post('/sales', data);
+
+                console.log('✅ API response received:', response);
+                return response;
+            } catch (error) {
+                console.error('❌ Error in mutationFn:', error);
+                throw error;
+            }
         },
         onSuccess: (response) => {
+            console.log('🎉 onSuccess called, response:', response);
             // Store the sale data for printing
             setLastSale(response.data);
             setIsPaymentModalOpen(false);
@@ -114,9 +182,21 @@ export function PosPage() {
             queryClient.invalidateQueries({ queryKey: ['stock-levels'] });
             queryClient.invalidateQueries({ queryKey: ['sales'] });
             queryClient.invalidateQueries({ queryKey: ['stock-alerts'] });
+
+            // Different message based on mode
+            if (!navigator.onLine) {
+                toast.success(t('pos.success.saved_offline', 'Vente enregistrée localement. Elle sera synchronisée automatiquement.'));
+            }
         },
-        onError: (error) => {
-            toast.error(t('pos.error.process_sale'));
+        onError: (error: any) => {
+            console.error('❌ onError called, error:', error);
+            if (error.code === 'ERR_NETWORK' || error.message?.includes('Network')) {
+                toast.error(t('pos.error.network', 'Erreur réseau. Vérifiez votre connexion.'));
+            } else if (error.code === 'ECONNABORTED') {
+                toast.error(t('pos.error.timeout', 'La requête a expiré. Réessayez.'));
+            } else {
+                toast.error(t('pos.error.process_sale', 'Erreur lors du traitement de la vente'));
+            }
             console.error(error);
         }
     });
@@ -181,8 +261,19 @@ export function PosPage() {
     const totalItems = cart.reduce((acc, item) => acc + item.quantity, 0);
 
     const handleCheckout = () => {
-        if (!currentStore) return;
-        createSaleMutation.mutate({
+        console.log('🚀 handleCheckout called!');
+        console.log('Current store:', currentStore);
+        console.log('Cart:', cart);
+        console.log('Payment details:', { paidAmount, paymentMethod, selectedCustomerId, globalDiscount });
+        console.log('createSaleMutation object:', createSaleMutation);
+        console.log('createSaleMutation.mutate type:', typeof createSaleMutation.mutate);
+
+        if (!currentStore) {
+            console.log('❌ No current store, returning early');
+            return;
+        }
+
+        const mutationData = {
             storeId: currentStore.id,
             items: cart.map(item => ({
                 productId: item.productId,
@@ -195,7 +286,16 @@ export function PosPage() {
             paidAmount: paidAmount,
             discount: globalDiscount,
             notes: `POS Sale - ${paymentMethod}`
-        });
+        };
+
+        console.log('📤 About to call mutate with data:', mutationData);
+
+        try {
+            createSaleMutation.mutate(mutationData);
+            console.log('✅ mutate() called successfully');
+        } catch (error) {
+            console.error('❌ Error calling mutate():', error);
+        }
     };
 
     const [customerNameForPrint, setCustomerNameForPrint] = useState('');
@@ -250,6 +350,12 @@ export function PosPage() {
 
     return (
         <div className="h-[calc(100vh-8rem)] sm:h-[calc(100vh-6rem)] flex flex-col lg:flex-row gap-4 lg:gap-6">
+            {/* Offline Indicator */}
+            {!isOnline && (
+                <div className="fixed top-16 left-0 right-0 z-50 bg-yellow-500 text-white px-4 py-2 text-center text-sm font-medium shadow-lg">
+                    ⚠️ {t('common.offline', 'Mode hors ligne - Les ventes seront synchronisées automatiquement')}
+                </div>
+            )}
             {/* Left: Product Grid */}
             <div className="flex-1 flex flex-col bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden transition-colors">
                 {/* Search & Filter Header */}
@@ -422,7 +528,15 @@ export function PosPage() {
                             <ShoppingCart className="w-5 h-5 mr-2" />
                             {t('pos.current_sale')}
                         </h2>
-                        <span className="text-sm text-gray-500 dark:text-gray-400">{totalItems} {t('pos.items')}</span>
+                        <div className="flex items-center gap-2">
+                            <span className="text-sm text-gray-500 dark:text-gray-400">{totalItems} {t('pos.items')}</span>
+                            {/* Sync Status Indicator */}
+                            {pendingOperations > 0 && (
+                                <span className="text-xs bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-400 px-2 py-1 rounded-full flex items-center gap-1">
+                                    {isSyncing ? '🔄' : '⏳'} {pendingOperations}
+                                </span>
+                            )}
+                        </div>
                     </div>
 
                     {/* Customer Selection */}
@@ -641,7 +755,12 @@ export function PosPage() {
                             disabled={createSaleMutation.isPending}
                             className="px-6 py-2 btn-theme-primary rounded-lg font-medium disabled:opacity-50"
                         >
-                            {createSaleMutation.isPending ? t('pos.payment.processing') : t('pos.payment.confirm')}
+                            {createSaleMutation.isPending
+                                ? t('pos.payment.processing')
+                                : !isOnline
+                                    ? t('pos.payment.save_offline', 'Enregistrer (Hors ligne)')
+                                    : t('pos.payment.confirm')
+                            }
                         </button>
                     </DialogFooter>
                 </DialogContent>

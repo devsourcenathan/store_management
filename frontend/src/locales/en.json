@@ -24,7 +24,8 @@
         "active": "Active",
         "inactive": "Inactive",
         "saving": "Saving...",
-        "processing": "Processing..."
+        "processing": "Processing...",
+        "offline": "Offline mode - Sales will be synchronized automatically"
     },
     "nav": {
         "dashboard": "Dashboard",
@@ -106,16 +107,20 @@
             "card": "Card",
             "mobile": "Mobile Money",
             "processing": "Processing...",
-            "confirm": "Confirm Payment"
+            "confirm": "Confirm Payment",
+            "save_offline": "Save (Offline)"
         },
         "success": {
             "title": "Sale Successful!",
             "description": "Transaction completed successfully",
             "print": "Print Receipt",
-            "new_sale": "New Sale"
+            "new_sale": "New Sale",
+            "saved_offline": "Sale saved locally. It will be synchronized automatically."
         },
         "error": {
-            "process_sale": "Error processing sale"
+            "process_sale": "Error processing sale",
+            "network": "Network error. Check your internet connection.",
+            "timeout": "Request timed out. Please try again."
         }
     },
     "auth": {
