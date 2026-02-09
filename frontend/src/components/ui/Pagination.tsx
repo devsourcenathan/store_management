@@ -67,7 +67,7 @@ export function Pagination({ currentPage, totalPages, onPageChange, showControls
 
             {getPageNumbers().map((page, index) => (
                 page === -1 ? (
-                    <span key={`ellipsis-${index}`} className="px-2 text-gray-500">...</span>
+                    <span key={`ellipsis-${index}`} className="px-2 text-muted-foreground">...</span>
                 ) : (
                     <Button
                         key={page}

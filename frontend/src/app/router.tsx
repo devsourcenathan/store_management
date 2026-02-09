@@ -20,6 +20,11 @@ import { SupplyOrdersPage } from '@/features/suppliers/SupplyOrdersPage';
 import { SettingsPage } from '@/features/settings/SettingsPage';
 import { MediaLibrary } from '@/features/media/MediaLibrary';
 import { OwnerStatisticsPage } from '@/features/statistics/OwnerStatisticsPage';
+import PricingPage from '@/features/billing/PricingPage';
+import SubscriptionPage from '@/features/billing/SubscriptionPage';
+import BillingCallbackPage from '@/features/billing/BillingCallbackPage';
+import { DevicesPage } from '@/features/devices/DevicesPage';
+import { MaintenancesPage } from '@/features/maintenances/MaintenancesPage';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
     const { user, isLoading } = useAuth();
@@ -43,6 +48,8 @@ import { OrgLandingEditor } from '@/features/org-landing/OrgLandingEditor';
 import { AdminLayout } from '@/features/admin/AdminLayout';
 import { AdminDashboard } from '@/features/admin/AdminDashboard';
 import { OrgList } from '@/features/admin/OrgList';
+import AdminPlansPage from '@/features/billing/AdminPlansPage';
+import AdminSubscriptionsPage from '@/features/billing/AdminSubscriptionsPage';
 
 export function AppRouter() {
     return (
@@ -50,6 +57,8 @@ export function AppRouter() {
             <Route path="/admin" element={<AdminLayout />}>
                 <Route index element={<AdminDashboard />} />
                 <Route path="organizations" element={<OrgList />} />
+                <Route path="billing/plans" element={<AdminPlansPage />} />
+                <Route path="billing/subscriptions" element={<AdminSubscriptionsPage />} />
             </Route>
 
             {/* <Route path="/" element={<LandingPage />} /> */}
@@ -84,6 +93,13 @@ export function AppRouter() {
                 <Route path="settings/landing" element={<OrgLandingEditor />} />
                 <Route path="media" element={<MediaLibrary />} />
                 <Route path="statistics" element={<OwnerStatisticsPage />} />
+                <Route path="devices" element={<DevicesPage />} />
+                <Route path="maintenances" element={<MaintenancesPage />} />
+
+                {/* Platform Billing */}
+                <Route path="billing/pricing" element={<PricingPage />} />
+                <Route path="billing/subscription" element={<SubscriptionPage />} />
+                <Route path="billing/callback" element={<BillingCallbackPage />} />
             </Route>
         </Routes>
     );

@@ -222,12 +222,19 @@ export function DashboardPage() {
             </div>
 
             {/* Stats Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                 <StatCard
                     title={`${t('dashboard.today_revenue')} (${periodLabel})`}
                     value={stats?.todaysSales ? `${stats.todaysSales.toLocaleString()} F` : '0 F'}
                     icon={<DollarIcon />}
                     color="blue"
+                    isLoading={isLoadingStats}
+                />
+                <StatCard
+                    title={t('dashboard.stats.maintenance_revenue', 'Revenus Maintenance')}
+                    value={stats?.maintenanceRevenue ? `${stats.maintenanceRevenue.toLocaleString()} F` : '0 F'}
+                    icon={<WrenchIcon />}
+                    color="green"
                     isLoading={isLoadingStats}
                 />
                 <StatCard
@@ -249,6 +256,13 @@ export function DashboardPage() {
                     value={stats?.pendingOrders || 0}
                     icon={<TruckIcon />}
                     color="purple"
+                    isLoading={isLoadingStats}
+                />
+                <StatCard
+                    title={t('dashboard.stats.pending_maintenances', 'Maintenances en cours')}
+                    value={stats?.pendingMaintenances || 0}
+                    icon={<WrenchIcon />}
+                    color="blue"
                     isLoading={isLoadingStats}
                 />
             </div>
@@ -296,6 +310,7 @@ function StatCard({ title, value, icon, color, isLoading }: any) {
         indigo: 'bg-indigo-50 text-indigo-600 dark:bg-indigo-900/40 dark:text-indigo-400',
         yellow: 'bg-yellow-50 text-yellow-600 dark:bg-yellow-900/40 dark:text-yellow-400',
         purple: 'bg-purple-50 text-purple-600 dark:bg-purple-900/40 dark:text-purple-400',
+        green: 'bg-green-50 text-green-600 dark:bg-green-900/40 dark:text-green-400',
     };
 
     return (
@@ -332,4 +347,7 @@ const TruckIcon = ({ className = "w-6 h-6" }: { className?: string }) => (
 );
 const CalculatorIcon = ({ className = "w-6 h-6" }: { className?: string }) => (
     <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>
+);
+const WrenchIcon = ({ className = "w-6 h-6" }: { className?: string }) => (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" /></svg>
 );

@@ -1,10 +1,12 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, ConflictException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '@/common/prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
 import { defaultLandingTemplate } from '../organization-landing/templates/default';
 import { randomBytes } from 'crypto';
 import { MailService } from '../mail/mail.service';
+import { DEFAULT_CATEGORIES } from '@/common/constants/default-categories';
+import { DEFAULT_THEME_CONFIG } from '@/common/constants/default-theme';
 
 // Helper to generate a URL-friendly slug
 const slugify = (text: string) =>
@@ -79,13 +81,24 @@ export class AuthService {
         lastName: string;
         organizationName: string;
     }) {
+        const existingUser = await this.prisma.user.findUnique({
+            where: { email: data.email },
+        });
+
+        if (existingUser) {
+            throw new ConflictException('Email already exists');
+        }
+
         // Hash password
         const passwordHash = await bcrypt.hash(data.password, 10);
 
         // Create organization and owner user in transaction
         const result = await this.prisma.$transaction(async (tx) => {
             const organization = await tx.organization.create({
-                data: { name: data.organizationName },
+                data: {
+                    name: data.organizationName,
+                    themeConfig: DEFAULT_THEME_CONFIG,
+                },
             });
 
             const user = await tx.user.create({
@@ -107,6 +120,14 @@ export class AuthService {
                     organizationId: organization.id,
                     subdomain: subdomain,
                 }
+            });
+
+            // Create default categories
+            await tx.category.createMany({
+                data: DEFAULT_CATEGORIES.map(category => ({
+                    ...category,
+                    organizationId: organization.id,
+                })),
             });
 
             return { user, organization };
@@ -187,6 +208,29 @@ export class AuthService {
     }
 
     async getUserWithStores(userId: string) {
-        // ... (omitted for brevity)
+        const user = await this.prisma.user.findUnique({
+            where: { id: userId },
+            include: {
+                organization: true,
+                stores: {
+                    include: { store: true },
+                },
+            },
+        });
+
+        if (!user || !user.isActive) {
+            throw new UnauthorizedException();
+        }
+
+        return {
+            id: user.id,
+            email: user.email,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            role: user.role,
+            organizationId: user.organizationId,
+            stores: user.stores,
+            organization: user.organization,
+        };
     }
 }

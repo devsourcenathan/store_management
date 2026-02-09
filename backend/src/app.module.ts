@@ -29,6 +29,9 @@ import { HealthController } from './health/health.controller';
 import { MailModule } from './modules/mail/mail.module';
 import { ReportsModule } from './modules/reports/reports.module';
 import { SchedulerModule } from './modules/scheduler/scheduler.module';
+import { BillingModule } from './modules/billing/billing.module';
+import { DevicesModule } from './modules/devices/devices.module';
+import { MaintenancesModule } from './modules/maintenances/maintenances.module';
 
 @Module({
     imports: [
@@ -69,6 +72,9 @@ import { SchedulerModule } from './modules/scheduler/scheduler.module';
         MailModule,
         ReportsModule,
         SchedulerModule,
+        BillingModule,
+        DevicesModule,
+        MaintenancesModule,
     ],
     controllers: [HealthController],
     providers: [

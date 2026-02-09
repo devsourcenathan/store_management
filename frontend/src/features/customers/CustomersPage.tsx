@@ -14,10 +14,18 @@ interface Customer {
     currentCredit: number;
 }
 
+// Phone validation helper
+const validatePhone = (phone: string): boolean => {
+    // Accepts: +237XXXXXXXXX, 237XXXXXXXXX, or 6XXXXXXXX/2XXXXXXXX
+    const phoneRegex = /^(\+237|237)?[26]\d{8}$/;
+    return phoneRegex.test(phone.replace(/\s/g, '')); // Remove spaces before validation
+};
+
 export function CustomersPage() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
     const [formData, setFormData] = useState({ name: '', email: '', phone: '', creditLimit: 0 });
+    const [phoneError, setPhoneError] = useState('');
     const { t } = useTranslation();
     const queryClient = useQueryClient();
 
@@ -37,6 +45,7 @@ export function CustomersPage() {
             queryClient.invalidateQueries({ queryKey: ['customers'] });
             setIsModalOpen(false);
             setFormData({ name: '', email: '', phone: '', creditLimit: 0 });
+            setPhoneError('');
         },
     });
 
@@ -48,6 +57,7 @@ export function CustomersPage() {
             queryClient.invalidateQueries({ queryKey: ['customers'] });
             setIsModalOpen(false);
             setFormData({ name: '', email: '', phone: '', creditLimit: 0 });
+            setPhoneError('');
             setEditingCustomer(null);
         },
     });
@@ -268,8 +278,33 @@ export function CustomersPage() {
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('common.phone')}</label>
-                                <input type="text" className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md shadow-sm p-2 dark:bg-gray-700 dark:text-white"
-                                    value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} />
+                                <input
+                                    type="tel"
+                                    className={`mt-1 block w-full border rounded-md shadow-sm p-2 dark:bg-gray-700 dark:text-white ${phoneError
+                                        ? 'border-red-500 dark:border-red-500 focus:ring-red-500 focus:border-red-500'
+                                        : 'border-gray-300 dark:border-gray-600 focus:ring-blue-500 focus:border-blue-500'
+                                        }`}
+                                    value={formData.phone}
+                                    onChange={(e) => {
+                                        // Only allow numbers, + at the start, and spaces
+                                        const value = e.target.value;
+                                        const filtered = value.replace(/[^\d+\s]/g, '').replace(/(?!^)\+/g, '');
+                                        setFormData({ ...formData, phone: filtered });
+                                        // Clear error when user types
+                                        if (phoneError) setPhoneError('');
+                                    }}
+                                    onBlur={(e) => {
+                                        const phone = e.target.value.trim();
+                                        if (phone && !validatePhone(phone)) {
+                                            setPhoneError(t('customers.invalid_phone', 'Format invalide. Utilisez: +237XXXXXXXXX, 237XXXXXXXXX ou 6XXXXXXXX'));
+                                        }
+                                    }}
+                                    pattern="^(\+237|237)?[26]\d{8}$"
+                                    placeholder="+237 6XX XXX XXX"
+                                />
+                                {phoneError && (
+                                    <p className="mt-1 text-sm text-red-600 dark:text-red-400">{phoneError}</p>
+                                )}
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('customers.credit_limit', 'Credit Limit')}</label>
@@ -277,7 +312,7 @@ export function CustomersPage() {
                                     value={formData.creditLimit} onChange={(e) => setFormData({ ...formData, creditLimit: parseFloat(e.target.value) })} />
                             </div>
                             <div className="flex justify-end space-x-3 mt-6">
-                                <button type="button" onClick={() => { setIsModalOpen(false); setEditingCustomer(null); setFormData({ name: '', email: '', phone: '', creditLimit: 0 }); }} className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">{t('common.cancel')}</button>
+                                <button type="button" onClick={() => { setIsModalOpen(false); setEditingCustomer(null); setFormData({ name: '', email: '', phone: '', creditLimit: 0 }); setPhoneError(''); }} className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">{t('common.cancel')}</button>
                                 <button type="submit" disabled={createCustomerMutation.isPending || updateCustomerMutation.isPending} className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
                                     {createCustomerMutation.isPending || updateCustomerMutation.isPending ? t('common.processing') : (editingCustomer ? t('common.save') : t('customers.add_customer'))}
                                 </button>

@@ -130,14 +130,52 @@ export class ReportsService {
             storePerformance.set(sale.storeId, existing);
         });
 
+        // Maintenance Stats
+        const maintenances = await this.prisma.maintenance.findMany({
+            where: {
+                organizationId,
+                status: 'DONE',
+                completedAt: {
+                    gte: startDate,
+                    lte: endDate,
+                }
+            },
+            include: {
+                parts: {
+                    include: {
+                        product: true
+                    }
+                }
+            }
+        });
+
+        const maintenanceRevenue = maintenances.reduce((sum, m) => sum + this.toNumber(m.totalCost), 0);
+        let maintenanceCost = 0;
+        maintenances.forEach(m => {
+            m.parts.forEach(p => {
+                maintenanceCost += p.quantity * this.toNumber(p.product.costPrice);
+            });
+        });
+        const maintenanceProfit = maintenanceRevenue - maintenanceCost;
+        const maintenanceCount = maintenances.length;
+
+        // Total Revenue & Profit
+        const totalRevenue = revenue + maintenanceRevenue;
+        const totalProfit = profit + maintenanceProfit;
+
         return {
             date: yesterday.toISOString().split('T')[0],
-            revenue,
-            profit,
+            revenue: totalRevenue, // Combined
+            salesRevenue: revenue,
+            maintenanceRevenue,
+            profit: totalProfit,
+            salesProfit: profit,
+            maintenanceProfit,
             salesCount,
+            maintenanceCount,
             topProducts,
             comparison: {
-                revenueChange: Math.round(revenueChange * 100) / 100,
+                revenueChange: Math.round(revenueChange * 100) / 100, // Note: this compares only sales revenue change unless we update prev period too. Keeping simple for now.
                 profitChange: Math.round(profitChange * 100) / 100,
             },
             lowStockAlerts: alerts.map(a => ({
@@ -218,11 +256,43 @@ export class ReportsService {
             .sort((a, b) => b.totalSpent - a.totalSpent)
             .slice(0, 10);
 
+        // Maintenance Stats
+        const maintenances = await this.prisma.maintenance.findMany({
+            where: {
+                organizationId,
+                status: 'DONE',
+                completedAt: {
+                    gte: startDate,
+                    lte: endDate,
+                }
+            },
+            include: {
+                parts: {
+                    include: {
+                        product: true
+                    }
+                }
+            }
+        });
+
+        const maintenanceRevenue = maintenances.reduce((sum, m) => sum + this.toNumber(m.totalCost), 0);
+        let maintenanceCost = 0;
+        maintenances.forEach(m => {
+            m.parts.forEach(p => {
+                maintenanceCost += p.quantity * this.toNumber(p.product.costPrice);
+            });
+        });
+        const maintenanceProfit = maintenanceRevenue - maintenanceCost;
+        const maintenanceCount = maintenances.length;
+
         return {
             week: `${startDate.toISOString().split('T')[0]} - ${endDate.toISOString().split('T')[0]}`,
-            revenue,
-            profit,
+            revenue: revenue + maintenanceRevenue,
+            salesRevenue: revenue,
+            maintenanceRevenue,
+            profit: profit + maintenanceProfit,
             salesCount: sales.length,
+            maintenanceCount,
             topProducts,
             topCustomers,
         };
@@ -282,11 +352,43 @@ export class ReportsService {
             });
         });
 
+        // Maintenance Stats
+        const maintenances = await this.prisma.maintenance.findMany({
+            where: {
+                organizationId,
+                status: 'DONE',
+                completedAt: {
+                    gte: startDate,
+                    lte: endDate,
+                }
+            },
+            include: {
+                parts: {
+                    include: {
+                        product: true
+                    }
+                }
+            }
+        });
+
+        const maintenanceRevenue = maintenances.reduce((sum, m) => sum + this.toNumber(m.totalCost), 0);
+        let maintenanceCost = 0;
+        maintenances.forEach(m => {
+            m.parts.forEach(p => {
+                maintenanceCost += p.quantity * this.toNumber(p.product.costPrice);
+            });
+        });
+        const maintenanceProfit = maintenanceRevenue - maintenanceCost;
+        const maintenanceCount = maintenances.length;
+
         return {
             month: date.toLocaleString('default', { month: 'long', year: 'numeric' }),
-            revenue,
-            profit,
+            revenue: revenue + maintenanceRevenue,
+            salesRevenue: revenue,
+            maintenanceRevenue,
+            profit: profit + maintenanceProfit,
             salesCount: sales.length,
+            maintenanceCount,
             categoryPerformance: Array.from(categoryRevenue.values())
                 .sort((a, b) => b.revenue - a.revenue),
         };
@@ -325,12 +427,44 @@ export class ReportsService {
 
         const quarter = Math.floor(date.getMonth() / 3) + 1;
 
+        // Maintenance Stats
+        const maintenances = await this.prisma.maintenance.findMany({
+            where: {
+                organizationId,
+                status: 'DONE',
+                completedAt: {
+                    gte: startDate,
+                    lte: endDate,
+                }
+            },
+            include: {
+                parts: {
+                    include: {
+                        product: true
+                    }
+                }
+            }
+        });
+
+        const maintenanceRevenue = maintenances.reduce((sum, m) => sum + this.toNumber(m.totalCost), 0);
+        let maintenanceCost = 0;
+        maintenances.forEach(m => {
+            m.parts.forEach(p => {
+                maintenanceCost += p.quantity * this.toNumber(p.product.costPrice);
+            });
+        });
+        const maintenanceProfit = maintenanceRevenue - maintenanceCost;
+        const maintenanceCount = maintenances.length;
+
         return {
             quarter,
             year: date.getFullYear(),
-            revenue,
-            profit,
+            revenue: revenue + maintenanceRevenue,
+            salesRevenue: revenue,
+            maintenanceRevenue,
+            profit: profit + maintenanceProfit,
             salesCount: sales.length,
+            maintenanceCount,
         };
     }
 
@@ -365,11 +499,43 @@ export class ReportsService {
         });
         const profit = revenue - totalCost;
 
+        // Maintenance Stats
+        const maintenances = await this.prisma.maintenance.findMany({
+            where: {
+                organizationId,
+                status: 'DONE',
+                completedAt: {
+                    gte: startDate,
+                    lte: endDate,
+                }
+            },
+            include: {
+                parts: {
+                    include: {
+                        product: true
+                    }
+                }
+            }
+        });
+
+        const maintenanceRevenue = maintenances.reduce((sum, m) => sum + this.toNumber(m.totalCost), 0);
+        let maintenanceCost = 0;
+        maintenances.forEach(m => {
+            m.parts.forEach(p => {
+                maintenanceCost += p.quantity * this.toNumber(p.product.costPrice);
+            });
+        });
+        const maintenanceProfit = maintenanceRevenue - maintenanceCost;
+        const maintenanceCount = maintenances.length;
+
         return {
             year: date.getFullYear(),
-            revenue,
-            profit,
+            revenue: revenue + maintenanceRevenue,
+            salesRevenue: revenue,
+            maintenanceRevenue,
+            profit: profit + maintenanceProfit,
             salesCount: sales.length,
+            maintenanceCount,
         };
     }
 }

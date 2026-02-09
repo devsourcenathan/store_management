@@ -32,7 +32,9 @@ import {
     Shield,
     Image,
     BarChart3,
-    Store
+    Store,
+    Smartphone,
+    Wrench
 } from 'lucide-react';
 
 export function DashboardLayout() {
@@ -75,6 +77,13 @@ export function DashboardLayout() {
             ]
         },
         {
+            title: t('maintenances.title'),
+            items: [
+                { name: t('devices.title'), href: '/devices', icon: Smartphone },
+                { name: t('maintenances.title'), href: '/maintenances', icon: Wrench },
+            ]
+        },
+        {
             title: 'Finance',
             items: [
                 { name: t('nav.subscriptions'), href: '/subscriptions', icon: CreditCard },
@@ -110,6 +119,13 @@ export function DashboardLayout() {
         groupedNavigation.splice(1, 0, {
             title: 'Analytics',
             items: [{ name: t('nav.statistics'), href: '/statistics', icon: BarChart3 }]
+        });
+
+        groupedNavigation.push({
+            title: 'Billing',
+            items: [
+                { name: t('nav.my_plan', 'My Plan'), href: '/billing/subscription', icon: CreditCard }
+            ]
         });
     }
 
