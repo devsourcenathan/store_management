@@ -96,6 +96,24 @@ export class SyncService {
             delete enrichedData.storeId;
         }
 
+        if (entity === 'sales') {
+            delete enrichedData.organizationId;
+        }
+
+        if (entity === 'sales' && enrichedData.items) {
+            const items = enrichedData.items;
+            delete enrichedData.items;
+
+            if (type === 'CREATE') {
+                enrichedData.items = {
+                    create: items.map((item: any) => {
+                        const { saleId, ...rest } = item;
+                        return rest;
+                    }),
+                };
+            }
+        }
+
         switch (type) {
             case 'CREATE':
                 // Check if already exists (idempotency)
