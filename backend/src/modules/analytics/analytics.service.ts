@@ -30,7 +30,7 @@ export class AnalyticsService {
             };
         }
 
-        const [totalProducts, lowStockItems, salesRevenue, pendingOrders] = await Promise.all([
+        const [totalProducts, lowStockItems, salesRevenue, pendingOrders, pendingMaintenances, maintenanceRevenue] = await Promise.all([
             // Total Products (Active)
             this.prisma.product.count({
                 where: { isActive: true }
@@ -61,14 +61,36 @@ export class AnalyticsService {
                 where: {
                     status: 'PENDING'
                 }
+            }),
+
+            // Pending Maintenances
+            this.prisma.maintenance.count({
+                where: {
+                    storeId,
+                    status: { in: ['PENDING', 'IN_PROGRESS'] }
+                }
+            }),
+
+            // Maintenance Revenue
+            this.prisma.maintenance.aggregate({
+                where: {
+                    storeId,
+                    status: 'DONE',
+                    ...dateFilter
+                },
+                _sum: {
+                    totalCost: true
+                }
             })
         ]);
 
         return {
             totalProducts,
             lowStockItems,
-            todaysSales: salesRevenue._sum.totalAmount || 0, // Label kept as todaysSales for frontend compat, but represents "Period Revenue"
-            pendingOrders
+            todaysSales: salesRevenue._sum.totalAmount || 0,
+            pendingOrders,
+            pendingMaintenances,
+            maintenanceRevenue: maintenanceRevenue._sum.totalCost || 0
         };
     }
 
@@ -220,7 +242,7 @@ export class AnalyticsService {
 
         const storeIds = stores.map(s => s.id);
 
-        const [totalSalesRevenue, totalSalesCount, totalProducts, totalCustomers, salesWithItems] = await Promise.all([
+        const [totalSalesRevenue, totalSalesCount, totalProducts, totalCustomers, salesWithItems, maintenanceRevenue, totalMaintenances] = await Promise.all([
             // Total Sales Revenue (prix de vente total)
             this.prisma.sale.aggregate({
                 where: {
@@ -270,6 +292,26 @@ export class AnalyticsService {
                         }
                     }
                 }
+            }),
+
+            // Maintenance Revenue
+            this.prisma.maintenance.aggregate({
+                where: {
+                    storeId: { in: storeIds },
+                    status: 'DONE',
+                    ...dateFilter
+                },
+                _sum: {
+                    totalCost: true
+                }
+            }),
+
+            // Total Maintenances (count all in period)
+            this.prisma.maintenance.count({
+                where: {
+                    storeId: { in: storeIds },
+                    ...dateFilter
+                }
             })
         ]);
 
@@ -286,12 +328,27 @@ export class AnalyticsService {
 
         // Net Profit = Total Sales Revenue (with discounts applied) - Total Cost of Goods Sold
         const actualSalesRevenue = Number(totalSalesRevenue._sum.totalAmount || 0);
+        const actualMaintenanceRevenue = Number(maintenanceRevenue._sum.totalCost || 0);
+
+        // Note: Maintenance profit is not fully calculated here (labor cost is profit, parts have cost), 
+        // but for now we might simplisticly assume maintenance revenue contributes to "Revenue".
+        // If we want total revenue of the organization:
+        const combinedRevenue = actualSalesRevenue + actualMaintenanceRevenue;
+
+        // Total Profit currently only considers Sales profit. 
+        // To be accurate with maintenance, we would need maintenance costs (parts cost).
+        // For now, let's keep totalProfit as Sales Profit, or we can try to approximate.
+        // Let's iterate maintenances if we want accurate profit, but for now just adding revenue field is safer.
+
         const totalProfit = actualSalesRevenue - totalCostOfGoodsSold;
 
         return {
             totalSalesRevenue: actualSalesRevenue,
+            totalMaintenanceRevenue: actualMaintenanceRevenue,
+            totalRevenue: combinedRevenue,
             totalProfit: totalProfit,
             totalSales: totalSalesCount,
+            totalMaintenances,
             totalProducts,
             totalCustomers,
             totalStores: stores.length
@@ -332,7 +389,7 @@ export class AnalyticsService {
         });
 
         const statsPromises = stores.map(async (store) => {
-            const [revenue, salesCount, productCount] = await Promise.all([
+            const [revenue, salesCount, productCount, maintenanceRevenue, activeMaintenances] = await Promise.all([
                 this.prisma.sale.aggregate({
                     where: {
                         storeId: store.id,
@@ -355,7 +412,23 @@ export class AnalyticsService {
                     where: {
                         storeId: store.id
                     }
-                }).then(result => result.length)
+                }).then(result => result.length),
+                this.prisma.maintenance.aggregate({
+                    where: {
+                        storeId: store.id,
+                        status: 'DONE',
+                        ...dateFilter
+                    },
+                    _sum: {
+                        totalCost: true
+                    }
+                }),
+                this.prisma.maintenance.count({
+                    where: {
+                        storeId: store.id,
+                        status: { in: ['PENDING', 'IN_PROGRESS'] }
+                    }
+                })
             ]);
 
             return {
@@ -363,8 +436,10 @@ export class AnalyticsService {
                 storeName: store.name,
                 storeAddress: store.address,
                 revenue: revenue._sum.totalAmount || 0,
+                maintenanceRevenue: maintenanceRevenue._sum.totalCost || 0,
                 salesCount,
-                productCount
+                productCount,
+                activeMaintenances
             };
         });
 

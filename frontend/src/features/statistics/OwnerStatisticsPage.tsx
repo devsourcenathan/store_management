@@ -4,7 +4,7 @@ import { api } from '@/services/api';
 import { useAuth } from '@/features/auth/useAuth';
 import { useTranslation } from 'react-i18next';
 import { ExportButton } from '@/components/ExportButton';
-import { BarChart3, TrendingUp, Store, DollarSign, Package, Users } from 'lucide-react';
+import { BarChart3, TrendingUp, Store, DollarSign, Package, Users, Wrench } from 'lucide-react';
 import { Bar, Line } from 'react-chartjs-2';
 import {
     Chart as ChartJS,
@@ -155,7 +155,9 @@ export function OwnerStatisticsPage() {
         { header: t('settings.stores.store_name'), key: 'storeName' },
         { header: t('common.address'), key: 'storeAddress' },
         { header: t('statistics.total_revenue'), key: 'revenue' },
+        { header: t('statistics.maintenance_revenue', 'Revenus Maintenance'), key: 'maintenanceRevenue' },
         { header: t('statistics.total_sales'), key: 'salesCount' },
+        { header: t('statistics.active_maintenances', 'Maintenances Actives'), key: 'activeMaintenances' },
         { header: t('statistics.total_products'), key: 'productCount' },
     ];
 
@@ -246,19 +248,33 @@ export function OwnerStatisticsPage() {
             </div>
 
             {/* Aggregated Stats Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
                 <StatCard
-                    title={t('statistics.total_sales_revenue')}
-                    value={`${aggregatedStats?.totalSalesRevenue?.toLocaleString() || 0} F`}
+                    title={t('statistics.total_revenue')}
+                    value={`${aggregatedStats?.totalRevenue?.toLocaleString() || 0} F`}
                     icon={<DollarSign className="w-6 h-6" />}
                     color="blue"
+                    isLoading={isLoadingAggregated}
+                />
+                <StatCard
+                    title={t('statistics.sales_revenue', 'Revenus Ventes')}
+                    value={`${aggregatedStats?.totalSalesRevenue?.toLocaleString() || 0} F`}
+                    icon={<TrendingUp className="w-6 h-6" />}
+                    color="indigo"
+                    isLoading={isLoadingAggregated}
+                />
+                <StatCard
+                    title={t('statistics.maintenance_revenue', 'Revenus Maintenance')}
+                    value={`${aggregatedStats?.totalMaintenanceRevenue?.toLocaleString() || 0} F`}
+                    icon={<Wrench className="w-6 h-6" />}
+                    color="green"
                     isLoading={isLoadingAggregated}
                 />
                 <StatCard
                     title={t('statistics.total_profit')}
                     value={`${aggregatedStats?.totalProfit?.toLocaleString() || 0} F`}
                     icon={<TrendingUp className="w-6 h-6" />}
-                    color="green"
+                    color="emerald"
                     isLoading={isLoadingAggregated}
                 />
                 <StatCard
@@ -269,17 +285,24 @@ export function OwnerStatisticsPage() {
                     isLoading={isLoadingAggregated}
                 />
                 <StatCard
+                    title={t('statistics.total_maintenances', 'Total Maintenances')}
+                    value={aggregatedStats?.totalMaintenances || 0}
+                    icon={<Wrench className="w-6 h-6" />}
+                    color="cyan"
+                    isLoading={isLoadingAggregated}
+                />
+                <StatCard
                     title={t('statistics.total_products')}
                     value={aggregatedStats?.totalProducts || 0}
                     icon={<Package className="w-6 h-6" />}
-                    color="indigo"
+                    color="orange"
                     isLoading={isLoadingAggregated}
                 />
                 <StatCard
                     title={t('statistics.total_customers')}
                     value={aggregatedStats?.totalCustomers || 0}
                     icon={<Users className="w-6 h-6" />}
-                    color="orange"
+                    color="pink"
                     isLoading={isLoadingAggregated}
                 />
             </div>
@@ -338,7 +361,13 @@ export function OwnerStatisticsPage() {
                                     {t('statistics.total_revenue')}
                                 </th>
                                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                    {t('statistics.maintenance_revenue', 'Rev. Maint.')}
+                                </th>
+                                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                                     {t('statistics.total_sales')}
+                                </th>
+                                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                    {t('statistics.active_maintenances', 'Maint. Act.')}
                                 </th>
                                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                                     {t('statistics.total_products')}
@@ -348,7 +377,7 @@ export function OwnerStatisticsPage() {
                         <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                             {isLoadingByStore ? (
                                 <tr>
-                                    <td colSpan={5} className="px-6 py-4 text-center">
+                                    <td colSpan={7} className="px-6 py-4 text-center">
                                         <div className="flex items-center justify-center">
                                             <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900 dark:border-gray-100"></div>
                                         </div>
@@ -367,7 +396,13 @@ export function OwnerStatisticsPage() {
                                             {store.revenue.toLocaleString()} F
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900 dark:text-gray-100">
+                                            {store.maintenanceRevenue ? store.maintenanceRevenue.toLocaleString() + ' F' : '0 F'}
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900 dark:text-gray-100">
                                             {store.salesCount}
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900 dark:text-gray-100">
+                                            {store.activeMaintenances || 0}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900 dark:text-gray-100">
                                             {store.productCount}
@@ -376,7 +411,7 @@ export function OwnerStatisticsPage() {
                                 ))
                             ) : (
                                 <tr>
-                                    <td colSpan={5} className="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-400">
+                                    <td colSpan={7} className="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-400">
                                         {t('statistics.no_data')}
                                     </td>
                                 </tr>
@@ -396,6 +431,9 @@ function StatCard({ title, value, icon, color, isLoading }: any) {
         purple: 'bg-purple-50 text-purple-600 dark:bg-purple-900/40 dark:text-purple-400',
         indigo: 'bg-indigo-50 text-indigo-600 dark:bg-indigo-900/40 dark:text-indigo-400',
         orange: 'bg-orange-50 text-orange-600 dark:bg-orange-900/40 dark:text-orange-400',
+        emerald: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/40 dark:text-emerald-400',
+        cyan: 'bg-cyan-50 text-cyan-600 dark:bg-cyan-900/40 dark:text-cyan-400',
+        pink: 'bg-pink-50 text-pink-600 dark:bg-pink-900/40 dark:text-pink-400',
     };
 
     return (

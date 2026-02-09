@@ -38,6 +38,7 @@ model Organization {
   landingPage   OrganizationLanding?
   media         Media[]
   platformSubscription OrganizationSubscription?
+  devices       Device[]
 
   @@map("organizations")
 }
@@ -138,6 +139,7 @@ model Product {
   saleItems      SaleItem[]
   supplyItems    SupplyItem[]
   pricingRules   PricingRule[]
+  maintenanceParts MaintenancePart[]
 
   @@unique([organizationId, sku])
   @@map("products")
@@ -389,6 +391,9 @@ model Customer {
   organization  Organization           @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   sales         Sale[]
   subscriptions CustomerSubscription[]
+  devices       Device[]
+  maintenances  Maintenance[]
+  maintenanceInvoices MaintenanceInvoice[]
 
   @@map("customers")
 }
@@ -821,3 +826,117 @@ model BillingInvoice {
 }
 
 // End of file
+
+// ============================================
+// MAINTENANCE & SAV
+// ============================================
+
+enum DeviceOwnerType {
+  INTERNAL
+  CLIENT
+}
+
+model Device {
+  id             String          @id @default(uuid())
+  name           String
+  model          String?
+  serialNumber   String?
+  ownerType      DeviceOwnerType
+  customerId     String?
+  organizationId String
+  storeId        String?
+  notes          String?
+  isActive       Boolean         @default(true)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  organization  Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  customer      Customer?     @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  maintenances  Maintenance[]
+
+  @@index([organizationId, ownerType])
+  @@index([customerId])
+  @@map("devices")
+}
+
+enum MaintenanceStatus {
+  PENDING
+  IN_PROGRESS
+  DONE
+  CANCELLED
+}
+
+enum MaintenanceType {
+  CLIENT
+  INTERNAL
+}
+
+model Maintenance {
+  id             String            @id @default(uuid())
+  deviceId       String
+  customerId     String?
+  type           MaintenanceType
+  status         MaintenanceStatus @default(PENDING)
+  description    String
+  diagnosis      String?
+  laborCost      Decimal           @db.Decimal(10, 2) @default(0)
+  totalCost      Decimal           @db.Decimal(10, 2) @default(0)
+  storeId        String
+  organizationId String
+  createdBy      String
+  completedBy    String?
+  completedAt    DateTime?
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+  syncedAt       DateTime?
+  clientId       String?
+
+  device   Device                @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  customer Customer?             @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  parts    MaintenancePart[]
+  invoice  MaintenanceInvoice?
+
+  @@index([storeId, status])
+  @@index([deviceId])
+  @@index([customerId])
+  @@index([type, status])
+  @@map("maintenances")
+}
+
+model MaintenancePart {
+  id            String  @id @default(uuid())
+  maintenanceId String
+  productId     String
+  quantity      Int
+  unitPrice     Decimal @db.Decimal(10, 2)
+  total         Decimal @db.Decimal(10, 2)
+
+  maintenance Maintenance @relation(fields: [maintenanceId], references: [id], onDelete: Cascade)
+  product     Product     @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  @@map("maintenance_parts")
+}
+
+enum MaintenanceInvoiceStatus {
+  PENDING
+  PAID
+  CANCELLED
+}
+
+model MaintenanceInvoice {
+  id            String                   @id @default(uuid())
+  maintenanceId String                   @unique
+  customerId    String
+  invoiceNumber String                   @unique
+  amount        Decimal                  @db.Decimal(10, 2)
+  status        MaintenanceInvoiceStatus @default(PENDING)
+  paidAt        DateTime?
+  createdAt     DateTime                 @default(now())
+  updatedAt     DateTime                 @updatedAt
+
+  maintenance Maintenance @relation(fields: [maintenanceId], references: [id], onDelete: Cascade)
+  customer    Customer    @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@index([customerId])
+  @@map("maintenance_invoices")
+}

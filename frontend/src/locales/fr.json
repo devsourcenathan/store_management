@@ -564,6 +564,64 @@
         "sales_by_store": "Ventes par Boutique",
         "no_data": "Aucune donnée disponible pour la période sélectionnée"
     },
+    "devices": {
+        "title": "Appareils",
+        "subtitle": "Gérer les appareils internes et clients",
+        "add_device": "Ajouter Appareil",
+        "edit_device": "Modifier Appareil",
+        "no_devices": "Aucun appareil trouvé",
+        "owner_type": {
+            "internal": "Interne",
+            "client": "Client"
+        },
+        "fields": {
+            "name": "Nom",
+            "model": "Modèle",
+            "serial_number": "Numéro de série",
+            "owner_type": "Type de propriétaire",
+            "customer": "Client",
+            "store": "Boutique",
+            "notes": "Notes"
+        }
+    },
+    "maintenances": {
+        "title": "Maintenances",
+        "subtitle": "Gérer les maintenances et réparations",
+        "add_maintenance": "Nouvelle Maintenance",
+        "edit_maintenance": "Modifier Maintenance",
+        "no_maintenances": "Aucune maintenance trouvée",
+        "complete": "Terminer",
+        "cancel": "Annuler",
+        "created": "Maintenance créée avec succès",
+        "completed": "Maintenance terminée avec succès",
+        "cancelled": "Maintenance annulée",
+        "status": {
+            "pending": "En attente",
+            "in_progress": "En cours",
+            "done": "Terminée",
+            "cancelled": "Annulée"
+        },
+        "type": {
+            "client": "Client",
+            "internal": "Interne"
+        },
+        "fields": {
+            "device": "Appareil",
+            "customer": "Client",
+            "type": "Type",
+            "description": "Description",
+            "diagnosis": "Diagnostic",
+            "labor_cost": "Coût main d'œuvre",
+            "parts": "Pièces utilisées",
+            "parts_cost": "Coût pièces",
+            "total_cost": "Coût total"
+        },
+        "alerts": {
+            "low_stock": "Stock insuffisant pour cette pièce",
+            "complete_confirm": "Confirmer la fin de la maintenance ? Le stock sera impacté.",
+            "cannot_edit_done": "Impossible de modifier une maintenance terminée"
+        }
+    },
     "export": {
         "pdf": "Exporter PDF",
         "excel": "Exporter Excel",

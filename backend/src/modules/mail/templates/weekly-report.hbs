@@ -139,18 +139,33 @@
 
             <div class="metrics">
                 <div class="metric-card">
-                    <div class="metric-label">Revenue</div>
+                    <div class="metric-label">{{t.revenue}}</div>
                     <div class="metric-value">{{revenue}} FCFA</div>
                 </div>
 
                 <div class="metric-card">
-                    <div class="metric-label">Profit</div>
+                    <div class="metric-label">{{t.profit}}</div>
                     <div class="metric-value">{{profit}} FCFA</div>
                 </div>
 
                 <div class="metric-card">
-                    <div class="metric-label">Total Sales</div>
+                    <div class="metric-label">{{t.total_sales}}</div>
                     <div class="metric-value">{{salesCount}}</div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-label">{{t.maintenance_revenue}}</div>
+                    <div class="metric-value">{{maintenanceRevenue}} FCFA</div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-label">{{t.maintenance_profit}}</div>
+                    <div class="metric-value">{{maintenanceProfit}} FCFA</div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-label">{{t.maintenance_count}}</div>
+                    <div class="metric-value">{{maintenanceCount}}</div>
                 </div>
             </div>
 

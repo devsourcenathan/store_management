@@ -32,7 +32,9 @@ import {
     Shield,
     Image,
     BarChart3,
-    Store
+    Store,
+    Smartphone,
+    Wrench
 } from 'lucide-react';
 
 export function DashboardLayout() {
@@ -72,6 +74,13 @@ export function DashboardLayout() {
                 { name: t('nav.products'), href: '/products', icon: Package },
                 { name: t('nav.categories'), href: '/categories', icon: Tags },
                 { name: t('nav.stock'), href: '/stock', icon: Warehouse },
+            ]
+        },
+        {
+            title: t('maintenances.title'),
+            items: [
+                { name: t('devices.title'), href: '/devices', icon: Smartphone },
+                { name: t('maintenances.title'), href: '/maintenances', icon: Wrench },
             ]
         },
         {

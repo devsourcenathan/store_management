@@ -23,6 +23,8 @@ import { OwnerStatisticsPage } from '@/features/statistics/OwnerStatisticsPage';
 import PricingPage from '@/features/billing/PricingPage';
 import SubscriptionPage from '@/features/billing/SubscriptionPage';
 import BillingCallbackPage from '@/features/billing/BillingCallbackPage';
+import { DevicesPage } from '@/features/devices/DevicesPage';
+import { MaintenancesPage } from '@/features/maintenances/MaintenancesPage';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
     const { user, isLoading } = useAuth();
@@ -91,6 +93,8 @@ export function AppRouter() {
                 <Route path="settings/landing" element={<OrgLandingEditor />} />
                 <Route path="media" element={<MediaLibrary />} />
                 <Route path="statistics" element={<OwnerStatisticsPage />} />
+                <Route path="devices" element={<DevicesPage />} />
+                <Route path="maintenances" element={<MaintenancesPage />} />
 
                 {/* Platform Billing */}
                 <Route path="billing/pricing" element={<PricingPage />} />
