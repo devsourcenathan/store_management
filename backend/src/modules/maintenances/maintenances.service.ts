@@ -201,7 +201,7 @@ export class MaintenancesService {
                         storeId: maintenance.storeId,
                         type: 'OUT',
                         source: 'MANUAL',
-                        quantity: -part.quantity,
+                        quantity: part.quantity, // Positive quantity for OUT type
                         reference: maintenance.id,
                         notes: `Maintenance ${maintenance.type}: ${maintenance.description}`,
                         createdBy: userId,
