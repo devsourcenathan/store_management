@@ -114,7 +114,9 @@ export function ProductsPage() {
                     mediaService.linkToEntity(m.id, 'PRODUCT', createdProduct.id)
                 ));
             }
-            queryClient.invalidateQueries({ queryKey: ['products'] });
+            // Invalidate both products and stock movements to refresh stock column
+            await queryClient.invalidateQueries({ queryKey: ['products'] });
+            await queryClient.invalidateQueries({ queryKey: ['stock'] });
             setIsModalOpen(false);
             resetForm();
         },
@@ -124,8 +126,10 @@ export function ProductsPage() {
         mutationFn: async ({ id, data }: { id: string; data: any }) => {
             return api.patch(`/products/${id}`, data);
         },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['products'] });
+        onSuccess: async () => {
+            // Invalidate both products and stock movements to refresh stock column
+            await queryClient.invalidateQueries({ queryKey: ['products'] });
+            await queryClient.invalidateQueries({ queryKey: ['stock'] });
             setIsModalOpen(false);
             resetForm();
         },
@@ -136,8 +140,10 @@ export function ProductsPage() {
             if (!confirm(t('products.delete_confirm'))) throw new Error('Cancelled');
             return api.delete(`/products/${id}`);
         },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['products'] });
+        onSuccess: async () => {
+            // Invalidate both products and stock movements to refresh stock column
+            await queryClient.invalidateQueries({ queryKey: ['products'] });
+            await queryClient.invalidateQueries({ queryKey: ['stock'] });
         },
         onError: (error) => {
             if (error.message !== 'Cancelled') {
