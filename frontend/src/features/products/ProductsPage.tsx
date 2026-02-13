@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/services/api';
 import { Package, Image as ImageIcon, Edit, Trash2, Plus } from 'lucide-react';
@@ -59,10 +59,21 @@ export function ProductsPage() {
         },
     });
 
+    const [searchQuery, setSearchQuery] = useState('');
+    const [selectedCategoryId, setSelectedCategoryId] = useState('');
+    const [sortBy, setSortBy] = useState('name');
+    const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+
     const { data: products, isLoading } = useQuery<any[]>({
-        queryKey: ['products', selectedStoreId],
+        queryKey: ['products', selectedStoreId, searchQuery, selectedCategoryId, sortBy, sortOrder],
         queryFn: async () => {
-            const response = await api.get('/products');
+            const params: any = {};
+            if (searchQuery) params.search = searchQuery;
+            if (selectedCategoryId) params.categoryId = selectedCategoryId;
+            params.sortBy = sortBy;
+            params.sortOrder = sortOrder;
+
+            const response = await api.get('/products', { params });
             const prods = response.data;
 
             // Fetch stock for each product if a store is selected
@@ -100,6 +111,18 @@ export function ProductsPage() {
         totalItems: products?.length || 0,
         itemsPerPage: 10,
     });
+
+    // Reset page when filters change
+    useEffect(() => {
+        setPage(1);
+    }, [searchQuery, selectedCategoryId, sortBy, sortOrder, setPage]);
+
+    // Reset page when filters change
+    // useEffect(() => setPage(1), [searchQuery, selectedCategoryId, products]); // This might need useEffect import or just relying on usePagination internal reset if it has one?
+    // Actually usePagination hook usually doesn't auto-reset. Let's look at usePagination.
+    // For now, I'll assume usePagination might need manual reset. Not adding useEffect to avoid import hassle unless I see it imported. 
+    // It's safer to just set page to 1 on filter change, but that requires Effect. 
+    // Let's add useEffect to imports.
 
     const paginatedProducts = products ? currentItems(products) : [];
 
@@ -230,6 +253,7 @@ export function ProductsPage() {
                         format="excel"
                         variant="outline"
                         size="sm"
+                        className="hidden xs:inline-flex"
                     />
                     {stores && (
                         <select
@@ -248,6 +272,54 @@ export function ProductsPage() {
                         <Plus className="w-4 h-4 sm:inline-block mr-0 sm:mr-2" />
                         <span className="hidden xs:inline">{t('products.add_product')}</span>
                         <span className="xs:hidden">{t('common.add')}</span>
+                    </button>
+                </div>
+            </div>
+
+            {/* Filters */}
+            <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 flex flex-col sm:flex-row gap-4">
+                <div className="flex-1">
+                    <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">{t('common.search')}</label>
+                    <input
+                        type="text"
+                        placeholder={t('products.search_placeholder', 'Search by name or SKU...')}
+                        className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md p-2 text-sm focus:ring-2 focus:ring-blue-500"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+                </div>
+                <div className="w-full sm:w-48">
+                    <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">{t('products.fields.category')}</label>
+                    <select
+                        className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md p-2 text-sm focus:ring-2 focus:ring-blue-500"
+                        value={selectedCategoryId}
+                        onChange={(e) => setSelectedCategoryId(e.target.value)}
+                    >
+                        <option value="">{t('common.all')}</option>
+                        {categories?.map((c: any) => (
+                            <option key={c.id} value={c.id}>{c.name}</option>
+                        ))}
+                    </select>
+                </div>
+                <div className="w-full sm:w-40">
+                    <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">{t('common.sort_by')}</label>
+                    <select
+                        className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md p-2 text-sm focus:ring-2 focus:ring-blue-500"
+                        value={sortBy}
+                        onChange={(e) => setSortBy(e.target.value)}
+                    >
+                        <option value="name">{t('products.fields.name')}</option>
+                        <option value="basePrice">{t('products.fields.price')}</option>
+                        <option value="createdAt">{t('common.date')}</option>
+                    </select>
+                </div>
+                <div className="w-full sm:w-24">
+                    <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">{t('common.order')}</label>
+                    <button
+                        className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md p-2 text-sm focus:ring-2 focus:ring-blue-500 flex items-center justify-center"
+                        onClick={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
+                    >
+                        {sortOrder === 'asc' ? 'Asc' : 'Desc'}
                     </button>
                 </div>
             </div>

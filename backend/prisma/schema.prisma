@@ -649,10 +649,13 @@ model AuditLog {
   id             String   @id @default(uuid())
   organizationId String
   userId         String
-  action         String
-  entity         String
+  action         String   // CREATE, UPDATE, DELETE, LOGIN, EXPORT, etc.
+  entity         String   // Sale, Product, Maintenance, User, etc.
   entityId       String
-  changes        Json?
+  changes        Json?    // Before/After for modifications
+  method         String?  // HTTP method: GET, POST, PUT, DELETE, PATCH
+  status         String   @default("SUCCESS") // SUCCESS, FAILED, PARTIAL
+  duration       Int?     // Duration in milliseconds
   ipAddress      String?
   userAgent      String?
   createdAt      DateTime @default(now())
@@ -661,8 +664,10 @@ model AuditLog {
   user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([organizationId, createdAt])
-  @@index([userId])
+  @@index([userId, createdAt])
   @@index([entity, entityId])
+  @@index([action])
+  @@index([status])
   @@map("audit_logs")
 }
 

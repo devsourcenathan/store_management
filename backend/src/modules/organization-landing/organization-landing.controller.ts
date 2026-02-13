@@ -41,7 +41,7 @@ export class OrganizationLandingController {
     @Roles(UserRole.OWNER, UserRole.MANAGER)
     @Get('audit')
     async getAuditLogs(@CurrentUser() user: any) {
-        return this.auditService.getLogs(user.organizationId, 'OrganizationLanding');
+        return this.auditService.getLogs({ organizationId: user.organizationId, entity: 'OrganizationLanding' });
     }
 
     @UseGuards(JwtAuthGuard, RolesGuard)

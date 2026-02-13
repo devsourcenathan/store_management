@@ -34,7 +34,9 @@ import {
     BarChart3,
     Store,
     Smartphone,
-    Wrench
+    Wrench,
+    FileText,
+    TrendingUp
 } from 'lucide-react';
 
 export function DashboardLayout() {
@@ -125,6 +127,17 @@ export function DashboardLayout() {
             title: 'Billing',
             items: [
                 { name: t('nav.my_plan', 'My Plan'), href: '/billing/subscription', icon: CreditCard }
+            ]
+        });
+    }
+
+    // Audit & Analytics - For OWNER and MANAGER
+    if (user?.role === 'OWNER' || user?.role === 'MANAGER') {
+        groupedNavigation.push({
+            title: 'Audit & Analytics',
+            items: [
+                { name: 'Audit Logs', href: '/audit-logs', icon: FileText },
+                { name: 'User Analytics', href: '/user-analytics', icon: TrendingUp },
             ]
         });
     }

@@ -99,14 +99,14 @@ export class OrganizationLandingService {
         }
 
         // Audit Log
-        await this.auditService.log(
+        await this.auditService.log({
             organizationId,
             userId,
-            'UPDATE_LANDING',
-            'OrganizationLanding',
-            result.id,
-            dto as any,
-        );
+            action: 'UPDATE_LANDING',
+            entity: 'OrganizationLanding',
+            entityId: result.id,
+            changes: dto as any,
+        });
 
         return result;
     }
@@ -149,14 +149,14 @@ export class OrganizationLandingService {
         });
 
         // Audit Log
-        await this.auditService.log(
+        await this.auditService.log({
             organizationId,
             userId,
-            'IMPORT_SITE',
-            'OrganizationLanding',
-            result.id,
-            { hasHtml: !!html, hasCss: !!css, hasJs: !!js },
-        );
+            action: 'IMPORT_SITE',
+            entity: 'OrganizationLanding',
+            entityId: result.id,
+            changes: { hasHtml: !!html, hasCss: !!css, hasJs: !!js },
+        });
 
         return result;
     }
@@ -241,14 +241,14 @@ export class OrganizationLandingService {
         });
 
         // Audit Log
-        await this.auditService.log(
+        await this.auditService.log({
             organizationId,
             userId,
-            'TOGGLE_EDIT_MODE',
-            'OrganizationLanding',
-            result.id,
-            { mode },
-        );
+            action: 'TOGGLE_EDIT_MODE',
+            entity: 'OrganizationLanding',
+            entityId: result.id,
+            changes: { mode },
+        });
 
         return result;
     }
