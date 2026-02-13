@@ -25,6 +25,8 @@
         "inactive": "Inactif",
         "saving": "Enregistrement...",
         "processing": "Traitement...",
+        "sort_by": "Trier par",
+        "order": "Ordre",
         "offline": "Mode hors ligne - Les ventes seront synchronisées automatiquement"
     },
     "nav": {

@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/Sheet";
 import { Pagination } from "@/components/ui/Pagination";
 import { usePagination } from "@/hooks/usePagination";
+import { useDebounce } from "@/hooks/useDebounce";
 import { ExportButton } from '@/components/ExportButton';
 
 interface Product {
@@ -60,15 +61,16 @@ export function ProductsPage() {
     });
 
     const [searchQuery, setSearchQuery] = useState('');
+    const debouncedSearchQuery = useDebounce(searchQuery, 500); // 500ms delay
     const [selectedCategoryId, setSelectedCategoryId] = useState('');
     const [sortBy, setSortBy] = useState('name');
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
 
     const { data: products, isLoading } = useQuery<any[]>({
-        queryKey: ['products', selectedStoreId, searchQuery, selectedCategoryId, sortBy, sortOrder],
+        queryKey: ['products', selectedStoreId, debouncedSearchQuery, selectedCategoryId, sortBy, sortOrder],
         queryFn: async () => {
             const params: any = {};
-            if (searchQuery) params.search = searchQuery;
+            if (debouncedSearchQuery) params.search = debouncedSearchQuery;
             if (selectedCategoryId) params.categoryId = selectedCategoryId;
             params.sortBy = sortBy;
             params.sortOrder = sortOrder;
@@ -115,7 +117,7 @@ export function ProductsPage() {
     // Reset page when filters change
     useEffect(() => {
         setPage(1);
-    }, [searchQuery, selectedCategoryId, sortBy, sortOrder, setPage]);
+    }, [debouncedSearchQuery, selectedCategoryId, sortBy, sortOrder, setPage]);
 
     // Reset page when filters change
     // useEffect(() => setPage(1), [searchQuery, selectedCategoryId, products]); // This might need useEffect import or just relying on usePagination internal reset if it has one?
