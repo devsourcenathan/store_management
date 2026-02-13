@@ -1,5 +1,6 @@
 import { Controller, Get, Post, Patch, Delete, Body, Param, UseGuards, Query } from '@nestjs/common';
 import { ProductsService } from './products.service';
+import { AuditService } from '../audit/audit.service';
 import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
 import { RolesGuard } from '@/common/guards/roles.guard';
 import { StoreAuthGuard } from '@/common/guards/store-auth.guard';
@@ -10,7 +11,10 @@ import { UserRole } from '@prisma/client';
 @Controller('products')
 @UseGuards(JwtAuthGuard, StoreAuthGuard)
 export class ProductsController {
-    constructor(private productsService: ProductsService) { }
+    constructor(
+        private productsService: ProductsService,
+        private auditService: AuditService,
+    ) { }
 
     @Get()
     async findAll(
@@ -36,7 +40,18 @@ export class ProductsController {
         @CurrentOrganization() organizationId: string,
         @CurrentUser() user: any,
     ) {
-        return this.productsService.create(data, organizationId, user.id);
+        const product = await this.productsService.create(data, organizationId, user.id);
+
+        await this.auditService.log({
+            organizationId,
+            userId: user.id,
+            action: 'CREATE',
+            entity: 'Product',
+            entityId: product.id,
+            changes: data,
+        });
+
+        return product;
     }
 
     @Patch(':id')
@@ -46,8 +61,20 @@ export class ProductsController {
         @Param('id') id: string,
         @Body() data: any,
         @CurrentOrganization() organizationId: string,
+        @CurrentUser() user: any,
     ) {
-        return this.productsService.update(id, data, organizationId);
+        const product = await this.productsService.update(id, data, organizationId);
+
+        await this.auditService.log({
+            organizationId,
+            userId: user.id,
+            action: 'UPDATE',
+            entity: 'Product',
+            entityId: id,
+            changes: data,
+        });
+
+        return product;
     }
 
     @Delete(':id')
@@ -56,8 +83,20 @@ export class ProductsController {
     async delete(
         @Param('id') id: string,
         @CurrentOrganization() organizationId: string,
+        @CurrentUser() user: any,
     ) {
-        return this.productsService.delete(id, organizationId);
+        const product = await this.productsService.delete(id, organizationId);
+
+        await this.auditService.log({
+            organizationId,
+            userId: user.id,
+            action: 'DELETE',
+            entity: 'Product',
+            entityId: id,
+            changes: {},
+        });
+
+        return product;
     }
 
     @Get('category/:categoryId')

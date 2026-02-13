@@ -604,3 +604,155 @@ export const adminBillingApi = {
     },
 };
 
+// ============================================
+// AUDIT API
+// ============================================
+
+export interface GetLogsParams {
+    userId?: string;
+    entity?: string;
+    entityId?: string;
+    action?: string;
+    status?: string;
+    startDate?: string;
+    endDate?: string;
+    limit?: number;
+    offset?: number;
+}
+
+export interface GetAuditStatsParams {
+    startDate?: string;
+    endDate?: string;
+}
+
+export const auditApi = {
+    /**
+     * Get audit logs with filtering
+     */
+    getLogs: async (params: GetLogsParams) => {
+        const response = await api.get('/audit/logs', { params });
+        return response.data;
+    },
+
+    /**
+     * Get audit logs for a specific user
+     */
+    getLogsByUser: async (userId: string, startDate?: string, endDate?: string, limit?: number) => {
+        const response = await api.get(`/audit/logs/user/${userId}`, {
+            params: { startDate, endDate, limit }
+        });
+        return response.data;
+    },
+
+    /**
+     * Get audit logs for a specific entity
+     */
+    getLogsByEntity: async (entity: string, entityId: string, limit?: number) => {
+        const response = await api.get(`/audit/logs/entity/${entity}/${entityId}`, {
+            params: { limit }
+        });
+        return response.data;
+    },
+
+    /**
+     * Get audit statistics
+     */
+    getStats: async (params: GetAuditStatsParams) => {
+        const response = await api.get('/audit/stats', { params });
+        return response.data;
+    },
+
+    /**
+     * Export audit logs as CSV
+     */
+    exportLogs: async (params: GetLogsParams) => {
+        const response = await api.get('/audit/export', {
+            params,
+            responseType: 'blob'
+        });
+        return response.data;
+    }
+};
+
+// ============================================
+// USER ANALYTICS API
+// ============================================
+
+export type PeriodType = 'day' | 'week' | 'month' | 'year' | 'custom';
+export type MetricType = 'sales' | 'maintenance' | 'subscriptions';
+
+export interface GetUserDashboardParams {
+    userId?: string;
+    storeId?: string;
+    period: PeriodType;
+    startDate?: string;
+    endDate?: string;
+}
+
+export interface GetUserStatsParams {
+    userId?: string;
+    storeId?: string;
+    startDate: string;
+    endDate: string;
+}
+
+export interface GetUserRankingsParams {
+    storeId?: string;
+    metric: MetricType;
+    startDate: string;
+    endDate: string;
+    limit?: number;
+}
+
+export const userAnalyticsApi = {
+    /**
+     * Get user analytics dashboard
+     */
+    getDashboard: async (params: GetUserDashboardParams) => {
+        const response = await api.get('/analytics/users/dashboard', { params });
+        return response.data;
+    },
+
+    /**
+     * Get sales statistics by user
+     */
+    getSalesStats: async (params: GetUserStatsParams) => {
+        const response = await api.get('/analytics/users/sales', { params });
+        return response.data;
+    },
+
+    /**
+     * Get maintenance statistics by user
+     */
+    getMaintenanceStats: async (params: GetUserStatsParams) => {
+        const response = await api.get('/analytics/users/maintenances', { params });
+        return response.data;
+    },
+
+    /**
+     * Get subscription statistics by user
+     */
+    getSubscriptionStats: async (params: GetUserStatsParams) => {
+        const response = await api.get('/analytics/users/subscriptions', { params });
+        return response.data;
+    },
+
+    /**
+     * Get user rankings
+     */
+    getRankings: async (params: GetUserRankingsParams) => {
+        const response = await api.get('/analytics/users/rankings', { params });
+        return response.data;
+    },
+
+    /**
+     * Export user analytics as CSV
+     */
+    exportAnalytics: async (params: GetUserStatsParams) => {
+        const response = await api.get('/analytics/users/export', {
+            params,
+            responseType: 'blob'
+        });
+        return response.data;
+    }
+};
