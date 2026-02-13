@@ -1,14 +1,44 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '@/common/prisma/prisma.service';
 import { MediaEntityType } from '@prisma/client';
+import { GetProductsDto } from './dto/get-products.dto';
 
 @Injectable()
 export class ProductsService {
     constructor(private prisma: PrismaService) { }
 
-    async findAll(organizationId: string) {
+    async findAll(organizationId: string, params?: GetProductsDto) {
+        const { search, categoryId, minPrice, maxPrice, sortBy = 'name', sortOrder = 'asc' } = params || {};
+
+        const where: any = {
+            organizationId,
+            isActive: true,
+        };
+
+        if (search) {
+            where.OR = [
+                { name: { contains: search, mode: 'insensitive' } },
+                { sku: { contains: search, mode: 'insensitive' } },
+            ];
+        }
+
+        if (categoryId) {
+            where.categoryId = categoryId;
+        }
+
+        if (minPrice !== undefined || maxPrice !== undefined) {
+            where.basePrice = {};
+            if (minPrice !== undefined) where.basePrice.gte = minPrice;
+            if (maxPrice !== undefined) where.basePrice.lte = maxPrice;
+        }
+
+        const orderBy: any = {};
+        if (sortBy) {
+            orderBy[sortBy] = sortOrder;
+        }
+
         const products = await this.prisma.product.findMany({
-            where: { organizationId, isActive: true },
+            where,
             include: {
                 category: true,
                 pricingRules: {
@@ -16,7 +46,7 @@ export class ProductsService {
                     orderBy: { priority: 'desc' },
                 },
             },
-            orderBy: { name: 'asc' },
+            orderBy,
         });
 
         const productIds = products.map(p => p.id);

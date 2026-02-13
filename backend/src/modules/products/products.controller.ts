@@ -1,5 +1,6 @@
 import { Controller, Get, Post, Patch, Delete, Body, Param, UseGuards, Query } from '@nestjs/common';
 import { ProductsService } from './products.service';
+import { GetProductsDto } from './dto/get-products.dto';
 import { AuditService } from '../audit/audit.service';
 import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
 import { RolesGuard } from '@/common/guards/roles.guard';
@@ -19,9 +20,9 @@ export class ProductsController {
     @Get()
     async findAll(
         @CurrentOrganization() organizationId: string,
-        @Query('storeId') storeId?: string,
+        @Query() query: GetProductsDto,
     ) {
-        return this.productsService.findAll(organizationId);
+        return this.productsService.findAll(organizationId, query);
     }
 
     @Get(':id')
