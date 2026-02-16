@@ -178,6 +178,8 @@
         "title": "Ventes",
         "subtitle": "Gérer les ventes et transactions",
         "new_sale": "Nouvelle Vente",
+        "products": "Produits",
+        "products_sold": "Produits Vendus",
         "no_sales": "Aucune vente trouvée",
         "create_new": "Créer une Vente"
     },

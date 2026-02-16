@@ -179,6 +179,8 @@
         "title": "Sales",
         "subtitle": "Manage sales and transactions",
         "new_sale": "New Sale",
+        "products": "Products",
+        "products_sold": "Products Sold",
         "no_sales": "No sales found",
         "create_new": "Create New Sale"
     },
