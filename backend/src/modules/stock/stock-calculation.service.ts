@@ -47,11 +47,21 @@ export class StockCalculationService {
             switch (movement.type) {
                 case 'IN':
                 case 'RETURN':
-                case 'ADJUST':
                 case 'SUPPLY':
                 case 'TRANSFER_IN':
                     // Positive movements (add to stock)
                     return total + movement.quantity;
+
+                case 'ADJUST':
+                    // ADJUST stores direction in notes as JSON
+                    try {
+                        const meta = JSON.parse(movement.notes || '{}');
+                        const direction = meta.direction || 'IN';
+                        return direction === 'IN' ? total + movement.quantity : total - movement.quantity;
+                    } catch {
+                        // Fallback if notes is not JSON (old data)
+                        return total + movement.quantity;
+                    }
 
                 case 'OUT':
                 case 'SALE':
@@ -90,10 +100,24 @@ export class StockCalculationService {
             switch (movement.type) {
                 case 'IN':
                 case 'RETURN':
-                case 'ADJUST':
                 case 'SUPPLY':
                 case 'TRANSFER_IN':
                     stockByProduct.set(movement.productId, currentStock + movement.quantity);
+                    break;
+
+                case 'ADJUST':
+                    // ADJUST stores direction in notes as JSON
+                    try {
+                        const meta = JSON.parse(movement.notes || '{}');
+                        const direction = meta.direction || 'IN';
+                        const newStock = direction === 'IN'
+                            ? currentStock + movement.quantity
+                            : currentStock - movement.quantity;
+                        stockByProduct.set(movement.productId, newStock);
+                    } catch {
+                        // Fallback if notes is not JSON (old data)
+                        stockByProduct.set(movement.productId, currentStock + movement.quantity);
+                    }
                     break;
 
                 case 'OUT':
@@ -136,10 +160,23 @@ export class StockCalculationService {
             switch (movement.type) {
                 case 'IN':
                 case 'RETURN':
-                case 'ADJUST':
                 case 'SUPPLY':
                 case 'TRANSFER_IN':
                     runningTotal += movement.quantity;
+                    break;
+
+                case 'ADJUST':
+                    // ADJUST stores direction in notes as JSON
+                    try {
+                        const meta = JSON.parse(movement.notes || '{}');
+                        const direction = meta.direction || 'IN';
+                        runningTotal = direction === 'IN'
+                            ? runningTotal + movement.quantity
+                            : runningTotal - movement.quantity;
+                    } catch {
+                        // Fallback if notes is not JSON (old data)
+                        runningTotal += movement.quantity;
+                    }
                     break;
 
                 case 'OUT':

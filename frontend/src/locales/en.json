@@ -241,7 +241,11 @@
         "no_categories": "No categories found",
         "new_category": "New Category",
         "category_name": "Category Name",
-        "description": "Description"
+        "description": "Description",
+        "search_placeholder": "Search by name or SKU...",
+        "select_product": "Select a product",
+        "no_results": "No products found",
+        "start_typing": "Start typing to search..."
     },
     "customers": {
         "title": "Customers",
@@ -472,6 +476,13 @@
             "SUPPLY": "Supply (SUPPLY)",
             "SALE": "Sale (SALE)",
             "RETURN": "Return (RETURN)"
+        },
+        "preview": {
+            "title": "Stock Preview",
+            "current": "Current Stock",
+            "new": "New Stock",
+            "new_adjusted": "New Stock (Adjusted)",
+            "set_to": "Set to"
         }
     },
     "media": {

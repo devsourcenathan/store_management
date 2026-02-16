@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/services/api';
-import { Package, Image as ImageIcon, Edit, Trash2, Plus } from 'lucide-react';
+import { Package, Image as ImageIcon, Edit, Trash2, Plus, TrendingUp, PackagePlus, Search } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { MediaSelector } from '@/features/media/components/MediaSelector';
 import { toast } from 'sonner';
 import { mediaService, Media } from '@/services/mediaService';
+import { useStore } from '@/features/stores/StoreProvider';
 import {
     Sheet,
     SheetContent,
@@ -15,8 +16,8 @@ import {
 } from "@/components/ui/Sheet";
 import { Pagination } from "@/components/ui/Pagination";
 import { usePagination } from "@/hooks/usePagination";
-import { useDebounce } from "@/hooks/useDebounce";
 import { ExportButton } from '@/components/ExportButton';
+import { StockMovementSheet } from '@/features/stock/components/StockMovementSheet';
 
 interface Product {
     id: string;
@@ -44,33 +45,41 @@ export function ProductsPage() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingProduct, setEditingProduct] = useState<Product | null>(null);
     const [formData, setFormData] = useState({ name: '', sku: '', basePrice: 0, costPrice: 0, minStock: 10, initialStock: 0, categoryId: '' });
-    const [selectedStoreId, setSelectedStoreId] = useState<string>('');
     const [selectedMedia, setSelectedMedia] = useState<Media[]>([]);
+    const { currentStore } = useStore();
+    const [isStockMovementOpen, setIsStockMovementOpen] = useState(false);
+    const [selectedProductForStock, setSelectedProductForStock] = useState<{ id: string; name: string } | null>(null);
     const queryClient = useQueryClient();
 
     const { t } = useTranslation();
 
-    const { data: stores } = useQuery<any[]>({
-        queryKey: ['stores'],
-        queryFn: async () => {
-            const response = await api.get('/organizations/current');
-            const storeList = response.data.stores || [];
-            if (storeList.length > 0 && !selectedStoreId) setSelectedStoreId(storeList[0].id);
-            return storeList;
-        },
-    });
+
 
     const [searchQuery, setSearchQuery] = useState('');
-    const debouncedSearchQuery = useDebounce(searchQuery, 500); // 500ms delay
+    const [activeSearchQuery, setActiveSearchQuery] = useState(''); // Actually applied search
+    const [isSearching, setIsSearching] = useState(false);
     const [selectedCategoryId, setSelectedCategoryId] = useState('');
     const [sortBy, setSortBy] = useState('name');
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
 
-    const { data: products, isLoading } = useQuery<any[]>({
-        queryKey: ['products', selectedStoreId, debouncedSearchQuery, selectedCategoryId, sortBy, sortOrder],
+    // Handle search button click
+    const handleSearch = () => {
+        setIsSearching(true);
+        setActiveSearchQuery(searchQuery);
+    };
+
+    // Handle Enter key in search input
+    const handleSearchKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Enter') {
+            handleSearch();
+        }
+    };
+
+    const { data: products, isLoading, isFetching } = useQuery<any[]>({
+        queryKey: ['products', currentStore?.id, activeSearchQuery, selectedCategoryId, sortBy, sortOrder],
         queryFn: async () => {
             const params: any = {};
-            if (debouncedSearchQuery) params.search = debouncedSearchQuery;
+            if (activeSearchQuery) params.search = activeSearchQuery;
             if (selectedCategoryId) params.categoryId = selectedCategoryId;
             params.sortBy = sortBy;
             params.sortOrder = sortOrder;
@@ -79,21 +88,49 @@ export function ProductsPage() {
             const prods = response.data;
 
             // Fetch stock for each product if a store is selected
-            if (selectedStoreId) {
-                const stockResponse = await api.get(`/stock/movements?storeId=${selectedStoreId}`);
+            if (currentStore?.id) {
+                const stockResponse = await api.get(`/stock/movements?storeId=${currentStore.id}`);
                 const movements = stockResponse.data;
 
                 return prods.map((p: any) => {
                     const productMovements = movements.filter((m: any) => m.productId === p.id);
-                    const quantity = productMovements.reduce((acc: number, m: any) =>
-                        acc + (m.type === 'IN' || m.type === 'RETURN' || m.type === 'ADJUST' ? m.quantity : -m.quantity), 0);
+                    const quantity = productMovements.reduce((acc: number, m: any) => {
+                        // Handle ADJUST type by reading direction from notes
+                        if (m.type === 'ADJUST') {
+                            try {
+                                const meta = JSON.parse(m.notes || '{}');
+                                const direction = meta.direction || 'IN';
+                                return direction === 'IN' ? acc + m.quantity : acc - m.quantity;
+                            } catch {
+                                // Fallback for old data without JSON notes
+                                return acc + m.quantity;
+                            }
+                        }
+
+                        // Handle other movement types
+                        if (m.type === 'IN' || m.type === 'RETURN' || m.type === 'SUPPLY' || m.type === 'TRANSFER_IN') {
+                            return acc + m.quantity;
+                        } else if (m.type === 'OUT' || m.type === 'SALE' || m.type === 'TRANSFER_OUT' || m.type === 'ADJUSTMENT') {
+                            return acc - m.quantity;
+                        }
+
+                        return acc;
+                    }, 0);
 
                     return { ...p, quantity };
                 });
             }
             return prods;
         },
+        enabled: !!currentStore?.id,
     });
+
+    // Reset searching state when query completes
+    useEffect(() => {
+        if (!isFetching) {
+            setIsSearching(false);
+        }
+    }, [isFetching]);
 
     const { data: categories } = useQuery<any[]>({
         queryKey: ['categories'],
@@ -117,16 +154,10 @@ export function ProductsPage() {
     // Reset page when filters change
     useEffect(() => {
         setPage(1);
-    }, [debouncedSearchQuery, selectedCategoryId, sortBy, sortOrder, setPage]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [activeSearchQuery, selectedCategoryId, sortBy, sortOrder]);
 
-    // Reset page when filters change
-    // useEffect(() => setPage(1), [searchQuery, selectedCategoryId, products]); // This might need useEffect import or just relying on usePagination internal reset if it has one?
-    // Actually usePagination hook usually doesn't auto-reset. Let's look at usePagination.
-    // For now, I'll assume usePagination might need manual reset. Not adding useEffect to avoid import hassle unless I see it imported. 
-    // It's safer to just set page to 1 on filter change, but that requires Effect. 
-    // Let's add useEffect to imports.
-
-    const paginatedProducts = products ? currentItems(products) : [];
+    const paginatedProducts = products && products.length > 0 ? currentItems(products) : [];
 
     const createProductMutation = useMutation({
         mutationFn: async (newProduct: any) => {
@@ -202,6 +233,16 @@ export function ProductsPage() {
         deleteProductMutation.mutate(id);
     };
 
+    const handleOpenStockMovement = (product: Product) => {
+        setSelectedProductForStock({ id: product.id, name: product.name });
+        setIsStockMovementOpen(true);
+    };
+
+    const handleCloseStockMovement = () => {
+        setIsStockMovementOpen(false);
+        setSelectedProductForStock(null);
+    };
+
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
 
@@ -214,11 +255,13 @@ export function ProductsPage() {
         if (editingProduct) {
             updateProductMutation.mutate({ id: editingProduct.id, data: formData });
         } else {
-            createProductMutation.mutate({ ...formData, storeId: selectedStoreId });
+            if (!currentStore?.id) {
+                toast.error(t('products.errors.no_store_selected') || 'Please select a store');
+                return;
+            }
+            createProductMutation.mutate({ ...formData, storeId: currentStore.id });
         }
     };
-
-    if (isLoading) return <div className="p-8 text-center text-gray-500 dark:text-gray-400">{t('products.loading')}</div>;
 
     return (
         <div className="space-y-6">
@@ -257,15 +300,19 @@ export function ProductsPage() {
                         size="sm"
                         className="hidden xs:inline-flex"
                     />
-                    {stores && (
-                        <select
-                            className="border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg px-2 sm:px-3 py-2 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-full xs:w-auto"
-                            value={selectedStoreId}
-                            onChange={(e) => setSelectedStoreId(e.target.value)}
-                        >
-                            {stores.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-                        </select>
-                    )}
+
+                    <button
+                        onClick={() => {
+                            setSelectedProductForStock(null);
+                            setIsStockMovementOpen(true);
+                        }}
+                        className="px-3 sm:px-4 py-2 bg-green-600 text-white hover:bg-green-700 rounded-lg transition-colors text-sm sm:text-base touch-target w-full xs:w-auto flex items-center justify-center whitespace-nowrap"
+                    >
+                        <PackagePlus className="w-4 h-4 sm:inline-block mr-0 sm:mr-2" />
+                        <span className="hidden xs:inline">{t('stock.new_movement', 'Stock Movement')}</span>
+                        <span className="xs:hidden">{t('stock.movement', 'Stock')}</span>
+                    </button>
+
 
                     <button
                         onClick={() => { resetForm(); setIsModalOpen(true); }}
@@ -282,13 +329,28 @@ export function ProductsPage() {
             <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 flex flex-col sm:flex-row gap-4">
                 <div className="flex-1">
                     <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">{t('common.search')}</label>
-                    <input
-                        type="text"
-                        placeholder={t('products.search_placeholder', 'Search by name or SKU...')}
-                        className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md p-2 text-sm focus:ring-2 focus:ring-blue-500"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                    />
+                    <div className="flex gap-2">
+                        <input
+                            type="text"
+                            placeholder={t('products.search_placeholder', 'Search by name or SKU...')}
+                            className="flex-1 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md p-2 text-sm focus:ring-2 focus:ring-blue-500"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            onKeyPress={handleSearchKeyPress}
+                        />
+                        <button
+                            onClick={handleSearch}
+                            disabled={isFetching}
+                            className="px-3 py-2 bg-blue-600 text-white hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed rounded-md transition-colors flex items-center justify-center"
+                            title={isFetching ? t('common.searching', 'Searching...') : t('common.search', 'Search')}
+                        >
+                            {isFetching ? (
+                                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                            ) : (
+                                <Search className="w-4 h-4" />
+                            )}
+                        </button>
+                    </div>
                 </div>
                 <div className="w-full sm:w-48">
                     <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">{t('products.fields.category')}</label>
@@ -363,6 +425,13 @@ export function ProductsPage() {
                                     </div>
                                     {/* Actions */}
                                     <div className="flex items-center space-x-2 ml-2">
+                                        <button
+                                            onClick={() => handleOpenStockMovement(product)}
+                                            className="p-2 text-green-600 hover:bg-green-50 dark:text-green-400 dark:hover:bg-green-900/30 rounded-lg transition-colors"
+                                            title={t('stock.new_movement', 'Stock Movement')}
+                                        >
+                                            <TrendingUp className="w-4 h-4" />
+                                        </button>
                                         <button
                                             onClick={() => handleEdit(product)}
                                             className="p-2 text-theme-primary hover:bg-theme-primary/10 rounded-lg transition-colors"
@@ -465,6 +534,13 @@ export function ProductsPage() {
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{product.basePrice} FCFA</td>
                                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                            <button
+                                                onClick={() => handleOpenStockMovement(product)}
+                                                className="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300 mr-3"
+                                                title={t('stock.new_movement', 'Stock Movement')}
+                                            >
+                                                <TrendingUp className="w-4 h-4" />
+                                            </button>
                                             <button
                                                 onClick={() => handleEdit(product)}
                                                 className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 mr-3"
@@ -618,6 +694,14 @@ export function ProductsPage() {
                     </div>
                 </SheetContent>
             </Sheet>
+
+            {/* Stock Movement Sheet */}
+            <StockMovementSheet
+                isOpen={isStockMovementOpen}
+                onClose={handleCloseStockMovement}
+                preselectedProductId={selectedProductForStock?.id}
+                preselectedProductName={selectedProductForStock?.name}
+            />
         </div >
     );
 }

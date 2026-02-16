@@ -240,7 +240,11 @@
         "no_categories": "Aucune catégorie trouvée",
         "new_category": "Nouvelle Catégorie",
         "category_name": "Nom de la Catégorie",
-        "description": "Description"
+        "description": "Description",
+        "search_placeholder": "Rechercher par nom ou SKU...",
+        "select_product": "Sélectionner un produit",
+        "no_results": "Aucun produit trouvé",
+        "start_typing": "Commencez à taper pour rechercher..."
     },
     "customers": {
         "title": "Clients",
@@ -471,6 +475,13 @@
             "SUPPLY": "Approvisionnement (SUPPLY)",
             "SALE": "Vente (SALE)",
             "RETURN": "Retour (RETURN)"
+        },
+        "preview": {
+            "title": "Aperçu du Stock",
+            "current": "Stock Actuel",
+            "new": "Nouveau Stock",
+            "new_adjusted": "Nouveau Stock (Ajusté)",
+            "set_to": "Défini à"
         }
     },
     "media": {
