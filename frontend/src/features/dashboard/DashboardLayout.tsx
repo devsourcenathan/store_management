@@ -4,6 +4,7 @@ import { useAuth } from '@/features/auth/useAuth';
 import { useSync } from '@/offline/SyncProvider';
 import { useOrganization } from '@/contexts/OrganizationContext';
 import { useTheme } from '@/components/ThemeProvider';
+import { usePermissions } from '@/contexts/PermissionContext';
 import { StoreSelector } from '@/features/stores/StoreSelector';
 import { NoAccessPage } from '@/features/auth/NoAccessPage';
 import { ThemeToggle } from '@/components/ThemeToggle';
@@ -46,6 +47,7 @@ export function DashboardLayout() {
     const { isOnline, isSyncing, pendingOperations, sync } = useSync();
     const { organization } = useOrganization();
     const { theme } = useTheme();
+    const { hasPermission, isLoading: permissionsLoading } = usePermissions();
     const location = useLocation();
     const { t } = useTranslation();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -56,94 +58,122 @@ export function DashboardLayout() {
     // Determine if dark mode is active
     const isDark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
 
-    const groupedNavigation = [
+    // Define all navigation items with their permission requirements
+    const allNavigation = [
         {
             title: 'Overview',
             items: [
-                { name: t('nav.dashboard'), href: '/dashboard', icon: LayoutDashboard },
+                { name: t('nav.dashboard'), href: '/dashboard', icon: LayoutDashboard, resource: 'dashboard' },
             ]
         },
         {
             title: 'Commercial',
             items: [
-                { name: t('nav.sales_history'), href: '/sales', icon: ShoppingCart },
-                { name: t('nav.pos'), href: '/pos', icon: Calculator },
-                { name: t('nav.customers'), href: '/customers', icon: Users },
-                { name: t('nav.suppliers'), href: '/suppliers', icon: Truck },
-                { name: t('nav.supply_orders'), href: '/supplies', icon: Package },
+                { name: t('nav.sales_history'), href: '/sales', icon: ShoppingCart, resource: 'sales' },
+                { name: t('nav.pos'), href: '/pos', icon: Calculator, resource: 'pos' },
+                { name: t('nav.customers'), href: '/customers', icon: Users, resource: 'customers' },
+                { name: t('nav.suppliers'), href: '/suppliers', icon: Truck, resource: 'suppliers' },
+                { name: t('nav.supply_orders'), href: '/supplies', icon: Package, resource: 'supply_orders' },
             ]
         },
         {
             title: 'Inventory',
             items: [
-                { name: t('nav.products'), href: '/products', icon: Package },
-                { name: t('nav.categories'), href: '/categories', icon: Tags },
-                { name: t('nav.stock'), href: '/stock', icon: Warehouse },
+                { name: t('nav.products'), href: '/products', icon: Package, resource: 'products' },
+                { name: t('nav.categories'), href: '/categories', icon: Tags, resource: 'categories' },
+                { name: t('nav.stock'), href: '/stock', icon: Warehouse, resource: 'stock' },
             ]
         },
         {
             title: t('maintenances.title'),
             items: [
-                { name: t('devices.title'), href: '/devices', icon: Smartphone },
-                { name: t('maintenances.title'), href: '/maintenances', icon: Wrench },
+                { name: t('devices.title'), href: '/devices', icon: Smartphone, resource: 'devices' },
+                { name: t('maintenances.title'), href: '/maintenances', icon: Wrench, resource: 'maintenances' },
             ]
         },
         {
             title: 'Finance',
             items: [
-                { name: t('nav.subscriptions'), href: '/subscriptions', icon: CreditCard },
-                { name: t('nav.services'), href: '/subscriptions/offers', icon: Layers },
+                { name: t('nav.subscriptions'), href: '/subscriptions', icon: CreditCard, resource: 'subscriptions' },
+                { name: t('nav.services'), href: '/subscriptions/offers', icon: Layers, resource: 'services' },
             ]
         },
         {
             title: 'Content',
             items: [
-                { name: t('nav.media'), href: '/media', icon: Image },
+                { name: t('nav.media'), href: '/media', icon: Image, resource: 'media' },
             ]
         }
     ];
 
-    // Settings - Only for OWNER and MANAGER
-    if (user?.role === 'OWNER' || user?.role === 'MANAGER') {
-        groupedNavigation.push({
+    // Analytics - For OWNER only
+    if (hasPermission('statistics')) {
+        allNavigation.splice(1, 0, {
+            title: 'Analytics',
+            items: [{ name: t('nav.statistics'), href: '/statistics', icon: BarChart3, resource: 'statistics' }]
+        });
+    }
+
+    // Settings
+    if (hasPermission('settings')) {
+        allNavigation.push({
             title: 'Settings',
             items: [
-                { name: t('nav.settings'), href: '/settings', icon: Settings },
+                { name: t('nav.settings'), href: '/settings', icon: Settings, resource: 'settings' },
             ]
         });
     }
 
-    if (user?.role === 'GLOBAL_ADMIN') {
-        groupedNavigation.push({
-            title: 'Admin',
-            items: [{ name: 'Admin Panel', href: '/admin', icon: Shield }]
-        });
+    // Stores management
+    if (hasPermission('stores')) {
+        const settingsGroup = allNavigation.find(g => g.title === 'Settings');
+        if (settingsGroup) {
+            settingsGroup.items.push({ name: t('nav.stores', 'Stores'), href: '/stores', icon: Store, resource: 'stores' });
+        }
     }
 
-    if (user?.role === 'OWNER') {
-        groupedNavigation.splice(1, 0, {
-            title: 'Analytics',
-            items: [{ name: t('nav.statistics'), href: '/statistics', icon: BarChart3 }]
-        });
-
-        groupedNavigation.push({
+    // Billing - For OWNER only
+    if (hasPermission('billing')) {
+        allNavigation.push({
             title: 'Billing',
             items: [
-                { name: t('nav.my_plan', 'My Plan'), href: '/billing/subscription', icon: CreditCard }
+                { name: t('nav.my_plan', 'My Plan'), href: '/billing/subscription', icon: CreditCard, resource: 'billing' }
             ]
         });
     }
 
-    // Audit & Analytics - For OWNER and MANAGER
-    if (user?.role === 'OWNER' || user?.role === 'MANAGER') {
-        groupedNavigation.push({
-            title: 'Audit & Analytics',
-            items: [
-                { name: 'Audit Logs', href: '/audit-logs', icon: FileText },
-                { name: 'User Analytics', href: '/user-analytics', icon: TrendingUp },
-            ]
+    // Audit & Analytics
+    if (hasPermission('audit_logs') || hasPermission('user_analytics')) {
+        const auditItems = [];
+        if (hasPermission('audit_logs')) {
+            auditItems.push({ name: 'Audit Logs', href: '/audit-logs', icon: FileText, resource: 'audit_logs' });
+        }
+        if (hasPermission('user_analytics')) {
+            auditItems.push({ name: 'User Analytics', href: '/user-analytics', icon: TrendingUp, resource: 'user_analytics' });
+        }
+        if (auditItems.length > 0) {
+            allNavigation.push({
+                title: 'Audit & Analytics',
+                items: auditItems
+            });
+        }
+    }
+
+    // Admin Panel - For GLOBAL_ADMIN only
+    if (user?.role === 'GLOBAL_ADMIN') {
+        allNavigation.push({
+            title: 'Admin',
+            items: [{ name: 'Admin Panel', href: '/admin', icon: Shield, resource: 'admin' }]
         });
     }
+
+    // Filter navigation based on permissions
+    const groupedNavigation = allNavigation
+        .map(group => ({
+            ...group,
+            items: group.items.filter(item => hasPermission(item.resource))
+        }))
+        .filter(group => group.items.length > 0);
 
     const isActive = (href: string) => {
         if (href === '/dashboard' && location.pathname === '/') {

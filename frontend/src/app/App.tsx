@@ -5,6 +5,7 @@ import { AuthProvider } from '@/features/auth/AuthProvider';
 import { OrganizationProvider } from '@/contexts/OrganizationContext';
 import { SyncProvider } from '@/offline/SyncProvider';
 import { StoreProvider } from '@/features/stores/StoreProvider';
+import { PermissionProvider } from '@/contexts/PermissionContext';
 import { Toaster } from 'sonner';
 
 const queryClient = new QueryClient({
@@ -23,10 +24,12 @@ function App() {
                 <AuthProvider>
                     <OrganizationProvider>
                         <StoreProvider>
-                            <SyncProvider>
-                                <AppRouter />
-                                <Toaster richColors position="top-center" />
-                            </SyncProvider>
+                            <PermissionProvider>
+                                <SyncProvider>
+                                    <AppRouter />
+                                    <Toaster richColors position="top-center" />
+                                </SyncProvider>
+                            </PermissionProvider>
                         </StoreProvider>
                     </OrganizationProvider>
                 </AuthProvider>

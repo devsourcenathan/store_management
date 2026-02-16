@@ -15,45 +15,46 @@ datasource db {
 // ============================================
 
 model Organization {
-  id        String   @id @default(uuid())
-  name      String
-  address   String?
-  phone     String?
-  email     String?
-  website   String?
-  taxId     String? // NIF or equivalent
-  logoUrl   String?
-  footer    String? // Default footer for invoices
+  id          String   @id @default(uuid())
+  name        String
+  address     String?
+  phone       String?
+  email       String?
+  website     String?
+  taxId       String? // NIF or equivalent
+  logoUrl     String?
+  footer      String? // Default footer for invoices
   themeConfig Json? // Theme colors and branding settings
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
-  stores        Store[]
-  users         User[]
-  products      Product[]
-  customers     Customer[]
-  suppliers     Supplier[]
-  services      Service[]
-  auditLogs     AuditLog[]
-  landingPage   OrganizationLanding?
-  media         Media[]
+  stores               Store[]
+  users                User[]
+  products             Product[]
+  customers            Customer[]
+  suppliers            Supplier[]
+  services             Service[]
+  auditLogs            AuditLog[]
+  landingPage          OrganizationLanding?
+  media                Media[]
   platformSubscription OrganizationSubscription?
-  devices       Device[]
+  devices              Device[]
+  rolePermissions      RolePermission[]
 
   @@map("organizations")
 }
 
 model Store {
-  id            String   @id @default(uuid())
-  name          String
-  address       String?
-  phone         String?
-  email         String?
-  logoUrl       String? // Override org logo
-  receiptFooter String? // Custom footer for store receipts
+  id             String   @id @default(uuid())
+  name           String
+  address        String?
+  phone          String?
+  email          String?
+  logoUrl        String? // Override org logo
+  receiptFooter  String? // Custom footer for store receipts
   organizationId String
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
   organization   Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   stockMovements StockMovement[]
@@ -65,32 +66,33 @@ model Store {
 }
 
 model User {
-  id             String   @id @default(uuid())
-  email          String   @unique
-  passwordHash   String
+  id                   String    @id @default(uuid())
+  email                String    @unique
+  passwordHash         String
   resetPasswordToken   String?   @unique
   resetPasswordExpires DateTime?
-  firstName      String
-  lastName       String
-  role           UserRole
-  organizationId String
-  isActive       Boolean  @default(true)
-  locale         String   @default("fr") // 'en' or 'fr'
-  
+  firstName            String
+  lastName             String
+  role                 UserRole
+  organizationId       String
+  isActive             Boolean   @default(true)
+  locale               String    @default("fr") // 'en' or 'fr'
+
   // Email Notification Preferences
   emailNotificationsEnabled Boolean @default(true)
   dailyReportEnabled        Boolean @default(false)
   weeklyReportEnabled       Boolean @default(false)
   monthlyReportEnabled      Boolean @default(false)
   yearlyReportEnabled       Boolean @default(false)
-  
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
 
-  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  stores       UserStore[]
-  auditLogs    AuditLog[]
-  syncMetadata SyncMetadata[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  organization    Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  stores          UserStore[]
+  auditLogs       AuditLog[]
+  syncMetadata    SyncMetadata[]
+  userPermissions UserPermission[]
 
   @@map("users")
 }
@@ -125,20 +127,20 @@ model Product {
   categoryId     String?
   organizationId String
   basePrice      Decimal  @db.Decimal(10, 2)
-  costPrice      Decimal  @db.Decimal(10, 2) @default(0)
+  costPrice      Decimal  @default(0) @db.Decimal(10, 2)
   minStock       Int      @default(10)
   isActive       Boolean  @default(true)
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
-  organization   Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  category       Category?       @relation(fields: [categoryId], references: [id], onDelete: SetNull)
-  images         ProductImage[]
-  stockMovements StockMovement[]
-  stockAlerts    StockAlert[]
-  saleItems      SaleItem[]
-  supplyItems    SupplyItem[]
-  pricingRules   PricingRule[]
+  organization     Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  category         Category?         @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  images           ProductImage[]
+  stockMovements   StockMovement[]
+  stockAlerts      StockAlert[]
+  saleItems        SaleItem[]
+  supplyItems      SupplyItem[]
+  pricingRules     PricingRule[]
   maintenanceParts MaintenancePart[]
 
   @@unique([organizationId, sku])
@@ -159,31 +161,31 @@ model ProductImage {
 }
 
 model Media {
-  id             String          @id @default(uuid())
-  filename       String
-  originalName   String
-  mimeType       String
-  size           Int             // Size in bytes
-  url            String          // S3 URL
-  thumbnailUrl   String?         // Optional thumbnail
-  alt            String?         // Alt text for accessibility
-  
+  id           String  @id @default(uuid())
+  filename     String
+  originalName String
+  mimeType     String
+  size         Int // Size in bytes
+  url          String // S3 URL
+  thumbnailUrl String? // Optional thumbnail
+  alt          String? // Alt text for accessibility
+
   // Polymorphic relations
-  entityType     MediaEntityType
-  entityId       String
-  
+  entityType MediaEntityType
+  entityId   String
+
   // Organization scoping
   organizationId String
-  organization   Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
   // Metadata
-  uploadedBy     String
-  isPublic       Boolean         @default(false)
-  tags           String[]        // For search and filtering
-  
-  createdAt      DateTime        @default(now())
-  updatedAt      DateTime        @updatedAt
-  
+  uploadedBy String
+  isPublic   Boolean  @default(false)
+  tags       String[] // For search and filtering
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@index([organizationId, entityType, entityId])
   @@index([organizationId, tags])
   @@map("media")
@@ -237,7 +239,7 @@ model PricingRule {
 // ============================================
 
 model StockMovement {
-  id        String            @id @default(uuid())
+  id        String              @id @default(uuid())
   productId String
   storeId   String
   type      StockMovementType
@@ -274,20 +276,20 @@ enum StockMovementType {
   SALE
   SUPPLY
   ADJUSTMENT
-  TRANSFER_OUT  // Product leaving source store
-  TRANSFER_IN   // Product arriving at destination store
+  TRANSFER_OUT // Product leaving source store
+  TRANSFER_IN // Product arriving at destination store
 }
 
 model StockAlert {
-  id             String   @id @default(uuid())
+  id             String    @id @default(uuid())
   productId      String
   storeId        String
   threshold      Int
   currentLevel   Int
-  acknowledged   Boolean  @default(false)
+  acknowledged   Boolean   @default(false)
   acknowledgedBy String?
   acknowledgedAt DateTime?
-  createdAt      DateTime @default(now())
+  createdAt      DateTime  @default(now())
 
   product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
   store   Store   @relation(fields: [storeId], references: [id], onDelete: Cascade)
@@ -305,8 +307,8 @@ model Sale {
   storeId     String
   customerId  String?
   totalAmount Decimal    @db.Decimal(10, 2)
-  paidAmount  Decimal    @db.Decimal(10, 2) @default(0)
-  discount    Decimal    @db.Decimal(10, 2) @default(0)
+  paidAmount  Decimal    @default(0) @db.Decimal(10, 2)
+  discount    Decimal    @default(0) @db.Decimal(10, 2)
   status      SaleStatus
   notes       String?
   createdBy   String
@@ -315,8 +317,8 @@ model Sale {
   syncedAt    DateTime?
   clientId    String? // For offline sync
 
-  store    Store     @relation(fields: [storeId], references: [id], onDelete: Cascade)
-  customer Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  store    Store      @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  customer Customer?  @relation(fields: [customerId], references: [id], onDelete: SetNull)
   items    SaleItem[]
   payments Payment[]
 
@@ -339,7 +341,7 @@ model SaleItem {
   productId String
   quantity  Int
   unitPrice Decimal @db.Decimal(10, 2)
-  discount  Decimal @db.Decimal(10, 2) @default(0)
+  discount  Decimal @default(0) @db.Decimal(10, 2)
   total     Decimal @db.Decimal(10, 2)
 
   sale    Sale    @relation(fields: [saleId], references: [id], onDelete: Cascade)
@@ -381,18 +383,18 @@ model Customer {
   email          String?
   phone          String?
   address        String?
-  creditLimit    Decimal  @db.Decimal(10, 2) @default(0)
-  currentCredit  Decimal  @db.Decimal(10, 2) @default(0)
+  creditLimit    Decimal  @default(0) @db.Decimal(10, 2)
+  currentCredit  Decimal  @default(0) @db.Decimal(10, 2)
   organizationId String
   isActive       Boolean  @default(true)
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
-  organization  Organization           @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  sales         Sale[]
-  subscriptions CustomerSubscription[]
-  devices       Device[]
-  maintenances  Maintenance[]
+  organization        Organization           @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  sales               Sale[]
+  subscriptions       CustomerSubscription[]
+  devices             Device[]
+  maintenances        Maintenance[]
   maintenanceInvoices MaintenanceInvoice[]
 
   @@map("customers")
@@ -424,7 +426,7 @@ model Supply {
   id          String       @id @default(uuid())
   supplierId  String
   totalAmount Decimal      @db.Decimal(10, 2)
-  paidAmount  Decimal      @db.Decimal(10, 2) @default(0)
+  paidAmount  Decimal      @default(0) @db.Decimal(10, 2)
   status      SupplyStatus
   notes       String?
   createdBy   String
@@ -459,14 +461,14 @@ model SupplyItem {
 }
 
 model SupplierBalanceEntry {
-  id         String                  @id @default(uuid())
+  id         String           @id @default(uuid())
   supplierId String
   type       BalanceEntryType
-  amount     Decimal                 @db.Decimal(10, 2)
+  amount     Decimal          @db.Decimal(10, 2)
   reference  String? // Reference to supply, payment, etc.
   notes      String?
   createdBy  String
-  createdAt  DateTime                @default(now())
+  createdAt  DateTime         @default(now())
 
   supplier Supplier @relation(fields: [supplierId], references: [id], onDelete: Cascade)
 
@@ -488,7 +490,7 @@ model Service {
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
-  organization Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organization Organization          @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   offers       SubscriptionOffer[]
   accounts     SubscriptionAccount[]
 
@@ -499,11 +501,11 @@ model SubscriptionAccount {
   id        String   @id @default(uuid())
   serviceId String
   storeId   String
-  balance   Decimal  @db.Decimal(10, 2) @default(0)
+  balance   Decimal  @default(0) @db.Decimal(10, 2)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  service        Service                      @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  service        Service                    @relation(fields: [serviceId], references: [id], onDelete: Cascade)
   balanceEntries SubscriptionBalanceEntry[]
   alerts         SubscriptionBalanceAlert[]
 
@@ -517,9 +519,9 @@ model SubscriptionOffer {
   name         String
   description  String?
   basePrice    Decimal  @db.Decimal(10, 2)
-  duration     Int      // Duration in days
-  billingCycle String   // MONTHLY, YEARLY, etc.
-  pricingRules Json?    // Dynamic pricing in JSONB
+  duration     Int // Duration in days
+  billingCycle String // MONTHLY, YEARLY, etc.
+  pricingRules Json? // Dynamic pricing in JSONB
   isActive     Boolean  @default(true)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
@@ -532,34 +534,34 @@ model SubscriptionOffer {
 }
 
 model SubscriptionOption {
-  id          String  @id @default(uuid())
-  offerId     String
-  name        String
-  description String?
-  price       Decimal @db.Decimal(10, 2)
-  pricingRules Json?   // Dynamic pricing rules
-  isActive    Boolean @default(true)
+  id           String  @id @default(uuid())
+  offerId      String
+  name         String
+  description  String?
+  price        Decimal @db.Decimal(10, 2)
+  pricingRules Json? // Dynamic pricing rules
+  isActive     Boolean @default(true)
 
-  offer SubscriptionOffer @relation(fields: [offerId], references: [id], onDelete: Cascade)
+  offer         SubscriptionOffer      @relation(fields: [offerId], references: [id], onDelete: Cascade)
   subscriptions CustomerSubscription[]
 
   @@map("subscription_options")
 }
 
 model CustomerSubscription {
-  id         String               @id @default(uuid())
+  id         String             @id @default(uuid())
   customerId String
   offerId    String
   status     SubscriptionStatus
   startDate  DateTime
   endDate    DateTime?
-  autoRenew  Boolean              @default(true)
-  createdAt  DateTime             @default(now())
-  updatedAt  DateTime             @updatedAt
+  autoRenew  Boolean            @default(true)
+  createdAt  DateTime           @default(now())
+  updatedAt  DateTime           @updatedAt
 
   customer Customer              @relation(fields: [customerId], references: [id], onDelete: Cascade)
   offer    SubscriptionOffer     @relation(fields: [offerId], references: [id], onDelete: Restrict)
-  options  SubscriptionOption[]  // Active options for this subscription
+  options  SubscriptionOption[] // Active options for this subscription
   renewals SubscriptionRenewal[]
 
   @@map("customer_subscriptions")
@@ -573,15 +575,15 @@ enum SubscriptionStatus {
 }
 
 model SubscriptionBalanceEntry {
-  id        String                  @id @default(uuid())
+  id        String                    @id @default(uuid())
   accountId String
   type      BalanceEntryType
   source    SubscriptionBalanceSource
-  amount    Decimal                 @db.Decimal(10, 2)
+  amount    Decimal                   @db.Decimal(10, 2)
   reference String?
   notes     String?
   createdBy String
-  createdAt DateTime                @default(now())
+  createdAt DateTime                  @default(now())
 
   account SubscriptionAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
 
@@ -602,15 +604,15 @@ enum BalanceEntryType {
 }
 
 model SubscriptionRenewal {
-  id             String   @id @default(uuid())
+  id             String    @id @default(uuid())
   subscriptionId String
-  duration       Int      // Duration in days
-  price          Decimal  @db.Decimal(10, 2)
-  balanceUsed    Decimal  @db.Decimal(10, 2) // Amount deducted from balance account
+  duration       Int // Duration in days
+  price          Decimal   @db.Decimal(10, 2)
+  balanceUsed    Decimal   @db.Decimal(10, 2) // Amount deducted from balance account
   createdBy      String
-  createdAt      DateTime @default(now())
+  createdAt      DateTime  @default(now())
   syncedAt       DateTime?
-  clientId       String?  // For offline sync tracking
+  clientId       String? // For offline sync tracking
 
   subscription CustomerSubscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
 
@@ -649,13 +651,13 @@ model AuditLog {
   id             String   @id @default(uuid())
   organizationId String
   userId         String
-  action         String   // CREATE, UPDATE, DELETE, LOGIN, EXPORT, etc.
-  entity         String   // Sale, Product, Maintenance, User, etc.
+  action         String // CREATE, UPDATE, DELETE, LOGIN, EXPORT, etc.
+  entity         String // Sale, Product, Maintenance, User, etc.
   entityId       String
-  changes        Json?    // Before/After for modifications
-  method         String?  // HTTP method: GET, POST, PUT, DELETE, PATCH
+  changes        Json? // Before/After for modifications
+  method         String? // HTTP method: GET, POST, PUT, DELETE, PATCH
   status         String   @default("SUCCESS") // SUCCESS, FAILED, PARTIAL
-  duration       Int?     // Duration in milliseconds
+  duration       Int? // Duration in milliseconds
   ipAddress      String?
   userAgent      String?
   createdAt      DateTime @default(now())
@@ -692,36 +694,36 @@ model SyncMetadata {
 // ============================================
 
 model LandingContent {
-  id          String   @id @default(uuid())
-  heroTitle   String
+  id           String   @id @default(uuid())
+  heroTitle    String
   heroSubtitle String?
-  ctaText     String?
-  sections    Json?    // Array of objects { title, content, image, etc. }
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  ctaText      String?
+  sections     Json? // Array of objects { title, content, image, etc. }
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   @@map("landing_content")
 }
 
 model OrganizationLanding {
-  id             String   @id @default(uuid())
-  organizationId String   @unique
-  subdomain     String?  @unique
-  customDomain  String?  @unique
-  published     Boolean  @default(false)
+  id             String  @id @default(uuid())
+  organizationId String  @unique
+  subdomain      String? @unique
+  customDomain   String? @unique
+  published      Boolean @default(false)
 
-  sections      Json?
-  themeConfig   Json?
-  
+  sections    Json?
+  themeConfig Json?
+
   // HTML/CSS/JS Import Support
-  rawHtml       String?  @db.Text // Original HTML content
-  rawCss        String?  @db.Text // Original CSS content
-  rawJs         String?  @db.Text // Original JavaScript content
-  importedAt    DateTime? // When the site was imported
-  editMode      String   @default("visual") // "visual" or "code"
-  
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  rawHtml    String?   @db.Text // Original HTML content
+  rawCss     String?   @db.Text // Original CSS content
+  rawJs      String?   @db.Text // Original JavaScript content
+  importedAt DateTime? // When the site was imported
+  editMode   String    @default("visual") // "visual" or "code"
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
@@ -762,7 +764,7 @@ enum InvoiceStatus {
 
 model PlatformPlan {
   id              String           @id @default(uuid())
-  name            String           // "PRO", "BUSINESS"
+  name            String // "PRO", "BUSINESS"
   type            PlatformPlanType
   monthlyPrice    Decimal          @db.Decimal(10, 2)
   semiAnnualPrice Decimal          @db.Decimal(10, 2)
@@ -771,14 +773,14 @@ model PlatformPlan {
   maxStores       Int?
   maxProducts     Int?
   maxUsers        Int?
-  features        Json?            // Feature flags JSON
+  features        Json? // Feature flags JSON
   trialDays       Int              @default(0)
   isActive        Boolean          @default(true)
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
 
-  subscriptions   OrganizationSubscription[]
-  invoices        BillingInvoice[]
+  subscriptions OrganizationSubscription[]
+  invoices      BillingInvoice[]
 
   @@map("platform_plans")
 }
@@ -800,31 +802,31 @@ model OrganizationSubscription {
   createdAt          DateTime                   @default(now())
   updatedAt          DateTime                   @updatedAt
 
-  organization       Organization               @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  plan               PlatformPlan               @relation(fields: [planId], references: [id])
-  invoices           BillingInvoice[]
+  organization Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  plan         PlatformPlan     @relation(fields: [planId], references: [id])
+  invoices     BillingInvoice[]
 
   @@map("organization_subscriptions")
 }
 
 model BillingInvoice {
-  id              String        @id @default(uuid())
-  subscriptionId  String
-  invoiceNumber   String        @unique
-  amount          Decimal       @db.Decimal(10, 2)
-  discount        Decimal       @db.Decimal(10, 2) @default(0)
-  finalAmount     Decimal       @db.Decimal(10, 2)
-  status          InvoiceStatus
-  dueDate         DateTime
-  paidAt          DateTime?
-  notchpayRef     String?
-  paymentUrl      String?
-  createdAt       DateTime      @default(now())
+  id             String        @id @default(uuid())
+  subscriptionId String
+  invoiceNumber  String        @unique
+  amount         Decimal       @db.Decimal(10, 2)
+  discount       Decimal       @default(0) @db.Decimal(10, 2)
+  finalAmount    Decimal       @db.Decimal(10, 2)
+  status         InvoiceStatus
+  dueDate        DateTime
+  paidAt         DateTime?
+  notchpayRef    String?
+  paymentUrl     String?
+  createdAt      DateTime      @default(now())
 
-  subscription    OrganizationSubscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+  subscription OrganizationSubscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
   // Optional plan snapshot for switching plans
-  planId          String?
-  plan            PlatformPlan? @relation(fields: [planId], references: [id])
+  planId       String?
+  plan         PlatformPlan?            @relation(fields: [planId], references: [id])
 
   @@index([subscriptionId, createdAt])
   @@map("billing_invoices")
@@ -855,9 +857,9 @@ model Device {
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
 
-  organization  Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  customer      Customer?     @relation(fields: [customerId], references: [id], onDelete: SetNull)
-  maintenances  Maintenance[]
+  organization Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  customer     Customer?     @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  maintenances Maintenance[]
 
   @@index([organizationId, ownerType])
   @@index([customerId])
@@ -884,8 +886,8 @@ model Maintenance {
   status         MaintenanceStatus @default(PENDING)
   description    String
   diagnosis      String?
-  laborCost      Decimal           @db.Decimal(10, 2) @default(0)
-  totalCost      Decimal           @db.Decimal(10, 2) @default(0)
+  laborCost      Decimal           @default(0) @db.Decimal(10, 2)
+  totalCost      Decimal           @default(0) @db.Decimal(10, 2)
   storeId        String
   organizationId String
   createdBy      String
@@ -896,8 +898,8 @@ model Maintenance {
   syncedAt       DateTime?
   clientId       String?
 
-  device   Device                @relation(fields: [deviceId], references: [id], onDelete: Cascade)
-  customer Customer?             @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  device   Device              @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  customer Customer?           @relation(fields: [customerId], references: [id], onDelete: SetNull)
   parts    MaintenancePart[]
   invoice  MaintenanceInvoice?
 
@@ -944,4 +946,57 @@ model MaintenanceInvoice {
 
   @@index([customerId])
   @@map("maintenance_invoices")
+}
+
+// ============================================
+// PERMISSIONS SYSTEM
+// ============================================
+
+// Represents a resource/feature in the system
+model Permission {
+  id          String   @id @default(uuid())
+  resource    String   @unique // e.g., "sales", "pos", "products", "settings"
+  name        String // Display name
+  description String?
+  category    String // e.g., "commercial", "inventory", "finance"
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  rolePermissions RolePermission[]
+  userPermissions UserPermission[]
+
+  @@map("permissions")
+}
+
+// Maps which roles have access to which resources (organization-level)
+model RolePermission {
+  id             String   @id @default(uuid())
+  organizationId String
+  role           UserRole // MANAGER or STAFF (OWNER always has full access)
+  permissionId   String
+  canAccess      Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  permission   Permission   @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, role, permissionId])
+  @@map("role_permissions")
+}
+
+// User-level permission overrides (takes precedence over role permissions)
+model UserPermission {
+  id           String   @id @default(uuid())
+  userId       String
+  permissionId String
+  canAccess    Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, permissionId])
+  @@map("user_permissions")
 }

@@ -1,16 +1,19 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { useAuth } from '@/features/auth/useAuth';
 import { OrganizationSettings } from './components/OrganizationSettings';
 import { StoreList } from './components/StoreList';
 import { UserList } from './components/UserList';
 import { NotificationSettings } from './components/NotificationSettings';
 import { OrgLandingEditor } from '@/features/org-landing/OrgLandingEditor';
-import { Building, Store as StoreIcon, Users, Globe, Bell } from 'lucide-react';
+import { Building, Store as StoreIcon, Users, Globe, Bell, Shield } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 type Tab = 'organization' | 'stores' | 'team' | 'notifications';
 
 export function SettingsPage() {
     const { t } = useTranslation();
+    const { user } = useAuth();
     const [activeTab, setActiveTab] = useState<Tab>('organization');
 
     const tabs = [
@@ -27,6 +30,17 @@ export function SettingsPage() {
             <div className="px-4 sm:px-0">
                 <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100">{t('settings.title')}</h2>
                 <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">{t('settings.subtitle')}</p>
+
+                {/* Permissions link for OWNER */}
+                {user?.role === 'OWNER' && (
+                    <Link
+                        to="/settings/permissions"
+                        className="inline-flex items-center gap-2 mt-4 px-4 py-2 text-sm font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors"
+                    >
+                        <Shield className="w-4 h-4" />
+                        Manage Permissions
+                    </Link>
+                )}
             </div>
 
             {/* Tabs - Horizontal on all screens */}

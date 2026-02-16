@@ -32,6 +32,7 @@ import { SchedulerModule } from './modules/scheduler/scheduler.module';
 import { BillingModule } from './modules/billing/billing.module';
 import { DevicesModule } from './modules/devices/devices.module';
 import { MaintenancesModule } from './modules/maintenances/maintenances.module';
+import { PermissionsModule } from './permissions/permissions.module';
 
 @Module({
     imports: [
@@ -75,6 +76,7 @@ import { MaintenancesModule } from './modules/maintenances/maintenances.module';
         BillingModule,
         DevicesModule,
         MaintenancesModule,
+        PermissionsModule,
     ],
     controllers: [HealthController],
     providers: [
