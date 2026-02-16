@@ -30,7 +30,76 @@ export class StockService {
     }
 
     async createMovement(data: any, userId: string) {
-        // Validate movement if it's outbound
+        // Special handling for ADJUST - it sets stock to an absolute value
+        if (data.type === 'ADJUST') {
+            // Calculate current stock
+            const currentStock = await this.stockCalculation.calculateCurrentStock(
+                data.productId,
+                data.storeId,
+            );
+
+            // Calculate the delta needed to reach target quantity
+            const targetQuantity = data.quantity;
+            const delta = targetQuantity - currentStock;
+
+            // Store adjustment metadata in notes as JSON
+            const adjustmentMeta = {
+                direction: delta >= 0 ? 'IN' : 'OUT',
+                previousStock: currentStock,
+                targetStock: targetQuantity,
+                userNotes: data.notes || ''
+            };
+
+            // Create the adjustment movement with the delta
+            // Positive delta = add stock, Negative delta = remove stock
+            const movement = await this.prisma.stockMovement.create({
+                data: {
+                    productId: data.productId,
+                    storeId: data.storeId,
+                    type: 'ADJUST',
+                    source: data.source || 'MANUAL',
+                    quantity: Math.abs(delta), // Store absolute value
+                    reference: data.reference,
+                    notes: JSON.stringify(adjustmentMeta), // Store direction and metadata in notes
+                    createdBy: userId,
+                },
+                include: {
+                    product: true,
+                },
+            });
+
+            // Check for low stock alerts after adjustment
+            const newStock = targetQuantity;
+            const minStock = movement.product.minStock;
+
+            if (newStock <= minStock) {
+                await this.prisma.stockAlert.create({
+                    data: {
+                        productId: data.productId,
+                        storeId: data.storeId,
+                        threshold: minStock,
+                        currentLevel: newStock,
+                    },
+                });
+            } else {
+                await this.prisma.stockAlert.updateMany({
+                    where: {
+                        storeId: data.storeId,
+                        productId: data.productId,
+                        acknowledged: false,
+                    },
+                    data: {
+                        acknowledged: true,
+                        acknowledgedBy: 'SYSTEM',
+                        acknowledgedAt: new Date(),
+                    },
+                });
+            }
+
+            return movement;
+        }
+
+        // Validate movement if it's outbound (non-ADJUST)
         const isOutbound = ['OUT', 'SALE', 'TRANSFER_OUT', 'ADJUSTMENT'].includes(data.type);
         if (isOutbound) {
             const validation = await this.stockCalculation.validateMovement(

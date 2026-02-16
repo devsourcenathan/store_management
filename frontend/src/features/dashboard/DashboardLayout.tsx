@@ -36,7 +36,9 @@ import {
     Smartphone,
     Wrench,
     FileText,
-    TrendingUp
+    TrendingUp,
+    PanelLeftClose,
+    PanelLeft
 } from 'lucide-react';
 
 export function DashboardLayout() {
@@ -49,6 +51,7 @@ export function DashboardLayout() {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
     const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
     // Determine if dark mode is active
     const isDark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
@@ -183,6 +186,20 @@ export function DashboardLayout() {
                                 aria-label="Open menu"
                             >
                                 <Menu className="w-6 h-6 text-gray-600 dark:text-gray-400" />
+                            </button>
+
+                            {/* Desktop Sidebar Toggle */}
+                            <button
+                                onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                                className="hidden md:block p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                                aria-label={isSidebarOpen ? 'Hide sidebar' : 'Show sidebar'}
+                                title={isSidebarOpen ? 'Hide sidebar' : 'Show sidebar'}
+                            >
+                                {isSidebarOpen ? (
+                                    <PanelLeftClose className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                                ) : (
+                                    <PanelLeft className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                                )}
                             </button>
 
                             {/* Organization Logo & Name */}
@@ -412,7 +429,8 @@ export function DashboardLayout() {
             <div className="flex">
                 {/* Sidebar Navigation */}
                 <aside
-                    className="w-64 border-r border-gray-200 dark:border-gray-700 min-h-[calc(100vh-4rem)] hidden md:block"
+                    className={`border-r border-gray-200 dark:border-gray-700 min-h-[calc(100vh-4rem)] hidden md:block transition-all duration-300 ease-in-out ${isSidebarOpen ? 'w-64' : 'w-0 border-0 overflow-hidden'
+                        }`}
                     style={{
                         backgroundColor: isDark
                             ? organization?.themeConfig?.sidebarBgDark
