@@ -569,7 +569,7 @@ export function PosPage() {
                                     {item.unitPrice.toLocaleString()} F x {item.quantity}
                                 </p>
                                 <div className="flex items-center gap-2 mt-1">
-                                    <span className="text-xs text-gray-500">Discount:</span>
+                                    <span className="text-xs text-gray-500">{t('pos.discount', 'Discount')}:</span>
                                     <input
                                         type="number"
                                         min="0"
@@ -614,11 +614,11 @@ export function PosPage() {
 
                 <div className="p-4 border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50 space-y-4">
                     <div className="flex justify-between items-center text-sm">
-                        <span className="text-gray-600 dark:text-gray-400">Subtotal</span>
+                        <span className="text-gray-600 dark:text-gray-400">{t('pos.subtotal')}</span>
                         <span className="text-gray-900 dark:text-gray-100">{itemsTotal.toLocaleString()} FCFA</span>
                     </div>
                     <div className="flex justify-between items-center text-sm gap-4">
-                        <span className="text-gray-600 dark:text-gray-400">Global Discount</span>
+                        <span className="text-gray-600 dark:text-gray-400">{t('pos.global_discount', 'Global Discount')}</span>
                         <input
                             type="number"
                             min="0"
@@ -685,11 +685,11 @@ export function PosPage() {
                     <div className="py-4 space-y-4">
                         <div className="bg-gray-50 dark:bg-gray-900/50 p-4 rounded-xl border border-gray-100 dark:border-gray-700">
                             <div className="flex justify-between mb-2">
-                                <span className="text-gray-600 dark:text-gray-400">Total Amount</span>
+                                <span className="text-gray-600 dark:text-gray-400">{t('pos.total_amount', 'Total Amount')}</span>
                                 <span className="font-bold text-gray-900 dark:text-gray-100">{cartTotal.toLocaleString()} FCFA</span>
                             </div>
                             <div className="flex items-center gap-2">
-                                <span className="text-gray-600 dark:text-gray-400 flex-none w-24">Amount Paid:</span>
+                                <span className="text-gray-600 dark:text-gray-400 flex-none w-24">{t('pos.amount_paid', 'Amount Paid')}:</span>
                                 <input
                                     type="number"
                                     min="0"
@@ -699,12 +699,7 @@ export function PosPage() {
                                     className="flex-1 border border-gray-300 dark:border-gray-600 rounded-lg p-2 dark:bg-gray-700 dark:text-white"
                                 />
                             </div>
-                            <div className="flex justify-between mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
-                                <span className="text-gray-600 dark:text-gray-400">Balance (Credit)</span>
-                                <span className={`font-bold ${cartTotal - paidAmount > 0 ? 'text-red-500' : 'text-green-500'}`}>
-                                    {(cartTotal - paidAmount).toLocaleString()} FCFA
-                                </span>
-                            </div>
+                            {/* Credit balance hidden as per user request */}
                         </div>
 
                         {paidAmount > 0 && (
@@ -784,11 +779,11 @@ export function PosPage() {
                         {!lastSale?.customer && (
                             <div className="mb-2">
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                    Customer Name (for Invoice)
+                                    {t('pos.customer_name_invoice', 'Customer Name (for Invoice)')}
                                 </label>
                                 <input
                                     type="text"
-                                    placeholder="Enter customer name (optional)"
+                                    placeholder={t('pos.enter_customer_name', 'Enter customer name (optional)')}
                                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500"
                                     value={customerNameForPrint}
                                     onChange={(e) => setCustomerNameForPrint(e.target.value)}
@@ -801,7 +796,7 @@ export function PosPage() {
                             className="w-full flex items-center justify-center px-4 py-3 btn-theme-primary rounded-lg font-medium disabled:opacity-70"
                         >
                             {isProcessingPrint ? (
-                                <span className="animate-pulse">Processing...</span>
+                                <span className="animate-pulse">{t('common.processing')}...</span>
                             ) : (
                                 <>
                                     <Printer className="w-5 h-5 mr-2" />
