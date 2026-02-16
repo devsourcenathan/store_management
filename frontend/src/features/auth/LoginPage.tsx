@@ -50,7 +50,7 @@ export function LoginPage() {
                 </div>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form autoComplete="off" onSubmit={handleSubmit} className="space-y-6">
                 <div>
                     <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                         {t('auth.email')}
@@ -62,6 +62,7 @@ export function LoginPage() {
                         <input
                             id="email"
                             type="email"
+                            autoComplete="off"
                             required
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
@@ -90,6 +91,7 @@ export function LoginPage() {
                         <input
                             id="password"
                             type="password"
+                            autoComplete="new-password"
                             required
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
