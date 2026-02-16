@@ -123,7 +123,13 @@
             "process_sale": "Error processing sale",
             "network": "Network error. Check your internet connection.",
             "timeout": "Request timed out. Please try again."
-        }
+        },
+        "discount": "Discount",
+        "global_discount": "Global Discount",
+        "total_amount": "Total Amount",
+        "amount_paid": "Amount Paid",
+        "customer_name_invoice": "Customer Name (for Invoice)",
+        "enter_customer_name": "Enter customer name (optional)"
     },
     "auth": {
         "login": "Login",

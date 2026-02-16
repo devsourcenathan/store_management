@@ -123,7 +123,13 @@
             "process_sale": "Erreur lors du traitement de la vente",
             "network": "Erreur réseau. Vérifiez votre connexion internet.",
             "timeout": "La requête a expiré. Veuillez réessayer."
-        }
+        },
+        "discount": "Remise",
+        "global_discount": "Remise Globale",
+        "total_amount": "Montant Total",
+        "amount_paid": "Montant Payé",
+        "customer_name_invoice": "Nom du Client (pour Facture)",
+        "enter_customer_name": "Entrez le nom du client (optionnel)"
     },
     "auth": {
         "login": "Connexion",
