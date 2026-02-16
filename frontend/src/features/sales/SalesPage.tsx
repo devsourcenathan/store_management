@@ -229,9 +229,17 @@ export function SalesPage() {
                                 <div className="flex items-start justify-between mb-3">
                                     <div className="flex-1">
                                         <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
-                                            {sale.customer?.name || 'Walk-in'}
+                                            {t('sales.products_sold', 'Products Sold')}
                                         </h3>
-                                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                            {sale.items.map((item: any, idx: number) => (
+                                                <span key={idx}>
+                                                    {item.product?.name || item.name || 'Unknown'} ({item.quantity})
+                                                    {idx < sale.items.length - 1 && ', '}
+                                                </span>
+                                            ))}
+                                        </p>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                                             {new Date(sale.createdAt).toLocaleDateString()}
                                         </p>
                                     </div>
@@ -279,7 +287,7 @@ export function SalesPage() {
                         <thead className="bg-gray-50 dark:bg-gray-700/50">
                             <tr>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.date', 'Date')}</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.customer', 'Customer')}</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('sales.products', 'Products')}</th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.total', 'Total')}</th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.paid', 'Paid')}</th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.status', 'Status')}</th>
@@ -295,7 +303,15 @@ export function SalesPage() {
                                 sales?.map((sale) => (
                                     <tr key={sale.id}>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{new Date(sale.createdAt).toLocaleDateString()}</td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">{sale.customer?.name || 'Walk-in'}</td>
+                                        <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-gray-100">
+                                            <div className="max-w-xs">
+                                                {sale.items.map((item: any, idx: number) => (
+                                                    <div key={idx} className="text-xs">
+                                                        {item.product?.name || item.name || 'Unknown'} <span className="text-gray-500">({item.quantity})</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{sale.totalAmount} FCFA</td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{sale.paidAmount} FCFA</td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
