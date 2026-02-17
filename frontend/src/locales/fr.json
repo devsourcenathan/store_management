@@ -29,7 +29,11 @@
         "order": "Ordre",
         "offline": "Mode hors ligne - Les ventes seront synchronisées automatiquement",
         "restore": "Restaurer",
-        "deleted": "Supprimés"
+        "deleted": "Supprimés",
+        "updateAvailable": "Nouvelle version disponible",
+        "updateDescription": "Une nouvelle version de l'application est disponible. Mettez à jour pour obtenir les dernières fonctionnalités.",
+        "later": "Plus tard",
+        "update": "Mettre à jour"
     },
     "nav": {
         "dashboard": "Tableau de bord",

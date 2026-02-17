@@ -29,7 +29,11 @@
         "order": "Order",
         "offline": "Offline mode - Sales will be synchronized automatically",
         "restore": "Restore",
-        "deleted": "Deleted"
+        "deleted": "Deleted",
+        "updateAvailable": "New version available",
+        "updateDescription": "A new version of the app is available. Update to get the latest features.",
+        "later": "Later",
+        "update": "Update"
     },
     "nav": {
         "dashboard": "Dashboard",

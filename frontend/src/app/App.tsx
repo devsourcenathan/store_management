@@ -7,6 +7,7 @@ import { SyncProvider } from '@/offline/SyncProvider';
 import { StoreProvider } from '@/features/stores/StoreProvider';
 import { PermissionProvider } from '@/contexts/PermissionContext';
 import { Toaster } from 'sonner';
+import { UpdatePopup } from '@/components/UpdatePopup';
 
 const queryClient = new QueryClient({
     defaultOptions: {
@@ -18,6 +19,8 @@ const queryClient = new QueryClient({
 });
 
 function App() {
+    console.log("123456");
+
     return (
         <QueryClientProvider client={queryClient}>
             <BrowserRouter>
@@ -28,6 +31,7 @@ function App() {
                                 <SyncProvider>
                                     <AppRouter />
                                     <Toaster richColors position="top-center" />
+                                    <UpdatePopup />
                                 </SyncProvider>
                             </PermissionProvider>
                         </StoreProvider>
