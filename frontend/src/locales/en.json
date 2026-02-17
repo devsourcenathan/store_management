@@ -41,7 +41,7 @@
         "sales_history": "Sales History",
         "customers": "Customers",
         "suppliers": "Suppliers",
-        "supply_orders": "Supply Orders",
+        "supply_orders": "Orders",
         "subscriptions": "Subscriptions",
         "services": "Offers & Services",
         "settings": "Settings",
@@ -50,7 +50,25 @@
         "offline": "Offline",
         "logout": "Logout",
         "media": "Media",
-        "statistics": "Statistics"
+        "statistics": "Statistics",
+        "stores": "Stores",
+        "my_plan": "My Plan",
+        "titles": {
+            "overview": "Overview",
+            "commercial": "Commercial",
+            "inventory": "Inventory",
+            "maintenance": "Maintenance",
+            "finance": "Finance",
+            "content": "Content",
+            "analytics": "Analytics",
+            "settings": "Settings",
+            "billing": "Billing",
+            "audit": "Audit & Analytics",
+            "admin": "Admin"
+        },
+        "admin_panel": "Admin Panel",
+        "audit_logs": "Audit Logs",
+        "user_analytics": "User Analytics"
     },
     "dashboard": {
         "title": "Dashboard",
@@ -289,7 +307,6 @@
         "profile": "Profile",
         "security": "Security",
         "appearance": "Appearance",
-        "notifications": "Notifications",
         "language": "Language",
         "select_language": "Select Language",
         "theme": "Theme",
@@ -300,7 +317,8 @@
             "organization": "Organization",
             "stores": "Stores",
             "team": "Team",
-            "notifications": "Notifications"
+            "notifications": "Notifications",
+            "permissions": "Permissions"
         },
         "org": {
             "title": "Organization Details",
@@ -605,5 +623,66 @@
         "csv": "Export CSV",
         "success": "Export successful",
         "error": "Export failed"
+    },
+    "permissions": {
+        "title": "Permission Management",
+        "subtitle": "Configure which features are accessible to each role in your organization.",
+        "role_permissions": "Role Permissions",
+        "owner_description": "Configure permissions for MANAGER and STAFF roles.",
+        "resource": "Resource",
+        "manager": "Manager",
+        "staff": "Staff",
+        "reset": "Reset",
+        "save_changes": "Save Changes",
+        "access_denied": "Access Denied",
+        "owner_only": "Only organization owners can manage permissions.",
+        "load_error": "Failed to load permissions",
+        "save_success": "Permissions updated successfully",
+        "save_error": "Failed to save permissions",
+        "reset_message": "Permissions reset to saved state",
+        "resources": {
+            "dashboard": "Dashboard",
+            "sales": "Sales",
+            "pos": "POS",
+            "customers": "Customers",
+            "suppliers": "Suppliers",
+            "supply_orders": "Supply Orders",
+            "products": "Products",
+            "categories": "Categories",
+            "stock": "Stock",
+            "devices": "Devices",
+            "maintenances": "Maintenances",
+            "subscriptions": "Subscriptions",
+            "services": "Services",
+            "media": "Media",
+            "statistics": "Analytics",
+            "settings": "Settings",
+            "stores": "Stores",
+            "billing": "Billing",
+            "audit_logs": "Audit Logs",
+            "user_analytics": "User Analytics",
+            "admin": "Admin"
+        },
+        "categories": {
+            "commercial": "Commercial",
+            "inventory": "Inventory",
+            "finance": "Finance",
+            "settings": "Settings",
+            "users": "Users",
+            "content": "Content",
+            "reports": "Reports",
+            "maintenance": "Maintenance",
+            "analytics": "Analytics",
+            "audit": "Audit",
+            "billing": "Billing",
+            "overview": "Overview"
+        },
+        "how_it_works": {
+            "title": "How it works",
+            "owner": "OWNER always has full access to all features",
+            "configurable": "MANAGER and STAFF permissions are configurable",
+            "immediate": "Changes apply immediately after saving",
+            "sidebar": "Users will see only the features they have access to in the sidebar"
+        }
     }
 }

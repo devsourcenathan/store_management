@@ -50,7 +50,7 @@ export function PermissionsPage() {
             setStaffPermissions(staffMap);
         } catch (error) {
             console.error('Failed to fetch permissions:', error);
-            toast.error('Failed to load permissions');
+            toast.error(t('permissions.load_error'));
         } finally {
             setIsLoading(false);
         }
@@ -91,10 +91,10 @@ export function PermissionsPage() {
                 updateRolePermissions('STAFF', staffUpdates),
             ]);
 
-            toast.success('Permissions updated successfully');
+            toast.success(t('permissions.save_success'));
         } catch (error) {
             console.error('Failed to save permissions:', error);
-            toast.error('Failed to save permissions');
+            toast.error(t('permissions.save_error'));
         } finally {
             setIsSaving(false);
         }
@@ -102,7 +102,8 @@ export function PermissionsPage() {
 
     const handleReset = () => {
         fetchPermissions();
-        toast.info('Permissions reset to saved state');
+        fetchPermissions();
+        toast.info(t('permissions.reset_message'));
     };
 
     if (user?.role !== 'OWNER') {
@@ -110,8 +111,8 @@ export function PermissionsPage() {
             <div className="flex items-center justify-center h-screen">
                 <div className="text-center">
                     <Shield className="w-16 h-16 mx-auto mb-4 text-gray-400" />
-                    <h2 className="text-2xl font-bold mb-2">Access Denied</h2>
-                    <p className="text-gray-600">Only organization owners can manage permissions.</p>
+                    <h2 className="text-2xl font-bold mb-2">{t('permissions.access_denied')}</h2>
+                    <p className="text-gray-600">{t('permissions.owner_only')}</p>
                 </div>
             </div>
         );
@@ -130,9 +131,9 @@ export function PermissionsPage() {
     return (
         <div className="max-w-6xl mx-auto p-6">
             <div className="mb-8">
-                <h1 className="text-3xl font-bold mb-2">Permission Management</h1>
+                <h1 className="text-3xl font-bold mb-2">{t('permissions.title')}</h1>
                 <p className="text-gray-600">
-                    Configure which features are accessible to each role in your organization.
+                    {t('permissions.subtitle')}
                 </p>
             </div>
 
@@ -140,9 +141,9 @@ export function PermissionsPage() {
                 <div className="p-6 border-b border-gray-200 dark:border-gray-700">
                     <div className="flex items-center justify-between">
                         <div>
-                            <h2 className="text-lg font-semibold">Role Permissions</h2>
+                            <h2 className="text-lg font-semibold">{t('permissions.role_permissions')}</h2>
                             <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                                OWNER always has full access. Configure permissions for MANAGER and STAFF roles.
+                                {t('permissions.owner_description')}
                             </p>
                         </div>
                         <div className="flex gap-2">
@@ -152,7 +153,7 @@ export function PermissionsPage() {
                                 className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50"
                             >
                                 <RotateCcw className="w-4 h-4 inline mr-2" />
-                                Reset
+                                {t('permissions.reset')}
                             </button>
                             <button
                                 onClick={handleSave}
@@ -164,7 +165,7 @@ export function PermissionsPage() {
                                 ) : (
                                     <Save className="w-4 h-4 mr-2" />
                                 )}
-                                Save Changes
+                                {t('permissions.save_changes')}
                             </button>
                         </div>
                     </div>
@@ -173,19 +174,19 @@ export function PermissionsPage() {
                 <div className="p-6">
                     {Object.entries(groupedPermissions).map(([category, permissions]) => (
                         <div key={category} className="mb-8 last:mb-0">
-                            <h3 className="text-lg font-semibold mb-4 capitalize">{category}</h3>
+                            <h3 className="text-lg font-semibold mb-4 capitalize">{t(`permissions.categories.${category}` as any)}</h3>
                             <div className="overflow-x-auto">
                                 <table className="w-full">
                                     <thead>
                                         <tr className="border-b border-gray-200 dark:border-gray-700">
                                             <th className="text-left py-3 px-4 font-medium text-gray-700 dark:text-gray-300">
-                                                Resource
+                                                {t('permissions.resource')}
                                             </th>
                                             <th className="text-center py-3 px-4 font-medium text-gray-700 dark:text-gray-300 w-32">
-                                                Manager
+                                                {t('permissions.manager')}
                                             </th>
                                             <th className="text-center py-3 px-4 font-medium text-gray-700 dark:text-gray-300 w-32">
-                                                Staff
+                                                {t('permissions.staff')}
                                             </th>
                                         </tr>
                                     </thead>
@@ -198,7 +199,7 @@ export function PermissionsPage() {
                                                 <td className="py-3 px-4">
                                                     <div>
                                                         <div className="font-medium text-gray-900 dark:text-gray-100">
-                                                            {permission.name}
+                                                            {t(`permissions.resources.${permission.resource}` as any)}
                                                         </div>
                                                         {permission.description && (
                                                             <div className="text-sm text-gray-500 dark:text-gray-400">
@@ -238,12 +239,12 @@ export function PermissionsPage() {
             </div>
 
             <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-                <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">💡 How it works</h4>
+                <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">💡 {t('permissions.how_it_works.title')}</h4>
                 <ul className="text-sm text-blue-800 dark:text-blue-200 space-y-1">
-                    <li>• <strong>OWNER</strong> always has full access to all features</li>
-                    <li>• <strong>MANAGER</strong> and <strong>STAFF</strong> permissions are configurable</li>
-                    <li>• Changes apply immediately after saving</li>
-                    <li>• Users will see only the features they have access to in the sidebar</li>
+                    <li>• <strong>OWNER</strong> {t('permissions.how_it_works.owner')}</li>
+                    <li>• <strong>MANAGER</strong> {t('permissions.how_it_works.configurable')}</li>
+                    <li>• {t('permissions.how_it_works.immediate')}</li>
+                    <li>• {t('permissions.how_it_works.sidebar')}</li>
                 </ul>
             </div>
         </div>

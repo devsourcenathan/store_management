@@ -29,6 +29,7 @@ import { DevicesPage } from '@/features/devices/DevicesPage';
 import { MaintenancesPage } from '@/features/maintenances/MaintenancesPage';
 import { AuditLogsPage } from '@/features/audit/AuditLogsPage';
 import { UserAnalyticsPage } from '@/features/analytics/UserAnalyticsPage';
+import { StoreList } from '@/features/settings/components/StoreList';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
     const { user, isLoading } = useAuth();
@@ -101,8 +102,10 @@ export function AppRouter() {
                 <Route path="statistics" element={<OwnerStatisticsPage />} />
                 <Route path="devices" element={<DevicesPage />} />
                 <Route path="maintenances" element={<MaintenancesPage />} />
+
                 <Route path="audit-logs" element={<AuditLogsPage />} />
                 <Route path="user-analytics" element={<UserAnalyticsPage />} />
+
 
                 {/* Platform Billing */}
                 <Route path="billing/pricing" element={<PricingPage />} />

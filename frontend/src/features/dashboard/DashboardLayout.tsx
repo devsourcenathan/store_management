@@ -61,13 +61,15 @@ export function DashboardLayout() {
     // Define all navigation items with their permission requirements
     const allNavigation = [
         {
-            title: 'Overview',
+            id: 'overview',
+            title: t('nav.titles.overview'),
             items: [
                 { name: t('nav.dashboard'), href: '/dashboard', icon: LayoutDashboard, resource: 'dashboard' },
             ]
         },
         {
-            title: 'Commercial',
+            id: 'commercial',
+            title: t('nav.titles.commercial'),
             items: [
                 { name: t('nav.sales_history'), href: '/sales', icon: ShoppingCart, resource: 'sales' },
                 { name: t('nav.pos'), href: '/pos', icon: Calculator, resource: 'pos' },
@@ -77,7 +79,8 @@ export function DashboardLayout() {
             ]
         },
         {
-            title: 'Inventory',
+            id: 'inventory',
+            title: t('nav.titles.inventory'),
             items: [
                 { name: t('nav.products'), href: '/products', icon: Package, resource: 'products' },
                 { name: t('nav.categories'), href: '/categories', icon: Tags, resource: 'categories' },
@@ -85,21 +88,24 @@ export function DashboardLayout() {
             ]
         },
         {
-            title: t('maintenances.title'),
+            id: 'maintenance',
+            title: t('nav.titles.maintenance'),
             items: [
                 { name: t('devices.title'), href: '/devices', icon: Smartphone, resource: 'devices' },
                 { name: t('maintenances.title'), href: '/maintenances', icon: Wrench, resource: 'maintenances' },
             ]
         },
         {
-            title: 'Finance',
+            id: 'finance',
+            title: t('nav.titles.finance'),
             items: [
                 { name: t('nav.subscriptions'), href: '/subscriptions', icon: CreditCard, resource: 'subscriptions' },
                 { name: t('nav.services'), href: '/subscriptions/offers', icon: Layers, resource: 'services' },
             ]
         },
         {
-            title: 'Content',
+            id: 'content',
+            title: t('nav.titles.content'),
             items: [
                 { name: t('nav.media'), href: '/media', icon: Image, resource: 'media' },
             ]
@@ -109,7 +115,8 @@ export function DashboardLayout() {
     // Analytics - For OWNER only
     if (hasPermission('statistics')) {
         allNavigation.splice(1, 0, {
-            title: 'Analytics',
+            id: 'analytics',
+            title: t('nav.titles.analytics'),
             items: [{ name: t('nav.statistics'), href: '/statistics', icon: BarChart3, resource: 'statistics' }]
         });
     }
@@ -117,53 +124,56 @@ export function DashboardLayout() {
     // Settings
     if (hasPermission('settings')) {
         allNavigation.push({
-            title: 'Settings',
+            id: 'settings',
+            title: t('nav.titles.settings'),
             items: [
                 { name: t('nav.settings'), href: '/settings', icon: Settings, resource: 'settings' },
             ]
         });
     }
 
-    // Stores management
-    if (hasPermission('stores')) {
-        const settingsGroup = allNavigation.find(g => g.title === 'Settings');
-        if (settingsGroup) {
-            settingsGroup.items.push({ name: t('nav.stores', 'Stores'), href: '/stores', icon: Store, resource: 'stores' });
+
+
+
+
+    // Audit & Analytics
+    if (hasPermission('audit_logs') || hasPermission('user_analytics')) {
+        const auditItems = [];
+
+        if (hasPermission('user_analytics')) {
+            auditItems.push({ name: t('nav.user_analytics'), href: '/user-analytics', icon: TrendingUp, resource: 'user_analytics' });
+        }
+
+        if (hasPermission('audit_logs')) {
+            auditItems.push({ name: t('nav.audit_logs'), href: '/audit-logs', icon: FileText, resource: 'audit_logs' });
+        }
+
+        if (auditItems.length > 0) {
+            allNavigation.push({
+                id: 'audit',
+                title: t('nav.titles.audit'),
+                items: auditItems
+            });
         }
     }
 
     // Billing - For OWNER only
     if (hasPermission('billing')) {
         allNavigation.push({
-            title: 'Billing',
+            id: 'billing',
+            title: t('nav.titles.billing'),
             items: [
-                { name: t('nav.my_plan', 'My Plan'), href: '/billing/subscription', icon: CreditCard, resource: 'billing' }
+                { name: t('nav.my_plan'), href: '/billing/subscription', icon: CreditCard, resource: 'billing' }
             ]
         });
-    }
-
-    // Audit & Analytics
-    if (hasPermission('audit_logs') || hasPermission('user_analytics')) {
-        const auditItems = [];
-        if (hasPermission('audit_logs')) {
-            auditItems.push({ name: 'Audit Logs', href: '/audit-logs', icon: FileText, resource: 'audit_logs' });
-        }
-        if (hasPermission('user_analytics')) {
-            auditItems.push({ name: 'User Analytics', href: '/user-analytics', icon: TrendingUp, resource: 'user_analytics' });
-        }
-        if (auditItems.length > 0) {
-            allNavigation.push({
-                title: 'Audit & Analytics',
-                items: auditItems
-            });
-        }
     }
 
     // Admin Panel - For GLOBAL_ADMIN only
     if (user?.role === 'GLOBAL_ADMIN') {
         allNavigation.push({
-            title: 'Admin',
-            items: [{ name: 'Admin Panel', href: '/admin', icon: Shield, resource: 'admin' }]
+            id: 'admin',
+            title: t('nav.titles.admin'),
+            items: [{ name: t('nav.admin_panel'), href: '/admin', icon: Shield, resource: 'admin' }]
         });
     }
 

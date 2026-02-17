@@ -5,11 +5,12 @@ import { OrganizationSettings } from './components/OrganizationSettings';
 import { StoreList } from './components/StoreList';
 import { UserList } from './components/UserList';
 import { NotificationSettings } from './components/NotificationSettings';
+import { PermissionsPage } from './PermissionsPage';
 import { OrgLandingEditor } from '@/features/org-landing/OrgLandingEditor';
 import { Building, Store as StoreIcon, Users, Globe, Bell, Shield } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
-type Tab = 'organization' | 'stores' | 'team' | 'notifications';
+type Tab = 'organization' | 'stores' | 'team' | 'notifications' | 'permissions';
 
 export function SettingsPage() {
     const { t } = useTranslation();
@@ -24,6 +25,15 @@ export function SettingsPage() {
         // { id: 'landing', label: 'Landing Page', icon: Globe, component: OrgLandingEditor },
     ];
 
+    if (user?.role === 'OWNER') {
+        tabs.push({
+            id: 'permissions',
+            label: t('settings.tabs.permissions'),
+            icon: Shield,
+            component: PermissionsPage
+        } as any);
+    }
+
     return (
         <div className="space-y-4 sm:space-y-6 pb-6">
             {/* Header */}
@@ -31,16 +41,7 @@ export function SettingsPage() {
                 <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100">{t('settings.title')}</h2>
                 <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">{t('settings.subtitle')}</p>
 
-                {/* Permissions link for OWNER */}
-                {user?.role === 'OWNER' && (
-                    <Link
-                        to="/settings/permissions"
-                        className="inline-flex items-center gap-2 mt-4 px-4 py-2 text-sm font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors"
-                    >
-                        <Shield className="w-4 h-4" />
-                        Manage Permissions
-                    </Link>
-                )}
+
             </div>
 
             {/* Tabs - Horizontal on all screens */}
