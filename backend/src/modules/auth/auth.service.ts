@@ -70,6 +70,11 @@ export class AuthService {
                 role: user.role,
                 organizationId: user.organizationId,
                 stores: user.stores,
+                emailNotificationsEnabled: user.emailNotificationsEnabled,
+                dailyReportEnabled: user.dailyReportEnabled,
+                weeklyReportEnabled: user.weeklyReportEnabled,
+                monthlyReportEnabled: user.monthlyReportEnabled,
+                yearlyReportEnabled: user.yearlyReportEnabled,
             },
         };
     }
@@ -231,6 +236,11 @@ export class AuthService {
             organizationId: user.organizationId,
             stores: user.stores,
             organization: user.organization,
+            emailNotificationsEnabled: user.emailNotificationsEnabled,
+            dailyReportEnabled: user.dailyReportEnabled,
+            weeklyReportEnabled: user.weeklyReportEnabled,
+            monthlyReportEnabled: user.monthlyReportEnabled,
+            yearlyReportEnabled: user.yearlyReportEnabled,
         };
     }
 }
