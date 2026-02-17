@@ -29,6 +29,9 @@ api.interceptors.request.use(
         const shouldExclude = excludedPaths.some(path => url.includes(path));
 
         if (currentStoreId && !shouldExclude) {
+            // Add storeId to headers (preferred method for backend)
+            config.headers['x-store-id'] = currentStoreId;
+
             // Add storeId to query params for GET requests
             if (config.method?.toLowerCase() === 'get') {
                 config.params = {

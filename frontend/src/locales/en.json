@@ -27,7 +27,9 @@
         "processing": "Processing...",
         "sort_by": "Sort by",
         "order": "Order",
-        "offline": "Offline mode - Sales will be synchronized automatically"
+        "offline": "Offline mode - Sales will be synchronized automatically",
+        "restore": "Restore",
+        "deleted": "Deleted"
     },
     "nav": {
         "dashboard": "Dashboard",
@@ -81,6 +83,8 @@
         }
     },
     "pos": {
+        "new_sale": "New Sale",
+        "print_invoice": "Print Invoice",
         "search_placeholder": "Search products...",
         "all_categories": "All Categories",
         "cart_empty": "Cart is empty",
@@ -253,7 +257,16 @@
         "search_placeholder": "Search by name or SKU...",
         "select_product": "Select a product",
         "no_results": "No products found",
-        "start_typing": "Start typing to search..."
+        "start_typing": "Start typing to search...",
+        "deleted_products": "Deleted Products",
+        "deleted_products_description": "Products deleted in the current store",
+        "no_deleted_products": "No Deleted Products",
+        "no_deleted_products_description": "There are no deleted products in this store.",
+        "deleted_at": "Deleted At",
+        "delete_success": "Product deleted successfully",
+        "restore_success": "Product restored successfully",
+        "restore_error": "Error restoring product",
+        "restore_confirm": "Are you sure you want to restore this product?"
     },
     "customers": {
         "title": "Customers",

@@ -57,11 +57,11 @@ export function SalesPage() {
 
     const queryClient = useQueryClient();
 
-    const { data: sales, isLoading } = useQuery<Sale[]>({
+    const { data: sales, isLoading, isError, error } = useQuery<Sale[]>({
         queryKey: ['sales', currentStore?.id],
         queryFn: async () => {
             if (!currentStore?.id) return [];
-            const response = await api.get(`/sales?storeId=${currentStore.id}`);
+            const response = await api.get('/sales');
             return response.data;
         },
         enabled: !!currentStore?.id,
@@ -220,10 +220,15 @@ export function SalesPage() {
                 <div className="md:hidden p-4 space-y-4">
                     {isLoading ? (
                         <div className="px-4 py-12 text-center text-gray-500 dark:text-gray-400">Loading...</div>
-                    ) : sales?.length === 0 ? (
+                    ) : isError ? (
+                        <div className="px-4 py-12 text-center text-red-500">
+                            <p>Error loading sales.</p>
+                            <p className="text-xs mt-1">{error?.message}</p>
+                        </div>
+                    ) : !sales || sales.length === 0 ? (
                         <div className="px-4 py-12 text-center text-gray-500 dark:text-gray-400">No sales found.</div>
                     ) : (
-                        sales?.map((sale) => (
+                        sales.map((sale) => (
                             <div key={sale.id} className="bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-xl p-4 shadow-sm hover:shadow-md hover:border-blue-300 dark:hover:border-blue-600 transition-all">
                                 {/* Sale Header */}
                                 <div className="flex items-start justify-between mb-3">
@@ -232,15 +237,15 @@ export function SalesPage() {
                                             {t('sales.products_sold', 'Products Sold')}
                                         </h3>
                                         <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                            {sale.items.map((item: any, idx: number) => (
+                                            {sale.items?.map((item: any, idx: number) => (
                                                 <span key={idx}>
                                                     {item.product?.name || item.name || 'Unknown'} ({item.quantity})
-                                                    {idx < sale.items.length - 1 && ', '}
+                                                    {idx < (sale.items?.length || 0) - 1 && ', '}
                                                 </span>
                                             ))}
                                         </p>
                                         <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                            {new Date(sale.createdAt).toLocaleDateString()}
+                                            {new Date(sale.createdAt).toLocaleDateString()} {new Date(sale.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                         </p>
                                     </div>
                                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${sale.status === 'PAID' ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300' :
@@ -258,7 +263,7 @@ export function SalesPage() {
                                             Total / Paid
                                         </p>
                                         <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">
-                                            {sale.totalAmount} / {sale.paidAmount}
+                                            {sale.totalAmount.toLocaleString()} / {sale.paidAmount.toLocaleString()}
                                         </p>
                                     </div>
                                     <div className="flex items-end justify-end space-x-2">
@@ -297,23 +302,27 @@ export function SalesPage() {
                         <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                             {isLoading ? (
                                 <tr><td colSpan={6} className="px-6 py-4 text-center dark:text-gray-400">Loading...</td></tr>
-                            ) : sales?.length === 0 ? (
+                            ) : isError ? (
+                                <tr><td colSpan={6} className="px-6 py-12 text-center text-red-500">Error: {error?.message}</td></tr>
+                            ) : !sales || sales.length === 0 ? (
                                 <tr><td colSpan={6} className="px-6 py-12 text-center text-gray-500 dark:text-gray-400">No sales found.</td></tr>
                             ) : (
-                                sales?.map((sale) => (
+                                sales.map((sale) => (
                                     <tr key={sale.id}>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{new Date(sale.createdAt).toLocaleDateString()}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                            {new Date(sale.createdAt).toLocaleDateString()} {new Date(sale.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                        </td>
                                         <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-gray-100">
                                             <div className="max-w-xs">
-                                                {sale.items.map((item: any, idx: number) => (
+                                                {sale.items?.map((item: any, idx: number) => (
                                                     <div key={idx} className="text-xs">
                                                         {item.product?.name || item.name || 'Unknown'} <span className="text-gray-500">({item.quantity})</span>
                                                     </div>
                                                 ))}
                                             </div>
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{sale.totalAmount} FCFA</td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{sale.paidAmount} FCFA</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{sale.totalAmount.toLocaleString()} FCFA</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{sale.paidAmount.toLocaleString()} FCFA</td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                             <span className={`px-2 py-1 rounded-full text-xs font-medium ${sale.status === 'PAID' ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300' :
                                                 sale.status === 'PARTIAL' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300' :

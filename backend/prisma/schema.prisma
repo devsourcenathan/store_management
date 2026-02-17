@@ -56,11 +56,12 @@ model Store {
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
-  organization   Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  stockMovements StockMovement[]
-  sales          Sale[]
-  userStores     UserStore[]
-  stockAlerts    StockAlert[]
+  organization    Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  stockMovements  StockMovement[]
+  sales           Sale[]
+  userStores      UserStore[]
+  stockAlerts     StockAlert[]
+  deletedProducts DeletedProduct[]
 
   @@map("stores")
 }
@@ -142,6 +143,7 @@ model Product {
   supplyItems      SupplyItem[]
   pricingRules     PricingRule[]
   maintenanceParts MaintenancePart[]
+  deletedInStores  DeletedProduct[]
 
   @@unique([organizationId, sku])
   @@map("products")
@@ -158,6 +160,21 @@ model ProductImage {
   product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@map("product_images")
+}
+
+model DeletedProduct {
+  id        String   @id @default(uuid())
+  productId String
+  storeId   String
+  deletedAt DateTime @default(now())
+  deletedBy String? // User ID who deleted the product
+  createdAt DateTime @default(now())
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  store   Store   @relation(fields: [storeId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, storeId])
+  @@map("deleted_products")
 }
 
 model Media {

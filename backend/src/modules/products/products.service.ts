@@ -7,13 +7,20 @@ import { GetProductsDto } from './dto/get-products.dto';
 export class ProductsService {
     constructor(private prisma: PrismaService) { }
 
-    async findAll(organizationId: string, params?: GetProductsDto) {
+    async findAll(organizationId: string, params?: GetProductsDto, storeId?: string) {
         const { search, categoryId, minPrice, maxPrice, sortBy = 'name', sortOrder = 'asc' } = params || {};
 
         const where: any = {
             organizationId,
             isActive: true,
         };
+
+        // Exclude products deleted in the current store
+        if (storeId) {
+            where.deletedInStores = {
+                none: { storeId }
+            };
+        }
 
         if (search) {
             where.OR = [
@@ -131,12 +138,63 @@ export class ProductsService {
         });
     }
 
-    async delete(id: string, organizationId: string) {
-        // Soft delete
-        return this.prisma.product.update({
-            where: { id },
-            data: { isActive: false },
+    async softDelete(id: string, storeId: string, userId: string) {
+        // Create a deleted product record for this store
+        return this.prisma.deletedProduct.create({
+            data: {
+                productId: id,
+                storeId,
+                deletedBy: userId,
+            },
         });
+    }
+
+    async restore(id: string, storeId: string) {
+        // Remove the deleted product record for this store
+        return this.prisma.deletedProduct.delete({
+            where: {
+                productId_storeId: {
+                    productId: id,
+                    storeId,
+                },
+            },
+        });
+    }
+
+    async findDeleted(organizationId: string, storeId: string) {
+        // Find products that are deleted in this specific store
+        const products = await this.prisma.product.findMany({
+            where: {
+                organizationId,
+                deletedInStores: {
+                    some: { storeId },
+                },
+            },
+            include: {
+                category: true,
+                deletedInStores: {
+                    where: { storeId },
+                    select: {
+                        deletedAt: true,
+                        deletedBy: true,
+                    },
+                },
+            },
+        });
+
+        const productIds = products.map(p => p.id);
+        const media = await this.prisma.media.findMany({
+            where: {
+                organizationId,
+                entityType: MediaEntityType.PRODUCT,
+                entityId: { in: productIds },
+            },
+        });
+
+        return products.map(p => ({
+            ...p,
+            media: media.filter(m => m.entityId === p.id),
+        }));
     }
 
     async findByCategory(categoryId: string, organizationId: string) {

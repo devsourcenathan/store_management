@@ -6,13 +6,7 @@ import { useAuth } from '../auth/useAuth';
 import { useStore } from '../stores/StoreProvider';
 import { TransferModal } from './TransferModal';
 import { StockAlertsList } from './components/StockAlertsList';
-import {
-    Sheet,
-    SheetContent,
-    SheetHeader,
-    SheetTitle,
-    SheetDescription,
-} from "@/components/ui/Sheet";
+import { StockMovementSheet } from './components/StockMovementSheet';
 import { usePagination } from '@/hooks/usePagination';
 import { Pagination } from "@/components/ui/Pagination";
 import { ExportButton } from '@/components/ExportButton';
@@ -43,14 +37,6 @@ export function StockPage() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
     const { currentStore } = useStore();
-    const [formData, setFormData] = useState({
-        productId: '',
-        type: 'IN' as const,
-        source: 'MANUAL' as const,
-        quantity: 0,
-        reference: '',
-        notes: ''
-    });
 
     const queryClient = useQueryClient();
     useAuth();
@@ -67,13 +53,12 @@ export function StockPage() {
         queryKey: ['movements', currentStore?.id],
         queryFn: async () => {
             if (!currentStore?.id) return [];
-            const response = await api.get(`/stock/movements?storeId=${currentStore.id}`);
+            // Note: storeId is automatically added by the API interceptor
+            const response = await api.get('/stock/movements');
             return response.data;
         },
         enabled: !!currentStore?.id,
     });
-
-
 
     const {
         currentItems,
@@ -86,27 +71,6 @@ export function StockPage() {
     });
 
     const paginatedMovements = movements ? currentItems(movements) : [];
-
-    const createMovementMutation = useMutation({
-        mutationFn: async (newMovement: any) => {
-            return api.post('/stock/movements', newMovement);
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['movements'] });
-            queryClient.invalidateQueries({ queryKey: ['stock-levels'] });
-            setIsModalOpen(false);
-            setFormData(prev => ({ ...prev, quantity: 0, reference: '', notes: '' }));
-        },
-    });
-
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!currentStore?.id) return;
-        createMovementMutation.mutate({
-            ...formData,
-            storeId: currentStore.id
-        });
-    };
 
     return (
         <div className="space-y-6">
@@ -246,97 +210,10 @@ export function StockPage() {
             </div>
 
             {/* New Movement Sheet */}
-            <Sheet open={isModalOpen} onOpenChange={setIsModalOpen}>
-                <SheetContent side="right" className="sm:max-w-md overflow-y-auto">
-                    <SheetHeader className="mb-6">
-                        <SheetTitle className="text-gray-900 dark:text-gray-100">{t('stock.new_movement_title')}</SheetTitle>
-                        <SheetDescription className="text-gray-500 dark:text-gray-400">
-                            {t('stock.new_movement_desc')}
-                        </SheetDescription>
-                    </SheetHeader>
-                    <form onSubmit={handleSubmit} className="space-y-6">
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('products.fields.product')}</label>
-                            <select
-                                required
-                                className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md shadow-sm p-2 dark:bg-gray-700 dark:text-white"
-                                value={formData.productId}
-                                onChange={(e) => setFormData({ ...formData, productId: e.target.value })}
-                            >
-                                <option value="">{t('products.fields.select_category')}</option>
-                                {products?.map(p => <option key={p.id} value={p.id}>{p.name} ({p.sku})</option>)}
-                            </select>
-                        </div>
-                        <div className="grid grid-cols-1 gap-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('stock.movement_type')}</label>
-                                <select
-                                    required
-                                    className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md shadow-sm p-2 dark:bg-gray-700 dark:text-white"
-                                    value={formData.type}
-                                    onChange={(e) => setFormData({ ...formData, type: e.target.value as any })}
-                                >
-                                    <option value="IN">{t('stock.types.IN')}</option>
-                                    <option value="OUT">{t('stock.types.OUT')}</option>
-                                    <option value="ADJUST">{t('stock.types.ADJUST')}</option>
-                                    <option value="RETURN">{t('stock.types.RETURN')}</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('stock.source')}</label>
-                                <select
-                                    required
-                                    className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md shadow-sm p-2 dark:bg-gray-700 dark:text-white"
-                                    value={formData.source}
-                                    onChange={(e) => setFormData({ ...formData, source: e.target.value as any })}
-                                >
-                                    <option value="MANUAL">{t('stock.sources.MANUAL')}</option>
-                                    <option value="SUPPLY">{t('stock.sources.SUPPLY')}</option>
-                                    <option value="SALE">{t('stock.sources.SALE')}</option>
-                                    <option value="RETURN">{t('stock.sources.RETURN')}</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('stock.quantity')}</label>
-                            <input
-                                type="number"
-                                required
-                                min="1"
-                                className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md shadow-sm p-2 dark:bg-gray-700 dark:text-white"
-                                value={formData.quantity}
-                                onChange={(e) => setFormData({ ...formData, quantity: parseInt(e.target.value) })}
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('stock.reference')}</label>
-                            <input
-                                type="text"
-                                className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md shadow-sm p-2 dark:bg-gray-700 dark:text-white"
-                                value={formData.reference}
-                                onChange={(e) => setFormData({ ...formData, reference: e.target.value })}
-                                placeholder="e.g. INV-001"
-                            />
-                        </div>
-                        <div className="flex flex-col gap-3 pt-4">
-                            <button
-                                type="submit"
-                                disabled={createMovementMutation.isPending || !formData.productId || !currentStore}
-                                className="w-full px-4 py-3 btn-theme-primary rounded-md font-medium disabled:opacity-50 transition-colors"
-                            >
-                                {createMovementMutation.isPending ? t('common.processing') : t('stock.save_movement')}
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => setIsModalOpen(false)}
-                                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 font-medium transition-colors"
-                            >
-                                {t('common.cancel')}
-                            </button>
-                        </div>
-                    </form>
-                </SheetContent>
-            </Sheet>
+            <StockMovementSheet
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+            />
 
             {/* Transfer Modal */}
             {
