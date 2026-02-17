@@ -12,12 +12,14 @@ import { SalesPage } from '@/features/sales/SalesPage';
 import { PosPage } from '@/features/sales/PosPage';
 import { CustomersPage } from '@/features/customers/CustomersPage';
 import { CategoriesPage } from '@/features/products/CategoriesPage';
+import { DeletedProductsPage } from '@/features/products/DeletedProductsPage';
 import { SuppliersPage } from '@/features/suppliers/SuppliersPage';
 import { SubscriptionsPage } from '@/features/subscriptions/SubscriptionsPage';
 import { BalanceManagementPage } from '@/features/subscriptions/BalanceManagementPage';
 import { OffersManagementPage } from '@/features/subscriptions/OffersManagementPage';
 import { SupplyOrdersPage } from '@/features/suppliers/SupplyOrdersPage';
 import { SettingsPage } from '@/features/settings/SettingsPage';
+import { PermissionsPage } from '@/features/settings/PermissionsPage';
 import { MediaLibrary } from '@/features/media/MediaLibrary';
 import { OwnerStatisticsPage } from '@/features/statistics/OwnerStatisticsPage';
 import PricingPage from '@/features/billing/PricingPage';
@@ -27,6 +29,7 @@ import { DevicesPage } from '@/features/devices/DevicesPage';
 import { MaintenancesPage } from '@/features/maintenances/MaintenancesPage';
 import { AuditLogsPage } from '@/features/audit/AuditLogsPage';
 import { UserAnalyticsPage } from '@/features/analytics/UserAnalyticsPage';
+import { StoreList } from '@/features/settings/components/StoreList';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
     const { user, isLoading } = useAuth();
@@ -81,6 +84,7 @@ export function AppRouter() {
             >
                 <Route path="/dashboard" element={<DashboardPage />} />
                 <Route path="products" element={<ProductsPage />} />
+                <Route path="products/deleted" element={<DeletedProductsPage />} />
                 <Route path="categories" element={<CategoriesPage />} />
                 <Route path="stock" element={<StockPage />} />
                 <Route path="sales" element={<SalesPage />} />
@@ -92,13 +96,16 @@ export function AppRouter() {
                 <Route path="subscriptions/balance" element={<BalanceManagementPage />} />
                 <Route path="subscriptions/offers" element={<OffersManagementPage />} />
                 <Route path="settings" element={<SettingsPage />} />
+                <Route path="settings/permissions" element={<PermissionsPage />} />
                 <Route path="settings/landing" element={<OrgLandingEditor />} />
                 <Route path="media" element={<MediaLibrary />} />
                 <Route path="statistics" element={<OwnerStatisticsPage />} />
                 <Route path="devices" element={<DevicesPage />} />
                 <Route path="maintenances" element={<MaintenancesPage />} />
+
                 <Route path="audit-logs" element={<AuditLogsPage />} />
                 <Route path="user-analytics" element={<UserAnalyticsPage />} />
+
 
                 {/* Platform Billing */}
                 <Route path="billing/pricing" element={<PricingPage />} />

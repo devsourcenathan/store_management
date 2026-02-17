@@ -27,7 +27,13 @@
         "processing": "Traitement...",
         "sort_by": "Trier par",
         "order": "Ordre",
-        "offline": "Mode hors ligne - Les ventes seront synchronisées automatiquement"
+        "offline": "Mode hors ligne - Les ventes seront synchronisées automatiquement",
+        "restore": "Restaurer",
+        "deleted": "Supprimés",
+        "updateAvailable": "Nouvelle version disponible",
+        "updateDescription": "Une nouvelle version de l'application est disponible. Mettez à jour pour obtenir les dernières fonctionnalités.",
+        "later": "Plus tard",
+        "update": "Mettre à jour"
     },
     "nav": {
         "dashboard": "Tableau de bord",
@@ -39,7 +45,7 @@
         "sales_history": "Historique Ventes",
         "customers": "Clients",
         "suppliers": "Fournisseurs",
-        "supply_orders": "Commandes Fourn.",
+        "supply_orders": "Commandes",
         "subscriptions": "Abonnements",
         "services": "Offres & Services",
         "settings": "Paramètres",
@@ -48,7 +54,25 @@
         "offline": "Hors ligne",
         "logout": "Déconnexion",
         "media": "Média",
-        "statistics": "Statistiques"
+        "statistics": "Statistiques",
+        "stores": "Magasins",
+        "my_plan": "Mon Forfait",
+        "titles": {
+            "overview": "Vue d'ensemble",
+            "commercial": "Commercial",
+            "inventory": "Inventaire",
+            "maintenance": "Maintenance",
+            "finance": "Finance",
+            "content": "Contenu",
+            "analytics": "Analytiques",
+            "settings": "Paramètres",
+            "billing": "Facturation",
+            "audit": "Audit & Analytiques",
+            "admin": "Administration"
+        },
+        "admin_panel": "Panneau d'Admin",
+        "audit_logs": "Journaux d'Audit",
+        "user_analytics": "Analytiques"
     },
     "dashboard": {
         "title": "Tableau de bord",
@@ -81,6 +105,8 @@
         }
     },
     "pos": {
+        "new_sale": "Nouvelle vente",
+        "print_invoice": "Imprimer la facture",
         "search_placeholder": "Rechercher un produit...",
         "all_categories": "Toutes Catégories",
         "cart_empty": "Le panier est vide",
@@ -252,7 +278,16 @@
         "search_placeholder": "Rechercher par nom ou SKU...",
         "select_product": "Sélectionner un produit",
         "no_results": "Aucun produit trouvé",
-        "start_typing": "Commencez à taper pour rechercher..."
+        "start_typing": "Commencez à taper pour rechercher...",
+        "deleted_products": "Produits Supprimés",
+        "deleted_products_description": "Produits supprimés dans le magasin actuel",
+        "no_deleted_products": "Aucun Produit Supprimé",
+        "no_deleted_products_description": "Il n'y a aucun produit supprimé dans ce magasin.",
+        "deleted_at": "Supprimé le",
+        "delete_success": "Produit supprimé avec succès",
+        "restore_success": "Produit restauré avec succès",
+        "restore_error": "Erreur lors de la restauration du produit",
+        "restore_confirm": "Êtes-vous sûr de vouloir restaurer ce produit ?"
     },
     "customers": {
         "title": "Clients",
@@ -275,7 +310,6 @@
         "profile": "Profil",
         "security": "Sécurité",
         "appearance": "Apparence",
-        "notifications": "Notifications",
         "language": "Langue",
         "select_language": "Changer la Langue",
         "theme": "Thème",
@@ -286,7 +320,8 @@
             "organization": "Organisation",
             "stores": "Magasins",
             "team": "Équipe",
-            "notifications": "Notifications"
+            "notifications": "Notifications",
+            "permissions": "Permissions"
         },
         "org": {
             "title": "Détails de l'Organisation",
@@ -649,5 +684,66 @@
         "csv": "Exporter CSV",
         "success": "Export réussi",
         "error": "Échec de l'export"
+    },
+    "permissions": {
+        "title": "Gestion des Permissions",
+        "subtitle": "Configurez les fonctionnalités accessibles chaque rôle.",
+        "role_permissions": "Permissions par Rôle",
+        "owner_description": "Configurez les permissions pour les MANAGERS et EMPLOYÉS.",
+        "resource": "Ressource",
+        "manager": "Manager",
+        "staff": "Employé",
+        "reset": "Réinitialiser",
+        "save_changes": "Enregistrer",
+        "access_denied": "Accès Refusé",
+        "owner_only": "Seuls les propriétaires peuvent gérer les permissions.",
+        "load_error": "Erreur lors du chargement des permissions",
+        "save_success": "Permissions mises à jour avec succès",
+        "save_error": "Erreur lors de l'enregistrement",
+        "reset_message": "Permissions réinitialisées",
+        "resources": {
+            "dashboard": "Tableau de bord",
+            "sales": "Ventes",
+            "pos": "Point de Vente",
+            "customers": "Clients",
+            "suppliers": "Fournisseurs",
+            "supply_orders": "Commandes Fournisseur",
+            "products": "Produits",
+            "categories": "Catégories",
+            "stock": "Stock",
+            "devices": "Appareils",
+            "maintenances": "Réparations",
+            "subscriptions": "Abonnements",
+            "services": "Services",
+            "media": "Média",
+            "statistics": "Analytiques",
+            "settings": "Paramètres",
+            "stores": "Magasins",
+            "billing": "Facturation",
+            "audit_logs": "Journaux d'audit",
+            "user_analytics": "Analytiques Utilisateur",
+            "admin": "Administration"
+        },
+        "categories": {
+            "commercial": "Commercial",
+            "inventory": "Inventaire",
+            "finance": "Finance",
+            "settings": "Paramètres",
+            "users": "Utilisateurs",
+            "content": "Contenu",
+            "reports": "Rapports",
+            "maintenance": "Maintenance",
+            "analytics": "Analytiques",
+            "audit": "Audit",
+            "billing": "Facturation",
+            "overview": "Vue d'ensemble"
+        },
+        "how_it_works": {
+            "title": "Comment ça marche",
+            "owner": "Le PROPRIÉTAIRE a accès à tout",
+            "configurable": "Les permissions MANAGER et EMPLOYÉ sont configurables",
+            "immediate": "Les changements s'appliquent immédiatement",
+            "sidebar": "Les utilisateurs ne verront que ce qui est autorisé"
+        }
     }
 }

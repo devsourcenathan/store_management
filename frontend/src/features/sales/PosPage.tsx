@@ -7,7 +7,7 @@ import { useSync } from '@/offline/SyncProvider';
 import { saveOffline } from '@/offline/offlineOperations';
 import { db } from '@/offline/db';
 import { v4 as uuidv4 } from 'uuid';
-import { Search, ShoppingCart, Trash2, Plus, Minus, CreditCard, Banknote, Smartphone, LayoutGrid, List, User, Printer } from 'lucide-react';
+import { Search, ShoppingCart, Trash2, Plus, Minus, CreditCard, Banknote, Smartphone, LayoutGrid, List, User, Printer, ShoppingBag } from 'lucide-react';
 import {
     Dialog,
     DialogContent,
@@ -16,6 +16,13 @@ import {
     DialogDescription,
     DialogFooter,
 } from "@/components/ui/Dialog";
+import {
+    Sheet,
+    SheetContent,
+    SheetHeader,
+    SheetTitle,
+    SheetDescription,
+} from "@/components/ui/Sheet";
 import { toast } from 'sonner';
 import { printer } from '@/services/printing';
 import { useTranslation } from 'react-i18next';
@@ -48,6 +55,7 @@ export function PosPage() {
     const [cart, setCart] = useState<CartItem[]>([]);
     const [globalDiscount, setGlobalDiscount] = useState<number>(0);
     const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+    const [isCartSheetOpen, setIsCartSheetOpen] = useState(false);
     const [paymentMethod, setPaymentMethod] = useState<'CASH' | 'CARD' | 'MOBILE'>('CASH');
     const [paidAmount, setPaidAmount] = useState<number>(0);
     const [selectedCustomerId, setSelectedCustomerId] = useState<string>('');
@@ -71,11 +79,8 @@ export function PosPage() {
     const { data: products } = useQuery<Product[]>({
         queryKey: ['products', currentStore?.id],
         queryFn: async () => {
-            const params: any = {};
-            if (currentStore?.id) {
-                params.storeId = currentStore.id;
-            }
-            const response = await api.get('/products', { params });
+            // Note: storeId is automatically added by the API interceptor
+            const response = await api.get('/products');
             return response.data;
         },
         enabled: !!currentStore?.id || true, // Allow fetching if organization-wide (e.g. owner) but prefer store context
@@ -348,6 +353,132 @@ export function PosPage() {
         return item?.quantity || 0;
     };
 
+    const CartContent = () => (
+        <div className="flex flex-col h-full bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden transition-colors">
+            <div className="p-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50 space-y-3">
+                <div className="flex justify-between items-center">
+                    <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100 flex items-center">
+                        <ShoppingCart className="w-5 h-5 mr-2" />
+                        {t('pos.current_sale')}
+                    </h2>
+                    <div className="flex items-center gap-2">
+                        <span className="text-sm text-gray-500 dark:text-gray-400">{totalItems} {t('pos.items')}</span>
+                        {/* Sync Status Indicator */}
+                        {pendingOperations > 0 && (
+                            <span className="text-xs bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-400 px-2 py-1 rounded-full flex items-center gap-1">
+                                {isSyncing ? '🔄' : '⏳'} {pendingOperations}
+                            </span>
+                        )}
+                    </div>
+                </div>
+
+                {/* Customer Selection */}
+                <div className="relative">
+                    <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                    <select
+                        className="w-full pl-9 pr-4 py-2 text-sm border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500 appearance-none bg-white dark:bg-gray-700"
+                        value={selectedCustomerId}
+                        onChange={(e) => setSelectedCustomerId(e.target.value)}
+                    >
+                        <option value="">{t('pos.walk_in_customer')}</option>
+                        {customers?.map((c: any) => (
+                            <option key={c.id} value={c.id}>{c.name}</option>
+                        ))}
+                    </select>
+                    <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                        <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-4 space-y-3 scrollbar-hide">
+                {cart.map(item => (
+                    <div key={item.productId} className="flex justify-between items-center bg-gray-50 dark:bg-gray-700/50 p-3 rounded-lg border border-gray-100 dark:border-gray-700">
+                        <div className="flex-1 min-w-0 mr-3">
+                            <h4 className="font-medium text-gray-900 dark:text-gray-100 truncate">{item.name}</h4>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">
+                                {item.unitPrice.toLocaleString()} F x {item.quantity}
+                            </p>
+                            <div className="flex items-center gap-2 mt-1">
+                                <span className="text-xs text-gray-500">{t('pos.discount', 'Discount')}:</span>
+                                <input
+                                    type="number"
+                                    min="0"
+                                    className="w-16 h-6 text-xs border border-gray-200 dark:border-gray-600 rounded px-1 dark:bg-gray-800 dark:text-gray-200"
+                                    value={item.discount}
+                                    onChange={(e) => updateDiscount(item.productId, parseInt(e.target.value) || 0)}
+                                />
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                            <div className="flex items-center bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg h-8">
+                                <button
+                                    onClick={() => updateQuantity(item.productId, -1)}
+                                    className="w-8 h-full flex items-center justify-center hover:bg-gray-50 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-300 border-r border-gray-200 dark:border-gray-600"
+                                >
+                                    <Minus className="w-3 h-3" />
+                                </button>
+                                <span className="w-8 text-center text-sm font-medium text-gray-900 dark:text-gray-100">{item.quantity}</span>
+                                <button
+                                    onClick={() => updateQuantity(item.productId, 1)}
+                                    className="w-8 h-full flex items-center justify-center hover:bg-gray-50 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-300 border-l border-gray-200 dark:border-gray-600"
+                                >
+                                    <Plus className="w-3 h-3" />
+                                </button>
+                            </div>
+                            <button
+                                onClick={() => removeFromCart(item.productId)}
+                                className="text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
+                            >
+                                <Trash2 className="w-4 h-4" />
+                            </button>
+                        </div>
+                    </div>
+                ))}
+                {cart.length === 0 && (
+                    <div className="h-full flex flex-col items-center justify-center text-gray-400 dark:text-gray-500 opacity-50 space-y-4">
+                        <ShoppingCart className="w-16 h-16" />
+                        <p>{t('pos.cart_empty')}</p>
+                    </div>
+                )}
+            </div>
+
+            <div className="p-4 border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50 space-y-4">
+                <div className="flex justify-between items-center text-sm">
+                    <span className="text-gray-600 dark:text-gray-400">{t('pos.subtotal')}</span>
+                    <span className="text-gray-900 dark:text-gray-100">{itemsTotal.toLocaleString()} FCFA</span>
+                </div>
+                <div className="flex justify-between items-center text-sm gap-4">
+                    <span className="text-gray-600 dark:text-gray-400">{t('pos.global_discount', 'Global Discount')}</span>
+                    <input
+                        type="number"
+                        min="0"
+                        className="w-24 border border-gray-300 dark:border-gray-600 rounded px-2 py-1 text-right dark:bg-gray-700 dark:text-white"
+                        value={globalDiscount}
+                        onChange={(e) => setGlobalDiscount(parseInt(e.target.value) || 0)}
+                    />
+                </div>
+                <div className="flex justify-between items-center text-lg font-bold text-gray-900 dark:text-gray-100 pt-2 border-t border-gray-200 dark:border-gray-700">
+                    <span>{t('pos.total')}</span>
+                    <span>{cartTotal.toLocaleString()} FCFA</span>
+                </div>
+                <button
+                    onClick={() => {
+                        setPaidAmount(cartTotal);
+                        setIsPaymentModalOpen(true);
+                        setIsCartSheetOpen(false); // Close mobile sheet if open
+                    }}
+                    disabled={cart.length === 0}
+                    className="w-full py-3 btn-theme-primary rounded-xl font-semibold shadow-sm disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-[0.98]"
+                >
+                    {t('pos.proceed_payment')}
+                </button>
+            </div>
+        </div>
+    );
+
     return (
         <div className="h-[calc(100vh-8rem)] sm:h-[calc(100vh-6rem)] flex flex-col lg:flex-row gap-4 lg:gap-6">
             {/* Offline Indicator */}
@@ -521,156 +652,45 @@ export function PosPage() {
             </div>
 
             {/* Right: Cart - Hidden on mobile, shown on desktop */}
-            <div className="hidden lg:flex w-96 flex-col bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden transition-colors">
-                <div className="p-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50 space-y-3">
-                    <div className="flex justify-between items-center">
-                        <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100 flex items-center">
-                            <ShoppingCart className="w-5 h-5 mr-2" />
-                            {t('pos.current_sale')}
-                        </h2>
-                        <div className="flex items-center gap-2">
-                            <span className="text-sm text-gray-500 dark:text-gray-400">{totalItems} {t('pos.items')}</span>
-                            {/* Sync Status Indicator */}
-                            {pendingOperations > 0 && (
-                                <span className="text-xs bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-400 px-2 py-1 rounded-full flex items-center gap-1">
-                                    {isSyncing ? '🔄' : '⏳'} {pendingOperations}
-                                </span>
-                            )}
-                        </div>
-                    </div>
-
-                    {/* Customer Selection */}
-                    <div className="relative">
-                        <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                        <select
-                            className="w-full pl-9 pr-4 py-2 text-sm border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500 appearance-none bg-white dark:bg-gray-700"
-                            value={selectedCustomerId}
-                            onChange={(e) => setSelectedCustomerId(e.target.value)}
-                        >
-                            <option value="">{t('pos.walk_in_customer')}</option>
-                            {customers?.map((c: any) => (
-                                <option key={c.id} value={c.id}>{c.name}</option>
-                            ))}
-                        </select>
-                        <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
-                            <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
-                            </svg>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="flex-1 overflow-y-auto p-4 space-y-3">
-                    {cart.map(item => (
-                        <div key={item.productId} className="flex justify-between items-center bg-gray-50 dark:bg-gray-700/50 p-3 rounded-lg border border-gray-100 dark:border-gray-700">
-                            <div className="flex-1 min-w-0 mr-3">
-                                <h4 className="font-medium text-gray-900 dark:text-gray-100 truncate">{item.name}</h4>
-                                <p className="text-sm text-gray-500 dark:text-gray-400">
-                                    {item.unitPrice.toLocaleString()} F x {item.quantity}
-                                </p>
-                                <div className="flex items-center gap-2 mt-1">
-                                    <span className="text-xs text-gray-500">{t('pos.discount', 'Discount')}:</span>
-                                    <input
-                                        type="number"
-                                        min="0"
-                                        className="w-16 h-6 text-xs border border-gray-200 dark:border-gray-600 rounded px-1 dark:bg-gray-800 dark:text-gray-200"
-                                        value={item.discount}
-                                        onChange={(e) => updateDiscount(item.productId, parseInt(e.target.value) || 0)}
-                                    />
-                                </div>
-                            </div>
-                            <div className="flex items-center gap-3">
-                                <div className="flex items-center bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg h-8">
-                                    <button
-                                        onClick={() => updateQuantity(item.productId, -1)}
-                                        className="w-8 h-full flex items-center justify-center hover:bg-gray-50 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-300 border-r border-gray-200 dark:border-gray-600"
-                                    >
-                                        <Minus className="w-3 h-3" />
-                                    </button>
-                                    <span className="w-8 text-center text-sm font-medium text-gray-900 dark:text-gray-100">{item.quantity}</span>
-                                    <button
-                                        onClick={() => updateQuantity(item.productId, 1)}
-                                        className="w-8 h-full flex items-center justify-center hover:bg-gray-50 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-300 border-l border-gray-200 dark:border-gray-600"
-                                    >
-                                        <Plus className="w-3 h-3" />
-                                    </button>
-                                </div>
-                                <button
-                                    onClick={() => removeFromCart(item.productId)}
-                                    className="text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
-                                >
-                                    <Trash2 className="w-4 h-4" />
-                                </button>
-                            </div>
-                        </div>
-                    ))}
-                    {cart.length === 0 && (
-                        <div className="h-full flex flex-col items-center justify-center text-gray-400 dark:text-gray-500 opacity-50 space-y-4">
-                            <ShoppingCart className="w-16 h-16" />
-                            <p>{t('pos.cart_empty')}</p>
-                        </div>
-                    )}
-                </div>
-
-                <div className="p-4 border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50 space-y-4">
-                    <div className="flex justify-between items-center text-sm">
-                        <span className="text-gray-600 dark:text-gray-400">{t('pos.subtotal')}</span>
-                        <span className="text-gray-900 dark:text-gray-100">{itemsTotal.toLocaleString()} FCFA</span>
-                    </div>
-                    <div className="flex justify-between items-center text-sm gap-4">
-                        <span className="text-gray-600 dark:text-gray-400">{t('pos.global_discount', 'Global Discount')}</span>
-                        <input
-                            type="number"
-                            min="0"
-                            className="w-24 border border-gray-300 dark:border-gray-600 rounded px-2 py-1 text-right dark:bg-gray-700 dark:text-white"
-                            value={globalDiscount}
-                            onChange={(e) => setGlobalDiscount(parseInt(e.target.value) || 0)}
-                        />
-                    </div>
-                    <div className="flex justify-between items-center text-lg font-bold text-gray-900 dark:text-gray-100 pt-2 border-t border-gray-200 dark:border-gray-700">
-                        <span>{t('pos.total')}</span>
-                        <span>{cartTotal.toLocaleString()} FCFA</span>
-                    </div>
-                    <button
-                        onClick={() => {
-                            setPaidAmount(cartTotal);
-                            setIsPaymentModalOpen(true);
-                        }}
-                        disabled={cart.length === 0}
-                        className="w-full py-3 btn-theme-primary rounded-xl font-semibold shadow-sm disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-[0.98]"
-                    >
-                        {t('pos.proceed_payment')}
-                    </button>
-                </div>
+            <div className="hidden lg:flex w-96 flex-col">
+                <CartContent />
             </div>
 
             {/* Mobile Cart Button - Fixed at bottom on mobile */}
-            <div className="lg:hidden fixed bottom-0 left-0 right-0 z-20 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 shadow-lg">
+            <div className="lg:hidden fixed bottom-16 left-4 right-4 z-20">
                 {cart.length > 0 && (
                     <button
-                        onClick={() => {
-                            setPaidAmount(cartTotal);
-                            setIsPaymentModalOpen(true);
-                        }}
-                        className="w-full px-4 py-3 flex items-center justify-between touch-target"
+                        onClick={() => setIsCartSheetOpen(true)}
+                        className="w-full bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 shadow-2xl rounded-2xl p-4 flex items-center justify-between touch-target active:scale-[0.98] transition-all"
                     >
-                        <div className="flex items-center space-x-3">
-                            <ShoppingCart className="w-5 h-5 text-theme-primary" />
+                        <div className="flex items-center space-x-4">
+                            <div className="bg-blue-100 dark:bg-blue-900/30 p-2.5 rounded-xl">
+                                <ShoppingBag className="w-6 h-6 text-theme-primary" />
+                            </div>
                             <div className="text-left">
                                 <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">
                                     {totalItems} {t('pos.items')}
                                 </p>
-                                <p className="text-xs text-gray-500 dark:text-gray-400">
+                                <p className="text-base font-bold text-theme-primary">
                                     {cartTotal.toLocaleString()} FCFA
                                 </p>
                             </div>
                         </div>
-                        <div className="px-4 py-2 btn-theme-primary rounded-lg font-medium">
-                            {t('pos.proceed_payment')}
+                        <div className="px-5 py-2.5 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-xl font-bold text-sm">
+                            {t('pos.view_cart', 'Voir panier')}
                         </div>
                     </button>
                 )}
             </div>
+
+            {/* Mobile Cart Sheet */}
+            <Sheet open={isCartSheetOpen} onOpenChange={setIsCartSheetOpen}>
+                <SheetContent side="bottom" className="h-[90vh] p-0 rounded-t-3xl">
+                    <div className="h-full pt-6"> {/* Add top padding for handle area */}
+                        <CartContent />
+                    </div>
+                </SheetContent>
+            </Sheet>
 
             {/* Payment Modal */}
             <Dialog open={isPaymentModalOpen} onOpenChange={setIsPaymentModalOpen}>
@@ -688,15 +708,32 @@ export function PosPage() {
                                 <span className="text-gray-600 dark:text-gray-400">{t('pos.total_amount', 'Total Amount')}</span>
                                 <span className="font-bold text-gray-900 dark:text-gray-100">{cartTotal.toLocaleString()} FCFA</span>
                             </div>
-                            <div className="flex items-center gap-2">
-                                <span className="text-gray-600 dark:text-gray-400 flex-none w-24">{t('pos.amount_paid', 'Amount Paid')}:</span>
+
+                            <div className="flex flex-col gap-1.5 mb-3">
+                                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                    {t('pos.global_discount', 'Remise Globale')}
+                                </label>
+                                <input
+                                    type="number"
+                                    min="0"
+                                    className="w-full border border-gray-300 dark:border-gray-600 rounded-lg p-2.5 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                                    value={globalDiscount}
+                                    onChange={(e) => setGlobalDiscount(parseInt(e.target.value) || 0)}
+                                    placeholder="0"
+                                />
+                            </div>
+
+                            <div className="flex flex-col gap-1.5">
+                                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                    {t('pos.amount_paid', 'Amount Paid')}
+                                </label>
                                 <input
                                     type="number"
                                     min="0"
                                     max={cartTotal}
                                     value={paidAmount}
                                     onChange={(e) => setPaidAmount(Number(e.target.value))}
-                                    className="flex-1 border border-gray-300 dark:border-gray-600 rounded-lg p-2 dark:bg-gray-700 dark:text-white"
+                                    className="w-full border border-gray-300 dark:border-gray-600 rounded-lg p-2.5 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none transition-all"
                                 />
                             </div>
                             {/* Credit balance hidden as per user request */}
@@ -714,16 +751,7 @@ export function PosPage() {
                                     <Banknote className="w-6 h-6 sm:w-8 sm:h-8 mb-2" />
                                     <span className="text-xs sm:text-sm font-medium">{t('pos.payment.cash')}</span>
                                 </button>
-                                <button
-                                    onClick={() => setPaymentMethod('CARD')}
-                                    className={`flex flex-col items-center justify-center p-3 sm:p-4 border-2 rounded-xl transition-all touch-target ${paymentMethod === 'CARD'
-                                        ? 'border-theme-primary bg-theme-primary/10 text-theme-primary'
-                                        : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
-                                        }`}
-                                >
-                                    <CreditCard className="w-6 h-6 sm:w-8 sm:h-8 mb-2" />
-                                    <span className="text-xs sm:text-sm font-medium">{t('pos.payment.card')}</span>
-                                </button>
+                                {/* Card Payment Hidden as per request */}
                                 <button
                                     onClick={() => setPaymentMethod('MOBILE')}
                                     className={`flex flex-col items-center justify-center p-3 sm:p-4 border-2 rounded-xl transition-all touch-target ${paymentMethod === 'MOBILE'
@@ -790,29 +818,33 @@ export function PosPage() {
                                 />
                             </div>
                         )}
+
                         <button
                             onClick={handlePrintInvoice}
                             disabled={isProcessingPrint}
-                            className="w-full flex items-center justify-center px-4 py-3 btn-theme-primary rounded-lg font-medium disabled:opacity-70"
+                            className="w-full flex items-center justify-center px-4 py-3 border border-gray-300 dark:border-gray-600 shadow-sm text-sm font-medium rounded-lg text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50"
                         >
                             {isProcessingPrint ? (
-                                <span className="animate-pulse">{t('common.processing')}...</span>
+                                <>
+                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current mr-2"></div>
+                                    Processing...
+                                </>
                             ) : (
                                 <>
                                     <Printer className="w-5 h-5 mr-2" />
-                                    {t('pos.success.print')}
+                                    {t('pos.print_invoice')}
                                 </>
                             )}
                         </button>
                         <button
                             onClick={handleCloseSuccess}
-                            className="w-full px-4 py-3 text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg font-medium"
+                            className="w-full flex items-center justify-center px-4 py-3 btn-theme-primary rounded-lg text-sm font-medium"
                         >
-                            {t('pos.success.new_sale')}
+                            {t('pos.new_sale')}
                         </button>
                     </div>
                 </DialogContent>
             </Dialog>
-        </div >
+        </div>
     );
 }

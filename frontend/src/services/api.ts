@@ -12,13 +12,46 @@ export const api = axios.create({
     },
 });
 
-// Request interceptor to add auth token
+// Request interceptor to add auth token and storeId
 api.interceptors.request.use(
     (config) => {
         const token = localStorage.getItem('access_token');
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
         }
+
+        // Add storeId to requests if available (required for STAFF users)
+        const currentStoreId = localStorage.getItem('current_store_id');
+        const url = config.url || '';
+
+        // Exclude certain endpoints that don't need storeId
+        const excludedPaths = ['/auth/', '/billing/', '/admin/', '/audit/', '/analytics/'];
+        const shouldExclude = excludedPaths.some(path => url.includes(path));
+
+        if (currentStoreId && !shouldExclude) {
+            // Add storeId to headers (preferred method for backend)
+            config.headers['x-store-id'] = currentStoreId;
+
+            // Add storeId to query params for GET requests
+            if (config.method?.toLowerCase() === 'get') {
+                config.params = {
+                    ...config.params,
+                    storeId: currentStoreId
+                };
+            } else {
+                // Add storeId to body for POST/PATCH/PUT requests
+                if (config.data && typeof config.data === 'object') {
+                    // Only add if not already present
+                    if (!config.data.storeId) {
+                        config.data = {
+                            ...config.data,
+                            storeId: currentStoreId
+                        };
+                    }
+                }
+            }
+        }
+
         return config;
     },
     (error) => {

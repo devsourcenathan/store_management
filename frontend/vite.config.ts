@@ -7,7 +7,7 @@ export default defineConfig({
     plugins: [
         react(),
         VitePWA({
-            registerType: 'autoUpdate',
+            registerType: 'prompt',
             includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'pwa-192x192.png', 'pwa-512x512.png'],
             manifest: {
                 name: 'Stock Management - Gestion de Stock',
@@ -39,6 +39,8 @@ export default defineConfig({
             workbox: {
                 globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
                 cleanupOutdatedCaches: true,
+                skipWaiting: false,
+                clientsClaim: true,
                 sourcemap: true,
                 runtimeCaching: [
                     {

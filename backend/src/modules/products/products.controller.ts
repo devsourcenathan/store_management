@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Patch, Delete, Body, Param, UseGuards, Query } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Delete, Body, Param, UseGuards, Query, Headers, BadRequestException } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { GetProductsDto } from './dto/get-products.dto';
 import { AuditService } from '../audit/audit.service';
@@ -21,8 +21,20 @@ export class ProductsController {
     async findAll(
         @CurrentOrganization() organizationId: string,
         @Query() query: GetProductsDto,
+        @Headers('x-store-id') storeId?: string,
     ) {
-        return this.productsService.findAll(organizationId, query);
+        return this.productsService.findAll(organizationId, query, storeId);
+    }
+
+    @Get('deleted')
+    async findDeleted(
+        @CurrentOrganization() organizationId: string,
+        @Headers('x-store-id') storeId: string,
+    ) {
+        if (!storeId) {
+            throw new BadRequestException('Store ID is required');
+        }
+        return this.productsService.findDeleted(organizationId, storeId);
     }
 
     @Get(':id')
@@ -85,8 +97,13 @@ export class ProductsController {
         @Param('id') id: string,
         @CurrentOrganization() organizationId: string,
         @CurrentUser() user: any,
+        @Headers('x-store-id') storeId: string,
     ) {
-        const product = await this.productsService.delete(id, organizationId);
+        if (!storeId) {
+            throw new BadRequestException('Store ID is required for deletion');
+        }
+
+        const product = await this.productsService.softDelete(id, storeId, user.id);
 
         await this.auditService.log({
             organizationId,
@@ -94,7 +111,34 @@ export class ProductsController {
             action: 'DELETE',
             entity: 'Product',
             entityId: id,
-            changes: {},
+            changes: { storeId },
+        });
+
+        return product;
+    }
+
+    @Post(':id/restore')
+    @UseGuards(RolesGuard)
+    @Roles(UserRole.OWNER, UserRole.MANAGER)
+    async restore(
+        @Param('id') id: string,
+        @CurrentOrganization() organizationId: string,
+        @CurrentUser() user: any,
+        @Headers('x-store-id') storeId: string,
+    ) {
+        if (!storeId) {
+            throw new BadRequestException('Store ID is required for restoration');
+        }
+
+        const product = await this.productsService.restore(id, storeId);
+
+        await this.auditService.log({
+            organizationId,
+            userId: user.id,
+            action: 'RESTORE',
+            entity: 'Product',
+            entityId: id,
+            changes: { storeId },
         });
 
         return product;

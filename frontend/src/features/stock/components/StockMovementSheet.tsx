@@ -10,6 +10,19 @@ import {
     SheetTitle,
     SheetDescription,
 } from "@/components/ui/Sheet";
+import {
+    ArrowDownLeft,
+    ArrowUpRight,
+    RotateCcw,
+    Truck,
+    ShoppingCart,
+    User,
+    Settings2,
+    Plus,
+    Minus,
+    Search,
+    Package
+} from 'lucide-react';
 
 interface Product {
     id: string;
@@ -60,7 +73,7 @@ export function StockMovementSheet({
     }, [preselectedProductId]);
 
     const { data: products } = useQuery<Product[]>({
-        queryKey: ['products'],
+        queryKey: ['products', currentStore?.id],
         queryFn: async () => {
             const response = await api.get('/products');
             return response.data;
@@ -72,7 +85,10 @@ export function StockMovementSheet({
         queryKey: ['stock-movements', formData.productId, currentStore?.id],
         queryFn: async () => {
             if (!formData.productId || !currentStore?.id) return [];
-            const response = await api.get(`/stock/movements?productId=${formData.productId}&storeId=${currentStore.id}`);
+            // Note: storeId is automatically added by the API interceptor
+            const response = await api.get('/stock/movements', {
+                params: { productId: formData.productId }
+            });
             return response.data;
         },
         enabled: !!formData.productId && !!currentStore?.id,
@@ -163,204 +179,294 @@ export function StockMovementSheet({
 
     return (
         <Sheet open={isOpen} onOpenChange={onClose}>
-            <SheetContent side="right" className="sm:max-w-md overflow-y-auto">
-                <SheetHeader className="mb-6">
-                    <SheetTitle className="text-gray-900 dark:text-gray-100">
-                        {preselectedProductName
-                            ? t('stock.new_movement_for_product', `Stock Movement - ${preselectedProductName}`)
-                            : t('stock.new_movement_title')}
-                    </SheetTitle>
-                    <SheetDescription className="text-gray-500 dark:text-gray-400">
-                        {t('stock.new_movement_desc')}
-                    </SheetDescription>
-                </SheetHeader>
-                <form onSubmit={handleSubmit} className="space-y-6">
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                            {t('products.fields.product')}
-                        </label>
+            <SheetContent side="right" className="w-full sm:max-w-lg overflow-y-auto bg-gray-50 dark:bg-gray-900 border-l dark:border-gray-800 p-0">
+                <div className="h-full flex flex-col">
+                    <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 sticky top-0 z-10">
+                        <SheetHeader>
+                            <SheetTitle className="text-xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                                {preselectedProductName ? (
+                                    <>
+                                        <Package className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                                        {preselectedProductName}
+                                    </>
+                                ) : (
+                                    t('stock.new_movement_title')
+                                )}
+                            </SheetTitle>
+                            <SheetDescription className="text-gray-500 dark:text-gray-400">
+                                {t('stock.new_movement_desc')}
+                            </SheetDescription>
+                        </SheetHeader>
+                    </div>
 
-                        {!preselectedProductId ? (
-                            <>
-                                {/* Search input */}
-                                <input
-                                    type="text"
-                                    placeholder={t('products.search_placeholder', 'Search by name or SKU...')}
-                                    className="mt-1 mb-2 block w-full border border-gray-300 dark:border-gray-600 rounded-md shadow-sm p-2 dark:bg-gray-700 dark:text-white text-sm"
-                                    value={productSearchQuery}
-                                    onChange={(e) => setProductSearchQuery(e.target.value)}
-                                />
+                    <div className="flex-1 overflow-y-auto px-6 py-6 scrollbar-hide">
+                        <form onSubmit={handleSubmit} className="space-y-8">
+                            {/* Product Selection (only if not preselected) */}
+                            {!preselectedProductId && (
+                                <div className="space-y-3">
+                                    <label className="text-sm font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                                        <Search className="w-4 h-4 text-gray-500" />
+                                        {t('products.fields.product')}
+                                    </label>
 
-                                {/* Scrollable product list */}
-                                <div className="mt-1 border border-gray-300 dark:border-gray-600 rounded-md max-h-48 overflow-y-auto dark:bg-gray-700">
-                                    {filteredProducts && filteredProducts.length > 0 ? (
-                                        filteredProducts.map(p => (
+                                    <div className="relative">
+                                        <input
+                                            type="text"
+                                            placeholder={t('products.search_placeholder', 'Search product...')}
+                                            className="w-full pl-3 pr-3 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none"
+                                            value={productSearchQuery}
+                                            onChange={(e) => setProductSearchQuery(e.target.value)}
+                                        />
+                                    </div>
+
+                                    {productSearchQuery && (
+                                        <div className="mt-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg max-h-60 overflow-y-auto divide-y divide-gray-100 dark:divide-gray-800">
+                                            {filteredProducts && filteredProducts.length > 0 ? (
+                                                filteredProducts.map(p => (
+                                                    <button
+                                                        key={p.id}
+                                                        type="button"
+                                                        onClick={() => {
+                                                            setFormData({ ...formData, productId: p.id });
+                                                            setProductSearchQuery(''); // Close search results
+                                                        }}
+                                                        className={`w-full text-left px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors flex items-center justify-between group ${formData.productId === p.id ? 'bg-blue-50 dark:bg-blue-900/20' : ''}`}
+                                                    >
+                                                        <div>
+                                                            <div className={`font-medium ${formData.productId === p.id ? 'text-blue-700 dark:text-blue-400' : 'text-gray-900 dark:text-gray-100'}`}>{p.name}</div>
+                                                            <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">SKU: {p.sku}</div>
+                                                        </div>
+                                                        {formData.productId === p.id && (
+                                                            <div className="w-2 h-2 rounded-full bg-blue-600 dark:bg-blue-400" />
+                                                        )}
+                                                    </button>
+                                                ))
+                                            ) : (
+                                                <div className="px-4 py-3 text-sm text-center text-gray-500 dark:text-gray-400 italic">
+                                                    {t('products.no_results', 'No products found')}
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+
+                                    {formData.productId && !productSearchQuery && (
+                                        <div className="p-3 bg-blue-50/50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-900/30 rounded-xl flex items-center justify-between">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400 font-bold text-lg">
+                                                    {products?.find(p => p.id === formData.productId)?.name.charAt(0)}
+                                                </div>
+                                                <div>
+                                                    <div className="font-semibold text-gray-900 dark:text-gray-100">
+                                                        {products?.find(p => p.id === formData.productId)?.name}
+                                                    </div>
+                                                    <div className="text-xs text-gray-500 dark:text-gray-400">
+                                                        SKU: {products?.find(p => p.id === formData.productId)?.sku}
+                                                    </div>
+                                                </div>
+                                            </div>
                                             <button
-                                                key={p.id}
                                                 type="button"
-                                                onClick={() => setFormData({ ...formData, productId: p.id })}
-                                                className={`w-full text-left px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors ${formData.productId === p.id
-                                                    ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-medium'
-                                                    : 'text-gray-900 dark:text-gray-100'
-                                                    }`}
+                                                onClick={() => setFormData(prev => ({ ...prev, productId: '' }))}
+                                                className="text-xs text-blue-600 dark:text-blue-400 hover:underline font-medium px-2"
                                             >
-                                                <div className="text-sm">{p.name}</div>
-                                                <div className="text-xs text-gray-500 dark:text-gray-400">SKU: {p.sku}</div>
+                                                Change
                                             </button>
-                                        ))
-                                    ) : (
-                                        <div className="px-3 py-4 text-sm text-center text-gray-500 dark:text-gray-400">
-                                            {productSearchQuery ? t('products.no_results', 'No products found') : t('products.start_typing', 'Start typing to search...')}
                                         </div>
                                     )}
                                 </div>
+                            )}
 
-                                {/* Hidden input for form validation */}
-                                <input
-                                    type="hidden"
-                                    required
-                                    value={formData.productId}
-                                />
-                            </>
-                        ) : (
-                            <div className="mt-1 p-3 bg-gray-50 dark:bg-gray-700 rounded-md border border-gray-300 dark:border-gray-600">
-                                <div className="text-sm font-medium text-gray-900 dark:text-gray-100">{preselectedProductName}</div>
-                                <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">Product pre-selected</div>
+                            {/* Movement Type - Grid Selection */}
+                            <div className="space-y-3">
+                                <label className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                                    {t('stock.movement_type')}
+                                </label>
+                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                                    {[
+                                        { value: 'IN', label: t('stock.types.IN'), icon: ArrowDownLeft, color: 'text-green-600', bg: 'bg-green-50 dark:bg-green-900/20', border: 'border-green-200 dark:border-green-800' },
+                                        { value: 'OUT', label: t('stock.types.OUT'), icon: ArrowUpRight, color: 'text-red-600', bg: 'bg-red-50 dark:bg-red-900/20', border: 'border-red-200 dark:border-red-800' },
+                                        { value: 'ADJUST', label: t('stock.types.ADJUST'), icon: Settings2, color: 'text-blue-600', bg: 'bg-blue-50 dark:bg-blue-900/20', border: 'border-blue-200 dark:border-blue-800' },
+                                        { value: 'RETURN', label: t('stock.types.RETURN'), icon: RotateCcw, color: 'text-orange-600', bg: 'bg-orange-50 dark:bg-orange-900/20', border: 'border-orange-200 dark:border-orange-800' },
+                                    ].map((type) => (
+                                        <button
+                                            key={type.value}
+                                            type="button"
+                                            onClick={() => setFormData({ ...formData, type: type.value as any })}
+                                            className={`flex flex-col items-center justify-center p-3 rounded-xl border-2 transition-all ${formData.type === type.value
+                                                    ? `${type.border} ${type.bg} ring-1 ring-offset-0 ring-${type.color.split('-')[1]}-500`
+                                                    : 'border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-800 hover:border-gray-300 dark:hover:border-gray-700'
+                                                }`}
+                                        >
+                                            <type.icon className={`w-6 h-6 mb-2 ${formData.type === type.value ? type.color : 'text-gray-400 dark:text-gray-500'}`} />
+                                            <span className={`text-xs font-semibold ${formData.type === type.value ? 'text-gray-900 dark:text-gray-100' : 'text-gray-500 dark:text-gray-400'}`}>
+                                                {type.label}
+                                            </span>
+                                        </button>
+                                    ))}
+                                </div>
                             </div>
-                        )}
-                    </div>
-                    <div className="grid grid-cols-1 gap-4">
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                {t('stock.movement_type')}
-                            </label>
-                            <select
-                                required
-                                className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md shadow-sm p-2 dark:bg-gray-700 dark:text-white"
-                                value={formData.type}
-                                onChange={(e) => setFormData({ ...formData, type: e.target.value as any })}
-                            >
-                                <option value="IN">{t('stock.types.IN')}</option>
-                                <option value="OUT">{t('stock.types.OUT')}</option>
-                                <option value="ADJUST">{t('stock.types.ADJUST')}</option>
-                                <option value="RETURN">{t('stock.types.RETURN')}</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                {t('stock.source')}
-                            </label>
-                            <select
-                                required
-                                className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md shadow-sm p-2 dark:bg-gray-700 dark:text-white"
-                                value={formData.source}
-                                onChange={(e) => setFormData({ ...formData, source: e.target.value as any })}
-                            >
-                                <option value="MANUAL">{t('stock.sources.MANUAL')}</option>
-                                <option value="SUPPLY">{t('stock.sources.SUPPLY')}</option>
-                                <option value="SALE">{t('stock.sources.SALE')}</option>
-                                <option value="RETURN">{t('stock.sources.RETURN')}</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                            {t('stock.quantity')}
-                        </label>
-                        <input
-                            type="number"
-                            required
-                            min="1"
-                            className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md shadow-sm p-2 dark:bg-gray-700 dark:text-white"
-                            value={formData.quantity}
-                            onChange={(e) => setFormData({ ...formData, quantity: parseInt(e.target.value) })}
-                        />
-                    </div>
 
-                    {/* Stock Preview - only show if product is selected */}
-                    {formData.productId && (
-                        <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-                            <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">{t('stock.preview.title', 'Stock Preview')}</h4>
-                            <div className="grid grid-cols-2 gap-4">
-                                {/* Current Stock */}
-                                <div className="bg-white dark:bg-gray-800 rounded-md p-3 border border-gray-200 dark:border-gray-700">
-                                    <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">{t('stock.preview.current', 'Current Stock')}</div>
-                                    <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">{currentStock}</div>
+                            {/* Source - Grid Selection */}
+                            <div className="space-y-3">
+                                <label className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                                    {t('stock.source')}
+                                </label>
+                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                                    {[
+                                        { value: 'MANUAL', label: t('stock.sources.MANUAL'), icon: User },
+                                        { value: 'SUPPLY', label: t('stock.sources.SUPPLY'), icon: Truck },
+                                        { value: 'SALE', label: t('stock.sources.SALE'), icon: ShoppingCart },
+                                        { value: 'RETURN', label: t('stock.sources.RETURN'), icon: RotateCcw },
+                                    ].map((source) => (
+                                        <button
+                                            key={source.value}
+                                            type="button"
+                                            onClick={() => setFormData({ ...formData, source: source.value as any })}
+                                            className={`flex flex-col items-center justify-center p-3 rounded-xl border transition-all ${formData.source === source.value
+                                                    ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 ring-1 ring-blue-500'
+                                                    : 'border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700/50'
+                                                }`}
+                                        >
+                                            <source.icon className={`w-5 h-5 mb-1.5 ${formData.source === source.value ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400'}`} />
+                                            <span className="text-xs font-medium">{source.label}</span>
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Quantity & Reference Grid */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                {/* Quantity Stepper */}
+                                <div className="space-y-3">
+                                    <label className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                                        {t('stock.quantity')}
+                                    </label>
+                                    <div className="flex items-center gap-3">
+                                        <button
+                                            type="button"
+                                            onClick={() => setFormData(prev => ({ ...prev, quantity: Math.max(0, prev.quantity - 1) }))}
+                                            className="w-12 h-12 flex items-center justify-center rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 active:scale-95 transition-all shadow-sm"
+                                        >
+                                            <Minus className="w-5 h-5" />
+                                        </button>
+                                        <div className="flex-1 relative">
+                                            <input
+                                                type="number"
+                                                required
+                                                min="0"
+                                                className="block w-full text-center border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm py-3 text-lg font-bold text-gray-900 dark:text-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                                                value={formData.quantity}
+                                                onChange={(e) => setFormData({ ...formData, quantity: Math.max(0, parseInt(e.target.value) || 0) })}
+                                            />
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={() => setFormData(prev => ({ ...prev, quantity: prev.quantity + 1 }))}
+                                            className="w-12 h-12 flex items-center justify-center rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 active:scale-95 transition-all shadow-sm"
+                                        >
+                                            <Plus className="w-5 h-5" />
+                                        </button>
+                                    </div>
                                 </div>
 
-                                {/* New Stock Preview */}
-                                <div className={`rounded-md p-3 border ${formData.type === 'ADJUST'
-                                    ? 'bg-blue-50 dark:bg-blue-900/30 border-blue-300 dark:border-blue-700'
-                                    : previewStock > currentStock
-                                        ? 'bg-green-50 dark:bg-green-900/30 border-green-300 dark:border-green-700'
-                                        : previewStock < currentStock
-                                            ? 'bg-red-50 dark:bg-red-900/30 border-red-300 dark:border-red-700'
-                                            : 'bg-gray-50 dark:bg-gray-800 border-gray-300 dark:border-gray-700'
-                                    }`}>
-                                    <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">
-                                        {formData.type === 'ADJUST' ? t('stock.preview.new_adjusted', 'New Stock (Adjusted)') : t('stock.preview.new', 'New Stock')}
+                                {/* Reference Input */}
+                                <div className="space-y-3">
+                                    <label className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                                        {t('stock.reference')} <span className="text-gray-400 font-normal text-xs">(Optional)</span>
+                                    </label>
+                                    <input
+                                        type="text"
+                                        className="block w-full border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm px-4 py-3 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                                        value={formData.reference}
+                                        onChange={(e) => setFormData({ ...formData, reference: e.target.value })}
+                                        placeholder="e.g. INV-2024-001"
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Stock Preview */}
+                            {formData.productId && (
+                                <div className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800/50 dark:to-gray-900/50 rounded-2xl p-5 border border-gray-200 dark:border-gray-700">
+                                    <h4 className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-4 flex items-center gap-2">
+                                        <Settings2 className="w-3 h-3" />
+                                        {t('stock.preview.title', 'Simulation')}
+                                    </h4>
+
+                                    <div className="flex items-center justify-between gap-6 relative">
+                                        {/* Current */}
+                                        <div className="flex-1">
+                                            <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">{t('stock.preview.current', 'Actuel')}</div>
+                                            <div className="text-3xl font-bold text-gray-900 dark:text-gray-100 tracking-tight">{currentStock}</div>
+                                        </div>
+
+                                        {/* Arrow Indicator */}
+                                        <div className="flex items-center justify-center">
+                                            <div className={`flex items-center justify-center w-8 h-8 rounded-full ${formData.quantity > 0
+                                                    ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
+                                                    : 'bg-gray-200 dark:bg-gray-700 text-gray-400'
+                                                }`}>
+                                                <ArrowUpRight className={`w-5 h-5 transition-transform ${formData.quantity > 0 ? 'rotate-0' : 'opacity-50'}`} />
+                                            </div>
+                                        </div>
+
+                                        {/* New Predicted */}
+                                        <div className="flex-1 text-right">
+                                            <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">
+                                                {formData.type === 'ADJUST' ? t('stock.preview.new_adjusted', 'Nouveau (Ajusté)') : t('stock.preview.new', 'Nouveau')}
+                                            </div>
+                                            <div className={`text-3xl font-bold tracking-tight transition-colors ${previewStock > currentStock ? 'text-green-600 dark:text-green-400' :
+                                                    previewStock < currentStock ? 'text-red-600 dark:text-red-400' :
+                                                        'text-gray-900 dark:text-gray-100'
+                                                }`}>
+                                                {previewStock}
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div className={`text-2xl font-bold ${formData.type === 'ADJUST'
-                                        ? 'text-blue-700 dark:text-blue-300'
-                                        : previewStock > currentStock
-                                            ? 'text-green-700 dark:text-green-300'
-                                            : previewStock < currentStock
-                                                ? 'text-red-700 dark:text-red-300'
-                                                : 'text-gray-900 dark:text-gray-100'
-                                        }`}>
-                                        {previewStock}
-                                    </div>
+
                                     {formData.quantity > 0 && (
-                                        <div className="text-xs mt-1 font-medium">
-                                            {formData.type === 'ADJUST' ? (
-                                                <span className="text-blue-600 dark:text-blue-400">
-                                                    {t('stock.preview.set_to', 'Set to')} {formData.quantity}
-                                                </span>
-                                            ) : previewStock > currentStock ? (
-                                                <span className="text-green-600 dark:text-green-400">
-                                                    +{previewStock - currentStock}
-                                                </span>
-                                            ) : previewStock < currentStock ? (
-                                                <span className="text-red-600 dark:text-red-400">
-                                                    {previewStock - currentStock}
-                                                </span>
-                                            ) : null}
+                                        <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700/50 flex justify-between items-center text-sm">
+                                            <span className="text-gray-500 dark:text-gray-400">Impact:</span>
+                                            <span className={`font-semibold ${previewStock > currentStock ? 'text-green-600 dark:text-green-400' :
+                                                    previewStock < currentStock ? 'text-red-600 dark:text-red-400' :
+                                                        'text-gray-500'
+                                                }`}>
+                                                {previewStock > currentStock ? '+' : ''}{previewStock - currentStock} {t('common.units', 'Unités')}
+                                            </span>
                                         </div>
                                     )}
                                 </div>
-                            </div>
-                        </div>
-                    )}
+                            )}
 
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                            {t('stock.reference')}
-                        </label>
-                        <input
-                            type="text"
-                            className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md shadow-sm p-2 dark:bg-gray-700 dark:text-white"
-                            value={formData.reference}
-                            onChange={(e) => setFormData({ ...formData, reference: e.target.value })}
-                            placeholder="e.g. INV-001"
-                        />
+                        </form>
                     </div>
-                    <div className="flex flex-col gap-3 pt-4">
-                        <button
-                            type="submit"
-                            disabled={createMovementMutation.isPending || !formData.productId || !currentStore}
-                            className="w-full px-4 py-3 btn-theme-primary rounded-md font-medium disabled:opacity-50 transition-colors"
-                        >
-                            {createMovementMutation.isPending ? t('common.processing') : t('stock.save_movement')}
-                        </button>
-                        <button
-                            type="button"
-                            onClick={onClose}
-                            className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 font-medium transition-colors"
-                        >
-                            {t('common.cancel')}
-                        </button>
+
+                    {/* Footer Actions */}
+                    <div className="px-6 py-4 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 sticky bottom-0 z-10 w-full">
+                        <div className="flex gap-4">
+                            <button
+                                type="button"
+                                onClick={onClose}
+                                className="flex-1 py-3.5 px-4 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-xl font-semibold transition-colors focus:ring-2 focus:ring-gray-200 dark:focus:ring-gray-700 outline-none"
+                            >
+                                {t('common.cancel')}
+                            </button>
+                            <button
+                                onClick={handleSubmit}
+                                disabled={createMovementMutation.isPending || !formData.productId || !currentStore}
+                                className="flex-[2] py-3.5 px-4 btn-theme-primary rounded-xl font-semibold shadow-lg shadow-blue-500/20 disabled:opacity-50 disabled:shadow-none transition-all active:scale-[0.98] focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 outline-none"
+                            >
+                                {createMovementMutation.isPending ? (
+                                    <span className="flex items-center justify-center gap-2">
+                                        <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                        {t('common.processing')}
+                                    </span>
+                                ) : (
+                                    t('stock.save_movement')
+                                )}
+                            </button>
+                        </div>
                     </div>
-                </form>
+                </div>
             </SheetContent>
         </Sheet>
     );

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Link } from 'react-router-dom';
 import { api } from '@/services/api';
 import { Package, Image as ImageIcon, Edit, Trash2, Plus, TrendingUp, PackagePlus, Search } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -84,12 +85,18 @@ export function ProductsPage() {
             params.sortBy = sortBy;
             params.sortOrder = sortOrder;
 
-            const response = await api.get('/products', { params });
+            const headers: any = {};
+            if (currentStore?.id) {
+                headers['x-store-id'] = currentStore.id;
+            }
+
+            const response = await api.get('/products', { params, headers });
             const prods = response.data;
 
             // Fetch stock for each product if a store is selected
             if (currentStore?.id) {
-                const stockResponse = await api.get(`/stock/movements?storeId=${currentStore.id}`);
+                // Note: storeId is automatically added by the API interceptor
+                const stockResponse = await api.get('/stock/movements');
                 const movements = stockResponse.data;
 
                 return prods.map((p: any) => {
@@ -194,16 +201,20 @@ export function ProductsPage() {
     const deleteProductMutation = useMutation({
         mutationFn: async (id: string) => {
             if (!confirm(t('products.delete_confirm'))) throw new Error('Cancelled');
-            return api.delete(`/products/${id}`);
+            const storeId = localStorage.getItem('current_store_id');
+            return api.delete(`/products/${id}`, {
+                headers: { 'x-store-id': storeId }
+            });
         },
         onSuccess: async () => {
             // Invalidate both products and stock movements to refresh stock column
             await queryClient.invalidateQueries({ queryKey: ['products'] });
             await queryClient.invalidateQueries({ queryKey: ['stock'] });
+            toast.success(t('products.delete_success', 'Product deleted successfully'));
         },
         onError: (error) => {
             if (error.message !== 'Cancelled') {
-                alert(t('products.delete_error'));
+                toast.error(t('products.delete_error'));
             }
         }
     });
@@ -322,6 +333,15 @@ export function ProductsPage() {
                         <span className="hidden xs:inline">{t('products.add_product')}</span>
                         <span className="xs:hidden">{t('common.add')}</span>
                     </button>
+
+                    <Link
+                        to="/products/deleted"
+                        className="px-3 sm:px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors text-sm sm:text-base touch-target w-full xs:w-auto flex items-center justify-center whitespace-nowrap border border-gray-300 dark:border-gray-600"
+                    >
+                        <Trash2 className="w-4 h-4 sm:inline-block mr-0 sm:mr-2" />
+                        <span className="hidden xs:inline">{t('products.deleted_products', 'Deleted Products')}</span>
+                        <span className="xs:hidden">{t('common.deleted', 'Deleted')}</span>
+                    </Link>
                 </div>
             </div>
 

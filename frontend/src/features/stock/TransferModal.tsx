@@ -33,7 +33,7 @@ export function TransferModal({ onClose, onSuccess }: TransferModalProps) {
     const queryClient = useQueryClient();
 
     const { data: products } = useQuery<Product[]>({
-        queryKey: ['products'],
+        queryKey: ['products', currentStore?.id],
         queryFn: async () => {
             const response = await api.get('/products');
             return response.data;

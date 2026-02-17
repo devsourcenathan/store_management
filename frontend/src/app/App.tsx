@@ -5,7 +5,9 @@ import { AuthProvider } from '@/features/auth/AuthProvider';
 import { OrganizationProvider } from '@/contexts/OrganizationContext';
 import { SyncProvider } from '@/offline/SyncProvider';
 import { StoreProvider } from '@/features/stores/StoreProvider';
+import { PermissionProvider } from '@/contexts/PermissionContext';
 import { Toaster } from 'sonner';
+import { UpdatePopup } from '@/components/UpdatePopup';
 
 const queryClient = new QueryClient({
     defaultOptions: {
@@ -17,16 +19,21 @@ const queryClient = new QueryClient({
 });
 
 function App() {
+    console.log("123456");
+
     return (
         <QueryClientProvider client={queryClient}>
             <BrowserRouter>
                 <AuthProvider>
                     <OrganizationProvider>
                         <StoreProvider>
-                            <SyncProvider>
-                                <AppRouter />
-                                <Toaster richColors position="top-center" />
-                            </SyncProvider>
+                            <PermissionProvider>
+                                <SyncProvider>
+                                    <AppRouter />
+                                    <Toaster richColors position="top-center" />
+                                    <UpdatePopup />
+                                </SyncProvider>
+                            </PermissionProvider>
                         </StoreProvider>
                     </OrganizationProvider>
                 </AuthProvider>

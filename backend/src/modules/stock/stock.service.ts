@@ -10,7 +10,9 @@ export class StockService {
     ) { }
 
     async getMovements(storeId: string, productId?: string) {
-        return this.prisma.stockMovement.findMany({
+        console.log('🔍 getMovements called with storeId:', storeId, 'productId:', productId);
+
+        const result = await this.prisma.stockMovement.findMany({
             where: {
                 storeId,
                 ...(productId && { productId }),
@@ -27,6 +29,13 @@ export class StockService {
             },
             orderBy: { createdAt: 'desc' },
         });
+
+        console.log('📦 getMovements result count:', result.length);
+        if (result.length > 0) {
+            console.log('First movement:', result[0]);
+        }
+
+        return result;
     }
 
     async createMovement(data: any, userId: string) {
