@@ -15,7 +15,7 @@ interface NotificationPreferences {
 
 export function NotificationSettings() {
     const { t } = useTranslation();
-    const { user } = useAuth();
+    const { user, refreshUser } = useAuth();
     const [loading, setLoading] = useState(false);
     const [saving, setSaving] = useState(false);
     const [preferences, setPreferences] = useState<NotificationPreferences>({
@@ -51,6 +51,7 @@ export function NotificationSettings() {
         setSaving(true);
         try {
             await api.patch(`/users/${user.id}/notification-preferences`, preferences);
+            await refreshUser();
             toast.success(t('settings.notifications.success'));
         } catch (error) {
             console.error('Failed to update notification preferences:', error);
