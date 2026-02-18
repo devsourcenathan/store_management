@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { api } from '@/services/api';
-import { Package, Image as ImageIcon, Edit, Trash2, Plus, TrendingUp, PackagePlus, Search } from 'lucide-react';
+import { Package, Image as ImageIcon, Edit, Trash2, Plus, TrendingUp, PackagePlus, Search, RefreshCw } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { MediaSelector } from '@/features/media/components/MediaSelector';
 import { toast } from 'sonner';
@@ -76,7 +76,7 @@ export function ProductsPage() {
         }
     };
 
-    const { data: products, isLoading, isFetching } = useQuery<any[]>({
+    const { data: products, isLoading, isFetching, refetch } = useQuery<any[]>({
         queryKey: ['products', currentStore?.id, activeSearchQuery, selectedCategoryId, sortBy, sortOrder],
         queryFn: async () => {
             const params: any = {};
@@ -282,6 +282,13 @@ export function ProductsPage() {
                     <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">{t('products.subtitle')}</p>
                 </div>
                 <div className="flex flex-row gap-2 sm:gap-3">
+                    <button
+                        onClick={() => refetch()}
+                        className="px-3 py-2 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors flex items-center justify-center"
+                        title={t('common.refresh', 'Refresh')}
+                    >
+                        <RefreshCw className={`w-4 h-4 ${isFetching ? 'animate-spin' : ''}`} />
+                    </button>
                     <ExportButton
                         data={products || []}
                         columns={[
@@ -311,6 +318,8 @@ export function ProductsPage() {
                         size="sm"
                         className="hidden xs:inline-flex"
                     />
+
+
 
                     <button
                         onClick={() => {

@@ -2,6 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '@/common/prisma/prisma.service';
 import { StockService } from '../stock/stock.service';
 
+import { UserRole } from '@prisma/client';
+
 @Injectable()
 export class SalesService {
     constructor(
@@ -9,12 +11,19 @@ export class SalesService {
         private stockService: StockService,
     ) { }
 
-    async findAll(storeId: string, customerId?: string) {
+    async findAll(storeId: string, user: { id: string; role: string }, customerId?: string) {
+        const where: any = {
+            storeId,
+            ...(customerId && { customerId }),
+        };
+
+        // If user is STAFF, they can only see their own sales
+        if (user.role === UserRole.STAFF) {
+            where.createdBy = user.id;
+        }
+
         return this.prisma.sale.findMany({
-            where: {
-                storeId,
-                ...(customerId && { customerId }),
-            },
+            where,
             include: {
                 customer: true,
                 items: {
