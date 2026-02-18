@@ -22,6 +22,7 @@ interface Sale {
     discount?: number;
     status: string;
     customer?: { name: string };
+    creator?: { firstName: string; lastName: string };
     items: any[];
 }
 
@@ -183,6 +184,7 @@ export function SalesPage() {
                             { header: t('invoice.customer'), key: 'customer.name' },
                             { header: t('invoice.total'), key: 'totalAmount' },
                             { header: t('invoice.paid'), key: 'paidAmount' },
+                            { header: t('common.seller'), key: 'creator.firstName' },
                             { header: t('common.status'), key: 'status' },
                         ]}
                         title={t('sales.title')}
@@ -246,6 +248,11 @@ export function SalesPage() {
                                         </p>
                                         <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                                             {new Date(sale.createdAt).toLocaleDateString()} {new Date(sale.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                            {sale.creator && (
+                                                <span className="ml-2 bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded text-gray-600 dark:text-gray-300">
+                                                    By: {sale.creator.firstName}
+                                                </span>
+                                            )}
                                         </p>
                                     </div>
                                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${sale.status === 'PAID' ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300' :
@@ -295,6 +302,7 @@ export function SalesPage() {
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('sales.products', 'Products')}</th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.total', 'Total')}</th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.paid', 'Paid')}</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.seller', 'Seller')}</th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.status', 'Status')}</th>
                                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.actions', 'Actions')}</th>
                             </tr>
@@ -323,6 +331,9 @@ export function SalesPage() {
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{sale.totalAmount.toLocaleString()} FCFA</td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{sale.paidAmount.toLocaleString()} FCFA</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                            {sale.creator ? `${sale.creator.firstName} ${sale.creator.lastName}` : 'N/A'}
+                                        </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                             <span className={`px-2 py-1 rounded-full text-xs font-medium ${sale.status === 'PAID' ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300' :
                                                 sale.status === 'PARTIAL' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300' :
@@ -360,7 +371,7 @@ export function SalesPage() {
                         <>
                             <SheetHeader className="mb-6">
                                 <SheetTitle className="flex justify-between items-center">
-                                    <span>Sale Details</span>
+                                    <span>{t('sales.details', 'Sale Details')}</span>
                                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${selectedSale.status === 'PAID' ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300' :
                                         selectedSale.status === 'PARTIAL' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300' :
                                             'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300'
@@ -369,19 +380,27 @@ export function SalesPage() {
                                     </span>
                                 </SheetTitle>
                                 <SheetDescription>
-                                    Ref: {selectedSale.id.substring(0, 8)} • {new Date(selectedSale.createdAt).toLocaleString()}
+                                    {t('sales.ref')}: {selectedSale.id.substring(0, 8)} • {new Date(selectedSale.createdAt).toLocaleString()}
+                                    {selectedSale.creator && (
+                                        <div className="mt-1 flex items-center gap-2">
+                                            <span className="font-medium text-gray-700 dark:text-gray-300">{t('sales.by', 'By')}:</span>
+                                            <span>{selectedSale.creator.firstName} {selectedSale.creator.lastName}</span>
+                                        </div>
+                                    )}
                                 </SheetDescription>
                             </SheetHeader>
 
                             <div className="space-y-6">
                                 {/* Items List */}
                                 <div>
-                                    <h4 className="font-semibold text-gray-900 dark:text-gray-100 mb-3">Items</h4>
+                                    <h4 className="font-semibold text-gray-900 dark:text-gray-100 mb-3">
+                                        {t('sales.items', 'Items')}
+                                    </h4>
                                     <div className="bg-gray-50 dark:bg-gray-900/50 rounded-lg p-4 space-y-3">
                                         {selectedSale.items.map((item: any, idx: number) => (
                                             <div key={idx} className="flex justify-between items-center border-b border-gray-200 dark:border-gray-700 last:border-0 pb-3 last:pb-0">
                                                 <div>
-                                                    <p className="font-medium text-gray-900 dark:text-gray-100">{item.product?.name || item.name || 'Unknown Product'}</p>
+                                                    <p className="font-medium text-gray-900 dark:text-gray-100">{item.product?.name || item.name || t('sales.unknown_product', 'Unknown Product')}</p>
                                                     <p className="text-sm text-gray-500 dark:text-gray-400">
                                                         {item.quantity} x {item.unitPrice} F
                                                         {item.discount > 0 && <span className="text-red-500 ml-2">(-{item.discount} F)</span>}
@@ -394,21 +413,21 @@ export function SalesPage() {
                                         ))}
                                         {(selectedSale.discount || 0) > 0 && (
                                             <div className="flex justify-between items-center pt-3 text-sm text-red-600 dark:text-red-400">
-                                                <span>Global Discount</span>
+                                                <span>{t('sales.global_discount', 'Global Discount')}</span>
                                                 <span>-{selectedSale.discount} F</span>
                                             </div>
                                         )}
                                         <div className={`flex justify-between items-center pt-3 ${!(selectedSale.discount || 0) ? 'border-t border-gray-200 dark:border-gray-700' : ''} font-bold`}>
-                                            <span>Total</span>
+                                            <span>{t('pos.total', 'Total')}</span>
                                             <span>{selectedSale.totalAmount} F</span>
                                         </div>
                                         <div className="flex justify-between items-center text-sm">
-                                            <span>Paid Amount</span>
+                                            <span>{t('pos.paid', 'Paid Amount')}</span>
                                             <span>{selectedSale.paidAmount} F</span>
                                         </div>
                                         {remainingBalance > 0 && (
                                             <div className="flex justify-between items-center text-red-600 dark:text-red-400 font-bold">
-                                                <span>Balance Due</span>
+                                                <span>{t('sales.balance_due', 'Balance Due')}</span>
                                                 <span>{remainingBalance} F</span>
                                             </div>
                                         )}
@@ -426,13 +445,13 @@ export function SalesPage() {
                                                 }}
                                                 className="w-full btn-theme-primary py-3 rounded-lg font-medium"
                                             >
-                                                Add Payment ({remainingBalance} F)
+                                                {t('sales.add_payment', 'Add Payment')} ({remainingBalance} F)
                                             </button>
                                         ) : (
                                             <form onSubmit={handleAddPayment} className="bg-gray-50 dark:bg-gray-900/50 rounded-lg p-4 space-y-4">
-                                                <h4 className="font-semibold text-gray-900 dark:text-gray-100">Record New Payment</h4>
+                                                <h4 className="font-semibold text-gray-900 dark:text-gray-100">{t('sales.record_payment', 'Record New Payment')}</h4>
                                                 <div>
-                                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Amount</label>
+                                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('sales.amount', 'Amount')}</label>
                                                     <input
                                                         type="number"
                                                         max={remainingBalance}
@@ -442,7 +461,7 @@ export function SalesPage() {
                                                     />
                                                 </div>
                                                 <div>
-                                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Method</label>
+                                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('sales.payment_method', 'Method')}</label>
                                                     <select
                                                         value={paymentMethod}
                                                         onChange={(e) => setPaymentMethod(e.target.value as any)}
@@ -459,14 +478,14 @@ export function SalesPage() {
                                                         onClick={() => setIsAddingPayment(false)}
                                                         className="flex-1 px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg font-medium hover:bg-gray-300 dark:hover:bg-gray-600"
                                                     >
-                                                        Cancel
+                                                        {t('sales.cancel', 'Cancel')}
                                                     </button>
                                                     <button
                                                         type="submit"
                                                         disabled={addPaymentMutation.isPending}
                                                         className="flex-1 btn-theme-primary px-4 py-2 rounded-lg font-medium disabled:opacity-50"
                                                     >
-                                                        {addPaymentMutation.isPending ? 'Processing...' : 'Confirm Payment'}
+                                                        {addPaymentMutation.isPending ? t('sales.processing', 'Processing...') : t('sales.confirm_payment', 'Confirm Payment')}
                                                     </button>
                                                 </div>
                                             </form>
@@ -622,6 +641,6 @@ export function SalesPage() {
                     </form>
                 </SheetContent>
             </Sheet>
-        </div>
+        </div >
     );
 }

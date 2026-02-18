@@ -95,6 +95,7 @@ model User {
   auditLogs       AuditLog[]
   syncMetadata    SyncMetadata[]
   userPermissions UserPermission[]
+  salesCreated    Sale[]           @relation("SaleCreator")
 
   @@map("users")
 }
@@ -339,10 +340,12 @@ model Sale {
   customer Customer?  @relation(fields: [customerId], references: [id], onDelete: SetNull)
   items    SaleItem[]
   payments Payment[]
+  creator  User       @relation("SaleCreator", fields: [createdBy], references: [id])
 
   @@index([storeId, createdAt])
   @@index([customerId])
   @@index([clientId])
+  @@index([createdBy])
   @@map("sales")
 }
 
