@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/Sheet";
 import { ExportButton } from '@/components/ExportButton';
 import { RefreshCw } from 'lucide-react';
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface Sale {
     id: string;
@@ -59,7 +60,7 @@ export function SalesPage() {
 
     const queryClient = useQueryClient();
 
-    const { data: sales, isLoading, isError, error, refetch } = useQuery<Sale[]>({
+    const { data: sales, isLoading, isError, error, refetch, isFetching } = useQuery<Sale[]>({
         queryKey: ['sales', currentStore?.id],
         queryFn: async () => {
             if (!currentStore?.id) return [];
@@ -229,8 +230,29 @@ export function SalesPage() {
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden border border-gray-100 dark:border-gray-700">
                 {/* Mobile Card View */}
                 <div className="md:hidden p-4 space-y-4">
-                    {isLoading ? (
-                        <div className="px-4 py-12 text-center text-gray-500 dark:text-gray-400">Loading...</div>
+                    {isLoading || (sales && sales.length > 0 && isFetching) ? (
+                        Array(3).fill(0).map((_, i) => (
+                            <div key={i} className="bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-xl p-4 shadow-sm">
+                                <div className="flex items-start justify-between mb-3">
+                                    <div className="flex-1">
+                                        <Skeleton className="h-5 w-32 mb-2" />
+                                        <Skeleton className="h-4 w-48 mb-2" />
+                                        <Skeleton className="h-3 w-24" />
+                                    </div>
+                                    <Skeleton className="h-6 w-20 rounded-full" />
+                                </div>
+                                <div className="grid grid-cols-2 gap-3 mt-3 pt-3 border-t-2 border-gray-200 dark:border-gray-700">
+                                    <div>
+                                        <Skeleton className="h-3 w-20 mb-1" />
+                                        <Skeleton className="h-4 w-24" />
+                                    </div>
+                                    <div className="flex justify-end space-x-2">
+                                        <Skeleton className="h-8 w-16 rounded-lg" />
+                                        <Skeleton className="h-8 w-16 rounded-lg" />
+                                    </div>
+                                </div>
+                            </div>
+                        ))
                     ) : isError ? (
                         <div className="px-4 py-12 text-center text-red-500">
                             <p>Error loading sales.</p>
@@ -317,8 +339,26 @@ export function SalesPage() {
                             </tr>
                         </thead>
                         <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                            {isLoading ? (
-                                <tr><td colSpan={6} className="px-6 py-4 text-center dark:text-gray-400">Loading...</td></tr>
+                            {isLoading || (sales && sales.length > 0 && isFetching) ? (
+                                Array(5).fill(0).map((_, i) => (
+                                    <tr key={i}>
+                                        <td className="px-6 py-4"><Skeleton className="h-4 w-32" /></td>
+                                        <td className="px-6 py-4">
+                                            <div className="space-y-1">
+                                                <Skeleton className="h-4 w-48" />
+                                                <Skeleton className="h-3 w-24" />
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4"><Skeleton className="h-4 w-24" /></td>
+                                        <td className="px-6 py-4"><Skeleton className="h-4 w-24" /></td>
+                                        <td className="px-6 py-4"><Skeleton className="h-4 w-32" /></td>
+                                        <td className="px-6 py-4"><Skeleton className="h-6 w-20 rounded-full" /></td>
+                                        <td className="px-6 py-4 text-right flex justify-end gap-2">
+                                            <Skeleton className="h-8 w-16 rounded-lg" />
+                                            <Skeleton className="h-8 w-16 rounded-lg" />
+                                        </td>
+                                    </tr>
+                                ))
                             ) : isError ? (
                                 <tr><td colSpan={6} className="px-6 py-12 text-center text-red-500">Error: {error?.message}</td></tr>
                             ) : !sales || sales.length === 0 ? (

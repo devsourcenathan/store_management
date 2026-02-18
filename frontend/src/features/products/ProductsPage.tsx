@@ -15,6 +15,7 @@ import {
     SheetHeader,
     SheetTitle,
 } from "@/components/ui/Sheet";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Pagination } from "@/components/ui/Pagination";
 import { usePagination } from "@/hooks/usePagination";
 import { ExportButton } from '@/components/ExportButton';
@@ -422,7 +423,40 @@ export function ProductsPage() {
                 {/* Mobile Card View */}
                 {/* Product List with Pagination */}
                 <div className="md:hidden p-4 space-y-4">
-                    {paginatedProducts.length === 0 ? (
+                    {isLoading || (products && products.length > 0 && isFetching) ? (
+                        Array(3).fill(0).map((_, i) => (
+                            <div key={i} className="bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-xl p-4 shadow-sm">
+                                <div className="flex items-start justify-between mb-3">
+                                    <div className="flex items-center flex-1 min-w-0">
+                                        <Skeleton className="h-12 w-12 rounded-lg" />
+                                        <div className="ml-3 flex-1 min-w-0 space-y-2">
+                                            <Skeleton className="h-4 w-32" />
+                                            <Skeleton className="h-3 w-20" />
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center space-x-2 ml-2">
+                                        <Skeleton className="h-8 w-8 rounded-lg" />
+                                        <Skeleton className="h-8 w-8 rounded-lg" />
+                                        <Skeleton className="h-8 w-8 rounded-lg" />
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-3 gap-3 mt-3 pt-3 border-t-2 border-gray-200 dark:border-gray-700">
+                                    <div>
+                                        <Skeleton className="h-3 w-16 mb-1" />
+                                        <Skeleton className="h-4 w-20" />
+                                    </div>
+                                    <div>
+                                        <Skeleton className="h-3 w-16 mb-1" />
+                                        <Skeleton className="h-4 w-12" />
+                                    </div>
+                                    <div>
+                                        <Skeleton className="h-3 w-16 mb-1" />
+                                        <Skeleton className="h-4 w-16" />
+                                    </div>
+                                </div>
+                            </div>
+                        ))
+                    ) : paginatedProducts.length === 0 ? (
                         <div className="px-4 py-12 text-center text-gray-500 dark:text-gray-400">
                             {t('products.no_products')}
                         </div>
@@ -524,7 +558,34 @@ export function ProductsPage() {
                             </tr>
                         </thead>
                         <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                            {paginatedProducts.length === 0 ? (
+                            {isLoading || (products && products.length > 0 && isFetching) ? (
+                                Array(5).fill(0).map((_, i) => (
+                                    <tr key={i}>
+                                        <td className="px-6 py-4">
+                                            <div className="flex items-center">
+                                                <Skeleton className="h-10 w-10 rounded" />
+                                                <div className="ml-4 space-y-1">
+                                                    <Skeleton className="h-4 w-32" />
+                                                    <Skeleton className="h-3 w-20" />
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4"><Skeleton className="h-4 w-24" /></td>
+                                        <td className="px-6 py-4">
+                                            <div className="flex items-center space-x-1">
+                                                <Skeleton className="h-4 w-4 mr-1" />
+                                                <Skeleton className="h-4 w-8" />
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4"><Skeleton className="h-4 w-20" /></td>
+                                        <td className="px-6 py-4 text-right flex justify-end gap-3">
+                                            <Skeleton className="h-4 w-4" />
+                                            <Skeleton className="h-4 w-4" />
+                                            <Skeleton className="h-4 w-4" />
+                                        </td>
+                                    </tr>
+                                ))
+                            ) : paginatedProducts.length === 0 ? (
                                 <tr>
                                     <td colSpan={6} className="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
                                         {t('products.no_products')}
