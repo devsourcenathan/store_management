@@ -25,7 +25,7 @@ api.interceptors.request.use(
         const url = config.url || '';
 
         // Exclude certain endpoints that don't need storeId
-        const excludedPaths = ['/auth/', '/billing/', '/admin/', '/audit/', '/analytics/'];
+        const excludedPaths = ['/auth/', '/billing/', '/admin/', '/audit/', '/analytics/', '/organizations/'];
         const shouldExclude = excludedPaths.some(path => url.includes(path));
 
         if (currentStoreId && !shouldExclude) {
