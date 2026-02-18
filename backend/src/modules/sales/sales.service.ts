@@ -21,6 +21,12 @@ export class SalesService {
                     include: { product: true },
                 },
                 payments: true,
+                creator: {
+                    select: {
+                        firstName: true,
+                        lastName: true,
+                    },
+                },
             },
             orderBy: { createdAt: 'desc' },
         });

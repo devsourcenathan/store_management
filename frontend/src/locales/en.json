@@ -33,7 +33,8 @@
         "updateAvailable": "New version available",
         "updateDescription": "A new version of the app is available. Update to get the latest features.",
         "later": "Later",
-        "update": "Update"
+        "update": "Update",
+        "seller": "Seller"
     },
     "nav": {
         "dashboard": "Dashboard",
@@ -208,7 +209,23 @@
         "products": "Products",
         "products_sold": "Products Sold",
         "no_sales": "No sales found",
-        "create_new": "Create New Sale"
+        "create_new": "Create New Sale",
+        "seller": "Seller",
+        "by": "By",
+        "unknown_product": "Unknown Product",
+        "details": "Sale Details",
+        "ref": "Ref",
+        "balance_due": "Balance Due",
+        "payment_history": "Payment History",
+        "global_discount": "Global Discount",
+        "add_payment": "Add Payment",
+        "record_payment": "Record Payment",
+        "payment_method": "Payment Method",
+        "confirm_payment": "Confirm Payment",
+        "processing": "Processing...",
+        "items": "Items",
+        "amount": "Amount",
+        "cancel": "Cancel"
     },
     "balance": {
         "title": "Balance Management",

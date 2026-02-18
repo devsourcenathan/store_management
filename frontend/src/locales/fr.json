@@ -33,7 +33,8 @@
         "updateAvailable": "Nouvelle version disponible",
         "updateDescription": "Une nouvelle version de l'application est disponible. Mettez à jour pour obtenir les dernières fonctionnalités.",
         "later": "Plus tard",
-        "update": "Mettre à jour"
+        "update": "Mettre à jour",
+        "seller": "Vendeur"
     },
     "nav": {
         "dashboard": "Tableau de bord",
@@ -157,6 +158,31 @@
         "customer_name_invoice": "Nom du Client (pour Facture)",
         "enter_customer_name": "Entrez le nom du client (optionnel)"
     },
+    "sales": {
+        "title": "Ventes",
+        "subtitle": "Gérer les ventes et transactions",
+        "new_sale": "Nouvelle Vente",
+        "products": "Produits",
+        "products_sold": "Produits Vendus",
+        "no_sales": "Aucune vente trouvée",
+        "create_new": "Créer une Nouvelle Vente",
+        "seller": "Vendeur",
+        "by": "Par",
+        "unknown_product": "Produit Inconnu",
+        "details": "Détails de la Vente",
+        "ref": "Réf",
+        "balance_due": "Reste à payer",
+        "payment_history": "Historique des Paiements",
+        "global_discount": "Remise Globale",
+        "add_payment": "Ajouter Paiement",
+        "record_payment": "Enregistrer un Paiement",
+        "payment_method": "Méthode de Paiement",
+        "confirm_payment": "Confirmer Paiement",
+        "processing": "Traitement...",
+        "items": "Articles",
+        "amount": "Montant",
+        "cancel": "Annuler"
+    },
     "auth": {
         "login": "Connexion",
         "email": "Email",
@@ -199,15 +225,6 @@
         "add_offer": "Ajouter une Offre",
         "service_name": "Nom du Service",
         "provider": "Fournisseur"
-    },
-    "sales": {
-        "title": "Ventes",
-        "subtitle": "Gérer les ventes et transactions",
-        "new_sale": "Nouvelle Vente",
-        "products": "Produits",
-        "products_sold": "Produits Vendus",
-        "no_sales": "Aucune vente trouvée",
-        "create_new": "Créer une Vente"
     },
     "balance": {
         "title": "Gestion du Solde",
