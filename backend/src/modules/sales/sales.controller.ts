@@ -15,8 +15,12 @@ export class SalesController {
 
     @Get()
     @UseGuards(StoreAuthGuard)
-    async findAll(@Query('storeId') storeId: string, @Query('customerId') customerId?: string) {
-        return this.salesService.findAll(storeId, customerId);
+    async findAll(
+        @Query('storeId') storeId: string,
+        @CurrentUser() user: any,
+        @Query('customerId') customerId?: string
+    ) {
+        return this.salesService.findAll(storeId, user, customerId);
     }
 
     @Post()
