@@ -228,6 +228,7 @@ export class UsersService {
                 weeklyReportEnabled: data.weeklyReportEnabled,
                 monthlyReportEnabled: data.monthlyReportEnabled,
                 yearlyReportEnabled: data.yearlyReportEnabled,
+                separateReportsByStore: data.separateReportsByStore,
             }
         });
     }
