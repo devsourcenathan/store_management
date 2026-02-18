@@ -22,7 +22,8 @@
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio",
     "prisma:seed": "ts-node prisma/seed.ts",
-    "seed:permissions:prod": "node dist/prisma/seed-permissions.js"
+    "seed:permissions:prod": "node dist/prisma/seed-permissions.js",
+    "fix:sales-creator": "node dist/scripts/fix-sales-creator.js"
   },
   "prisma": {
     "seed": "ts-node prisma/seed.ts"
