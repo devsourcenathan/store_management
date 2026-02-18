@@ -92,7 +92,9 @@ export class MailService {
 
         const emailOptions: LegacyEmailOptions = {
             to,
-            subject: `${t.title} - ${reportData.date}`,
+            subject: reportData.storeName
+                ? `${t.title} - ${reportData.storeName} - ${reportData.date}`
+                : `${t.title} - ${reportData.date}`,
             template: 'daily-report',
             context: { ...reportData, t },
         };
@@ -121,7 +123,9 @@ export class MailService {
 
         const emailOptions: LegacyEmailOptions = {
             to,
-            subject: `${t.title} - ${reportData.week}`,
+            subject: reportData.storeName
+                ? `${t.title} - ${reportData.storeName} - ${reportData.week}`
+                : `${t.title} - ${reportData.week}`,
             template: 'weekly-report',
             context: { ...reportData, t },
         };
@@ -147,7 +151,9 @@ export class MailService {
     async sendMonthlyReport(to: string, reportData: any, lang: string = 'fr', organizationName?: string): Promise<boolean> {
         const emailOptions: LegacyEmailOptions = {
             to,
-            subject: `Monthly Sales Report - ${reportData.month}`,
+            subject: reportData.storeName
+                ? `Monthly Sales Report - ${reportData.storeName} - ${reportData.month}`
+                : `Monthly Sales Report - ${reportData.month}`,
             template: 'monthly-report',
             context: reportData,
         };
@@ -173,7 +179,9 @@ export class MailService {
     async sendQuarterlyReport(to: string, reportData: any, lang: string = 'fr'): Promise<boolean> {
         return this.sendEmail({
             to,
-            subject: `Quarterly Sales Report - ${reportData.quarter}`,
+            subject: reportData.storeName
+                ? `Quarterly Sales Report - ${reportData.storeName} - ${reportData.quarter}`
+                : `Quarterly Sales Report - ${reportData.quarter}`,
             template: 'quarterly-report',
             context: reportData,
         });
@@ -182,7 +190,9 @@ export class MailService {
     async sendYearlyReport(to: string, reportData: any, lang: string = 'fr', organizationName?: string): Promise<boolean> {
         const emailOptions: LegacyEmailOptions = {
             to,
-            subject: `Annual Sales Report - ${reportData.year}`,
+            subject: reportData.storeName
+                ? `Annual Sales Report - ${reportData.storeName} - ${reportData.year}`
+                : `Annual Sales Report - ${reportData.year}`,
             template: 'yearly-report',
             context: reportData,
         };

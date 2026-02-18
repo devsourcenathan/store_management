@@ -449,7 +449,11 @@
             },
             "save": "Save Preferences",
             "success": "Notification preferences updated successfully",
-            "error": "Failed to update notification preferences"
+            "error": "Failed to update notification preferences",
+            "separateReports": {
+                "label": "Separate Reports by Store",
+                "description": "Receive a separate email for each store"
+            }
         }
     },
     "users": {
@@ -620,6 +624,64 @@
         "revenue_by_store": "Revenue by Store",
         "sales_by_store": "Sales by Store",
         "no_data": "No data available for the selected period"
+    },
+    "devices": {
+        "title": "Devices",
+        "subtitle": "Manage internal and customer devices",
+        "add_device": "Add Device",
+        "edit_device": "Edit Device",
+        "no_devices": "No devices found",
+        "owner_type": {
+            "internal": "Internal",
+            "client": "Client"
+        },
+        "fields": {
+            "name": "Name",
+            "model": "Model",
+            "serial_number": "Serial Number",
+            "owner_type": "Owner Type",
+            "customer": "Customer",
+            "store": "Store",
+            "notes": "Notes"
+        }
+    },
+    "maintenances": {
+        "title": "Maintenances",
+        "subtitle": "Manage maintenances and repairs",
+        "add_maintenance": "New Maintenance",
+        "edit_maintenance": "Edit Maintenance",
+        "no_maintenances": "No maintenances found",
+        "complete": "Complete",
+        "cancel": "Cancel",
+        "created": "Maintenance created successfully",
+        "completed": "Maintenance completed successfully",
+        "cancelled": "Maintenance cancelled",
+        "status": {
+            "pending": "Pending",
+            "in_progress": "In Progress",
+            "done": "Done",
+            "cancelled": "Cancelled"
+        },
+        "type": {
+            "client": "Client",
+            "internal": "Internal"
+        },
+        "fields": {
+            "device": "Device",
+            "customer": "Customer",
+            "type": "Type",
+            "description": "Description",
+            "diagnosis": "Diagnosis",
+            "labor_cost": "Labor Cost",
+            "parts": "Parts Used",
+            "parts_cost": "Parts Cost",
+            "total_cost": "Total Cost"
+        },
+        "alerts": {
+            "low_stock": "Insufficient stock for this part",
+            "complete_confirm": "Confirm maintenance completion? Stock will be impacted.",
+            "cannot_edit_done": "Cannot edit completed maintenance"
+        }
     },
     "export": {
         "pdf": "Export PDF",

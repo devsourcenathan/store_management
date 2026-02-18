@@ -11,6 +11,7 @@ interface NotificationPreferences {
     weeklyReportEnabled: boolean;
     monthlyReportEnabled: boolean;
     yearlyReportEnabled: boolean;
+    separateReportsByStore: boolean;
 }
 
 export function NotificationSettings() {
@@ -24,6 +25,7 @@ export function NotificationSettings() {
         weeklyReportEnabled: false,
         monthlyReportEnabled: false,
         yearlyReportEnabled: false,
+        separateReportsByStore: false,
     });
 
     useEffect(() => {
@@ -34,6 +36,7 @@ export function NotificationSettings() {
                 weeklyReportEnabled: user.weeklyReportEnabled ?? false,
                 monthlyReportEnabled: user.monthlyReportEnabled ?? false,
                 yearlyReportEnabled: user.yearlyReportEnabled ?? false,
+                separateReportsByStore: user.separateReportsByStore ?? false,
             });
         }
     }, [user]);
@@ -106,6 +109,24 @@ export function NotificationSettings() {
                         <ToggleSwitch
                             enabled={preferences.emailNotificationsEnabled}
                             onChange={() => handleToggle('emailNotificationsEnabled')}
+                        />
+                    </div>
+                </div>
+
+                {/* Separate Reports Toggle */}
+                <div className="p-4 sm:p-6">
+                    <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                            <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                {t('settings.notifications.separateReports.label')}
+                            </h4>
+                            <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                                {t('settings.notifications.separateReports.description')}
+                            </p>
+                        </div>
+                        <ToggleSwitch
+                            enabled={preferences.separateReportsByStore && preferences.emailNotificationsEnabled}
+                            onChange={() => preferences.emailNotificationsEnabled && handleToggle('separateReportsByStore')}
                         />
                     </div>
                 </div>

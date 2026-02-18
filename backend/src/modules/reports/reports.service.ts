@@ -13,14 +13,17 @@ export class ReportsService {
         return value.toNumber();
     }
 
-    async generateDailyReport(organizationId: string, date: Date = new Date()) {
+    async generateDailyReport(organizationId: string, date: Date = new Date(), storeId?: string) {
         const yesterday = subDays(date, 1);
         const startDate = startOfDay(yesterday);
         const endDate = endOfDay(yesterday);
 
         const sales = await this.prisma.sale.findMany({
             where: {
-                store: { organizationId },
+                store: {
+                    organizationId,
+                    ...(storeId && { id: storeId }),
+                },
                 createdAt: {
                     gte: startDate,
                     lte: endDate,
@@ -76,7 +79,10 @@ export class ReportsService {
 
         const prevSales = await this.prisma.sale.findMany({
             where: {
-                store: { organizationId },
+                store: {
+                    organizationId,
+                    ...(storeId && { id: storeId }),
+                },
                 createdAt: {
                     gte: prevStartDate,
                     lte: prevEndDate,
@@ -107,7 +113,10 @@ export class ReportsService {
         // Low stock alerts (from StockAlerts table)
         const alerts = await this.prisma.stockAlert.findMany({
             where: {
-                store: { organizationId },
+                store: {
+                    organizationId,
+                    ...(storeId && { id: storeId }),
+                },
                 acknowledged: false,
             },
             include: {
@@ -188,13 +197,16 @@ export class ReportsService {
         };
     }
 
-    async generateWeeklyReport(organizationId: string, date: Date = new Date()) {
+    async generateWeeklyReport(organizationId: string, date: Date = new Date(), storeId?: string) {
         const startDate = startOfWeek(date, { weekStartsOn: 1 });
         const endDate = endOfWeek(date, { weekStartsOn: 1 });
 
         const sales = await this.prisma.sale.findMany({
             where: {
-                store: { organizationId },
+                store: {
+                    organizationId,
+                    ...(storeId && { id: storeId }),
+                },
                 createdAt: {
                     gte: startDate,
                     lte: endDate,
@@ -298,13 +310,16 @@ export class ReportsService {
         };
     }
 
-    async generateMonthlyReport(organizationId: string, date: Date = new Date()) {
+    async generateMonthlyReport(organizationId: string, date: Date = new Date(), storeId?: string) {
         const startDate = startOfMonth(date);
         const endDate = endOfMonth(date);
 
         const sales = await this.prisma.sale.findMany({
             where: {
-                store: { organizationId },
+                store: {
+                    organizationId,
+                    ...(storeId && { id: storeId }),
+                },
                 createdAt: {
                     gte: startDate,
                     lte: endDate,
@@ -394,13 +409,16 @@ export class ReportsService {
         };
     }
 
-    async generateQuarterlyReport(organizationId: string, date: Date = new Date()) {
+    async generateQuarterlyReport(organizationId: string, date: Date = new Date(), storeId?: string) {
         const startDate = startOfQuarter(date);
         const endDate = endOfQuarter(date);
 
         const sales = await this.prisma.sale.findMany({
             where: {
-                store: { organizationId },
+                store: {
+                    organizationId,
+                    ...(storeId && { id: storeId }),
+                },
                 createdAt: {
                     gte: startDate,
                     lte: endDate,
@@ -468,13 +486,16 @@ export class ReportsService {
         };
     }
 
-    async generateYearlyReport(organizationId: string, date: Date = new Date()) {
+    async generateYearlyReport(organizationId: string, date: Date = new Date(), storeId?: string) {
         const startDate = startOfYear(date);
         const endDate = endOfYear(date);
 
         const sales = await this.prisma.sale.findMany({
             where: {
-                store: { organizationId },
+                store: {
+                    organizationId,
+                    ...(storeId && { id: storeId }),
+                },
                 createdAt: {
                     gte: startDate,
                     lte: endDate,

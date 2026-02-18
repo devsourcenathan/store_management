@@ -85,6 +85,7 @@ model User {
   weeklyReportEnabled       Boolean @default(false)
   monthlyReportEnabled      Boolean @default(false)
   yearlyReportEnabled       Boolean @default(false)
+  separateReportsByStore    Boolean @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
