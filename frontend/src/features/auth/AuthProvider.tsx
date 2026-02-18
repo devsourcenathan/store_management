@@ -15,6 +15,7 @@ interface User {
     weeklyReportEnabled?: boolean;
     monthlyReportEnabled?: boolean;
     yearlyReportEnabled?: boolean;
+    separateReportsByStore?: boolean;
 }
 
 interface AuthContextType {

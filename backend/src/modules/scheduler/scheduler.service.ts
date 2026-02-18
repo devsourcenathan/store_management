@@ -8,12 +8,18 @@ import { BillingService } from '../billing/billing.service';
 
 // Type for Organization with included users
 type OrganizationWithUsers = Prisma.OrganizationGetPayload<{
-    include: { users: true };
+    include: { users: true; stores: true };
 }>;
 
 @Injectable()
 export class SchedulerService implements OnModuleInit {
     private readonly logger = new Logger(SchedulerService.name);
+
+    // Type for Organization with included users and stores
+    private readonly orgInclude = {
+        users: true,
+        stores: true,
+    };
 
     async onModuleInit() {
         this.logger.log('SchedulerService initialized');
@@ -55,31 +61,52 @@ export class SchedulerService implements OnModuleInit {
                             dailyReportEnabled: true,
                         },
                     },
+                    stores: true,
                 },
             }) as OrganizationWithUsers[];
 
             for (const org of organizations) {
                 try {
-                    // Generate report data
-                    const reportData = await this.reportsService.generateDailyReport(org.id);
-
-                    // Send to all active owners
                     for (const owner of org.users) {
-                        if (owner.email) {
-                            await this.mailService.sendDailyReport(
-                                owner.email,
-                                {
-                                    ...reportData,
-                                    organizationName: org.name,
-                                    ownerName: `${owner.firstName} ${owner.lastName}`,
-                                },
-                                owner.locale || 'fr',
-                                org.name
-                            );
-                            this.logger.log(`Daily report sent to ${owner.email} for ${org.name}`);
-
-                            // Pause de 2 secondes après chaque email
-                            await this.sleep(2000);
+                        try {
+                            if (owner.email) {
+                                if (owner.separateReportsByStore) {
+                                    // Send separate report for each store
+                                    for (const store of org.stores) {
+                                        const reportData = await this.reportsService.generateDailyReport(org.id, undefined, store.id);
+                                        await this.mailService.sendDailyReport(
+                                            owner.email,
+                                            {
+                                                ...reportData,
+                                                organizationName: org.name,
+                                                storeName: store.name,
+                                                ownerName: `${owner.firstName} ${owner.lastName}`,
+                                            },
+                                            owner.locale || 'fr',
+                                            org.name
+                                        );
+                                        this.logger.log(`Daily report for store ${store.name} sent to ${owner.email}`);
+                                        await this.sleep(1000);
+                                    }
+                                } else {
+                                    // Send aggregated report
+                                    const reportData = await this.reportsService.generateDailyReport(org.id);
+                                    await this.mailService.sendDailyReport(
+                                        owner.email,
+                                        {
+                                            ...reportData,
+                                            organizationName: org.name,
+                                            ownerName: `${owner.firstName} ${owner.lastName}`,
+                                        },
+                                        owner.locale || 'fr',
+                                        org.name
+                                    );
+                                    this.logger.log(`Daily report sent to ${owner.email} for ${org.name}`);
+                                }
+                                await this.sleep(1000);
+                            }
+                        } catch (err) {
+                            this.logger.error(`Failed to send daily report to ${owner.email}:`, err);
                         }
                     }
                 } catch (error) {
@@ -112,29 +139,50 @@ export class SchedulerService implements OnModuleInit {
                             weeklyReportEnabled: true,
                         },
                     },
+                    stores: true,
                 },
             }) as OrganizationWithUsers[];
 
             for (const org of organizations) {
                 try {
-                    const reportData = await this.reportsService.generateWeeklyReport(org.id);
-
                     for (const user of org.users) {
-                        if (user.email) {
-                            await this.mailService.sendWeeklyReport(
-                                user.email,
-                                {
-                                    ...reportData,
-                                    organizationName: org.name,
-                                    userName: `${user.firstName} ${user.lastName}`,
-                                },
-                                user.locale || 'fr',
-                                org.name
-                            );
-                            this.logger.log(`Weekly report sent to ${user.email} for ${org.name}`);
-
-                            // Pause de 2 secondes après chaque email
-                            await this.sleep(2000);
+                        try {
+                            if (user.email) {
+                                if (user.separateReportsByStore) {
+                                    for (const store of org.stores) {
+                                        const reportData = await this.reportsService.generateWeeklyReport(org.id, undefined, store.id);
+                                        await this.mailService.sendWeeklyReport(
+                                            user.email,
+                                            {
+                                                ...reportData,
+                                                organizationName: org.name,
+                                                storeName: store.name,
+                                                userName: `${user.firstName} ${user.lastName}`,
+                                            },
+                                            user.locale || 'fr',
+                                            org.name
+                                        );
+                                        this.logger.log(`Weekly report for store ${store.name} sent to ${user.email}`);
+                                        await this.sleep(1000);
+                                    }
+                                } else {
+                                    const reportData = await this.reportsService.generateWeeklyReport(org.id);
+                                    await this.mailService.sendWeeklyReport(
+                                        user.email,
+                                        {
+                                            ...reportData,
+                                            organizationName: org.name,
+                                            userName: `${user.firstName} ${user.lastName}`,
+                                        },
+                                        user.locale || 'fr',
+                                        org.name
+                                    );
+                                    this.logger.log(`Weekly report sent to ${user.email} for ${org.name}`);
+                                }
+                                await this.sleep(1000);
+                            }
+                        } catch (err) {
+                            this.logger.error(`Failed to send weekly report to ${user.email}:`, err);
                         }
                     }
                 } catch (error) {
@@ -167,29 +215,50 @@ export class SchedulerService implements OnModuleInit {
                             monthlyReportEnabled: true,
                         },
                     },
+                    stores: true,
                 },
             }) as OrganizationWithUsers[];
 
             for (const org of organizations) {
                 try {
-                    const reportData = await this.reportsService.generateMonthlyReport(org.id);
-
                     for (const owner of org.users) {
-                        if (owner.email) {
-                            await this.mailService.sendMonthlyReport(
-                                owner.email,
-                                {
-                                    ...reportData,
-                                    organizationName: org.name,
-                                    ownerName: `${owner.firstName} ${owner.lastName}`,
-                                },
-                                owner.locale || 'fr',
-                                org.name
-                            );
-                            this.logger.log(`Monthly report sent to ${owner.email} for ${org.name}`);
-
-                            // Pause de 2 secondes après chaque email
-                            await this.sleep(2000);
+                        try {
+                            if (owner.email) {
+                                if (owner.separateReportsByStore) {
+                                    for (const store of org.stores) {
+                                        const reportData = await this.reportsService.generateMonthlyReport(org.id, undefined, store.id);
+                                        await this.mailService.sendMonthlyReport(
+                                            owner.email,
+                                            {
+                                                ...reportData,
+                                                organizationName: org.name,
+                                                storeName: store.name,
+                                                ownerName: `${owner.firstName} ${owner.lastName}`,
+                                            },
+                                            owner.locale || 'fr',
+                                            org.name
+                                        );
+                                        this.logger.log(`Monthly report for store ${store.name} sent to ${owner.email}`);
+                                        await this.sleep(1000);
+                                    }
+                                } else {
+                                    const reportData = await this.reportsService.generateMonthlyReport(org.id);
+                                    await this.mailService.sendMonthlyReport(
+                                        owner.email,
+                                        {
+                                            ...reportData,
+                                            organizationName: org.name,
+                                            ownerName: `${owner.firstName} ${owner.lastName}`,
+                                        },
+                                        owner.locale || 'fr',
+                                        org.name
+                                    );
+                                    this.logger.log(`Monthly report sent to ${owner.email} for ${org.name}`);
+                                }
+                                await this.sleep(1000);
+                            }
+                        } catch (err) {
+                            this.logger.error(`Failed to send monthly report to ${owner.email}:`, err);
                         }
                     }
                 } catch (error) {
@@ -220,28 +289,48 @@ export class SchedulerService implements OnModuleInit {
                             isActive: true,
                         },
                     },
+                    stores: true,
                 },
             }) as OrganizationWithUsers[];
 
             for (const org of organizations) {
                 try {
-                    const reportData = await this.reportsService.generateQuarterlyReport(org.id);
-
                     for (const owner of org.users) {
-                        if (owner.email) {
-                            await this.mailService.sendQuarterlyReport(
-                                owner.email,
-                                {
-                                    ...reportData,
-                                    organizationName: org.name,
-                                    ownerName: `${owner.firstName} ${owner.lastName}`,
-                                },
-                                owner.locale || 'fr'
-                            );
-                            this.logger.log(`Quarterly report sent to ${owner.email} for ${org.name}`);
-
-                            // Pause de 2 secondes après chaque email
-                            await this.sleep(2000);
+                        try {
+                            if (owner.email) {
+                                if (owner.separateReportsByStore) {
+                                    for (const store of org.stores) {
+                                        const reportData = await this.reportsService.generateQuarterlyReport(org.id, undefined, store.id);
+                                        await this.mailService.sendQuarterlyReport(
+                                            owner.email,
+                                            {
+                                                ...reportData,
+                                                organizationName: org.name,
+                                                storeName: store.name,
+                                                ownerName: `${owner.firstName} ${owner.lastName}`,
+                                            },
+                                            owner.locale || 'fr'
+                                        );
+                                        this.logger.log(`Quarterly report for store ${store.name} sent to ${owner.email}`);
+                                        await this.sleep(1000);
+                                    }
+                                } else {
+                                    const reportData = await this.reportsService.generateQuarterlyReport(org.id);
+                                    await this.mailService.sendQuarterlyReport(
+                                        owner.email,
+                                        {
+                                            ...reportData,
+                                            organizationName: org.name,
+                                            ownerName: `${owner.firstName} ${owner.lastName}`,
+                                        },
+                                        owner.locale || 'fr'
+                                    );
+                                    this.logger.log(`Quarterly report sent to ${owner.email} for ${org.name}`);
+                                }
+                                await this.sleep(1000);
+                            }
+                        } catch (err) {
+                            this.logger.error(`Failed to send quarterly report to ${owner.email}:`, err);
                         }
                     }
                 } catch (error) {
@@ -274,29 +363,50 @@ export class SchedulerService implements OnModuleInit {
                             yearlyReportEnabled: true,
                         },
                     },
+                    stores: true,
                 },
             }) as OrganizationWithUsers[];
 
             for (const org of organizations) {
                 try {
-                    const reportData = await this.reportsService.generateYearlyReport(org.id);
-
                     for (const owner of org.users) {
-                        if (owner.email) {
-                            await this.mailService.sendYearlyReport(
-                                owner.email,
-                                {
-                                    ...reportData,
-                                    organizationName: org.name,
-                                    ownerName: `${owner.firstName} ${owner.lastName}`,
-                                },
-                                owner.locale || 'fr',
-                                org.name
-                            );
-                            this.logger.log(`Yearly report sent to ${owner.email} for ${org.name}`);
-
-                            // Pause de 2 secondes après chaque email
-                            await this.sleep(2000);
+                        try {
+                            if (owner.email) {
+                                if (owner.separateReportsByStore) {
+                                    for (const store of org.stores) {
+                                        const reportData = await this.reportsService.generateYearlyReport(org.id, undefined, store.id);
+                                        await this.mailService.sendYearlyReport(
+                                            owner.email,
+                                            {
+                                                ...reportData,
+                                                organizationName: org.name,
+                                                storeName: store.name,
+                                                ownerName: `${owner.firstName} ${owner.lastName}`,
+                                            },
+                                            owner.locale || 'fr',
+                                            org.name
+                                        );
+                                        this.logger.log(`Yearly report for store ${store.name} sent to ${owner.email}`);
+                                        await this.sleep(1000);
+                                    }
+                                } else {
+                                    const reportData = await this.reportsService.generateYearlyReport(org.id);
+                                    await this.mailService.sendYearlyReport(
+                                        owner.email,
+                                        {
+                                            ...reportData,
+                                            organizationName: org.name,
+                                            ownerName: `${owner.firstName} ${owner.lastName}`,
+                                        },
+                                        owner.locale || 'fr',
+                                        org.name
+                                    );
+                                    this.logger.log(`Yearly report sent to ${owner.email} for ${org.name}`);
+                                }
+                                await this.sleep(1000);
+                            }
+                        } catch (err) {
+                            this.logger.error(`Failed to send yearly report to ${owner.email}:`, err);
                         }
                     }
                 } catch (error) {

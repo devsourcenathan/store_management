@@ -448,7 +448,11 @@
             },
             "save": "Enregistrer les Préférences",
             "success": "Préférences de notifications mises à jour avec succès",
-            "error": "Échec de la mise à jour des préférences de notifications"
+            "error": "Échec de la mise à jour des préférences de notifications",
+            "separateReports": {
+                "label": "Rapports Séparés par Magasin",
+                "description": "Recevoir un email distinct pour chaque magasin"
+            }
         }
     },
     "users": {

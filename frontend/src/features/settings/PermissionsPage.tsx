@@ -129,36 +129,36 @@ export function PermissionsPage() {
     const groupedPermissions = groupPermissionsByCategory(allPermissions);
 
     return (
-        <div className="max-w-6xl mx-auto p-6">
-            <div className="mb-8">
-                <h1 className="text-3xl font-bold mb-2">{t('permissions.title')}</h1>
-                <p className="text-gray-600">
+        <div className="max-w-6xl mx-auto p-4 md:p-6">
+            <div className="mb-6 md:mb-8">
+                <h1 className="text-2xl md:text-3xl font-bold mb-2">{t('permissions.title')}</h1>
+                <p className="text-sm md:text-base text-gray-600">
                     {t('permissions.subtitle')}
                 </p>
             </div>
 
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-                <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-                    <div className="flex items-center justify-between">
+                <div className="p-4 md:p-6 border-b border-gray-200 dark:border-gray-700">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                         <div>
                             <h2 className="text-lg font-semibold">{t('permissions.role_permissions')}</h2>
                             <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                                 {t('permissions.owner_description')}
                             </p>
                         </div>
-                        <div className="flex gap-2">
+                        <div className="flex gap-2 w-full md:w-auto">
                             <button
                                 onClick={handleReset}
                                 disabled={isSaving}
-                                className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50"
+                                className="flex-1 md:flex-none justify-center px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50 flex items-center"
                             >
-                                <RotateCcw className="w-4 h-4 inline mr-2" />
+                                <RotateCcw className="w-4 h-4 mr-2" />
                                 {t('permissions.reset')}
                             </button>
                             <button
                                 onClick={handleSave}
                                 disabled={isSaving}
-                                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50 flex items-center"
+                                className="flex-1 md:flex-none justify-center px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50 flex items-center"
                             >
                                 {isSaving ? (
                                     <Loader2 className="w-4 h-4 animate-spin mr-2" />
@@ -171,11 +171,13 @@ export function PermissionsPage() {
                     </div>
                 </div>
 
-                <div className="p-6">
+                <div className="p-4 md:p-6">
                     {Object.entries(groupedPermissions).map(([category, permissions]) => (
                         <div key={category} className="mb-8 last:mb-0">
                             <h3 className="text-lg font-semibold mb-4 capitalize">{t(`permissions.categories.${category}` as any)}</h3>
-                            <div className="overflow-x-auto">
+
+                            {/* Desktop View - Table */}
+                            <div className="hidden md:block overflow-x-auto">
                                 <table className="w-full">
                                     <thead>
                                         <tr className="border-b border-gray-200 dark:border-gray-700">
@@ -232,6 +234,59 @@ export function PermissionsPage() {
                                         ))}
                                     </tbody>
                                 </table>
+                            </div>
+
+                            {/* Mobile View - Cards */}
+                            <div className="md:hidden space-y-4">
+                                {permissions.map((permission) => (
+                                    <div
+                                        key={permission.id}
+                                        className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4 border border-gray-100 dark:border-gray-700"
+                                    >
+                                        <div className="mb-3">
+                                            <div className="font-medium text-gray-900 dark:text-gray-100">
+                                                {t(`permissions.resources.${permission.resource}` as any)}
+                                            </div>
+                                            {permission.description && (
+                                                <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                                                    {permission.description}
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        <div className="flex items-center justify-between gap-4 pt-3 border-t border-gray-200 dark:border-gray-700/50">
+                                            <div className="flex flex-col items-center flex-1">
+                                                <span className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wide">
+                                                    {t('permissions.manager')}
+                                                </span>
+                                                <label className="inline-flex items-center cursor-pointer">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={managerPermissions[permission.resource] || false}
+                                                        onChange={() => handleToggle(permission.resource, 'MANAGER')}
+                                                        className="w-6 h-6 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                                                    />
+                                                </label>
+                                            </div>
+
+                                            <div className="w-px h-10 bg-gray-200 dark:bg-gray-700"></div>
+
+                                            <div className="flex flex-col items-center flex-1">
+                                                <span className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wide">
+                                                    {t('permissions.staff')}
+                                                </span>
+                                                <label className="inline-flex items-center cursor-pointer">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={staffPermissions[permission.resource] || false}
+                                                        onChange={() => handleToggle(permission.resource, 'STAFF')}
+                                                        className="w-6 h-6 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                                                    />
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
                         </div>
                     ))}

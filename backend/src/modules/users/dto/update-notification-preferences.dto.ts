@@ -20,4 +20,7 @@ export class UpdateNotificationPreferencesDto {
     @IsBoolean()
     @IsOptional()
     yearlyReportEnabled?: boolean;
+    @IsBoolean()
+    @IsOptional()
+    separateReportsByStore?: boolean;
 }
