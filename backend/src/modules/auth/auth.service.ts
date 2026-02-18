@@ -75,6 +75,7 @@ export class AuthService {
                 weeklyReportEnabled: user.weeklyReportEnabled,
                 monthlyReportEnabled: user.monthlyReportEnabled,
                 yearlyReportEnabled: user.yearlyReportEnabled,
+                separateReportsByStore: user.separateReportsByStore,
             },
         };
     }
@@ -241,6 +242,7 @@ export class AuthService {
             weeklyReportEnabled: user.weeklyReportEnabled,
             monthlyReportEnabled: user.monthlyReportEnabled,
             yearlyReportEnabled: user.yearlyReportEnabled,
+            separateReportsByStore: user.separateReportsByStore,
         };
     }
 }
