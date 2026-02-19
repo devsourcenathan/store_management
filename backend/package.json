@@ -29,8 +29,10 @@
     "seed": "ts-node prisma/seed.ts"
   },
   "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.993.0",
     "@aws-sdk/client-s3": "^3.969.0",
     "@aws-sdk/client-ses": "^3.972.0",
+    "@aws-sdk/lib-dynamodb": "^3.993.0",
     "@aws-sdk/s3-request-presigner": "^3.969.0",
     "@nestjs-modules/mailer": "^2.0.2",
     "@nestjs/bull": "^11.0.4",

@@ -20,8 +20,8 @@ export class SubscriptionsController {
     // ============================================
 
     @Post()
-    async create(@Body() data: any) {
-        return this.subscriptionsService.create(data);
+    async create(@Body() data: any, @Request() req: any) {
+        return this.subscriptionsService.create(data, req.user.id);
     }
 
     @Get()

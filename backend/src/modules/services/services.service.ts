@@ -48,9 +48,10 @@ export class ServicesService {
     async create(data: any, organizationId: string) {
         // Create service and default account
         return this.prisma.$transaction(async (tx) => {
+            const { storeId, ...serviceData } = data;
             const service = await tx.service.create({
                 data: {
-                    ...data,
+                    ...serviceData,
                     organizationId
                 }
             });
@@ -135,7 +136,7 @@ export class ServicesService {
     }
 
     async createOffer(serviceId: string, data: any) {
-        const { options, ...offerData } = data;
+        const { options, storeId, ...offerData } = data;
 
         return this.prisma.subscriptionOffer.create({
             data: {
@@ -152,7 +153,7 @@ export class ServicesService {
     }
 
     async updateOffer(offerId: string, data: any) {
-        const { options, ...offerData } = data;
+        const { options, storeId, ...offerData } = data;
 
         // Transaction to update offer and sync options
         return this.prisma.$transaction(async (tx) => {
@@ -180,15 +181,16 @@ export class ServicesService {
                 // Upsert (Update existing or Create new)
                 for (const opt of options) {
                     const price = Number(opt.price);
+                    const { storeId: optStoreId, ...optData } = opt;
 
                     if (opt.id && !opt.id.toString().startsWith('temp-')) {
                         // Update existing
                         await tx.subscriptionOption.update({
                             where: { id: opt.id },
                             data: {
-                                name: opt.name,
+                                name: optData.name,
                                 price: price,
-                                pricingRules: opt.pricingRules
+                                pricingRules: optData.pricingRules
                             }
                         });
                     } else {
@@ -196,9 +198,9 @@ export class ServicesService {
                         await tx.subscriptionOption.create({
                             data: {
                                 offerId,
-                                name: opt.name,
+                                name: optData.name,
                                 price: price,
-                                pricingRules: opt.pricingRules
+                                pricingRules: optData.pricingRules
                             }
                         });
                     }
@@ -218,18 +220,20 @@ export class ServicesService {
     }
 
     async createOption(offerId: string, data: any) {
+        const { storeId, ...optionData } = data;
         return this.prisma.subscriptionOption.create({
             data: {
-                ...data,
+                ...optionData,
                 offerId
             }
         });
     }
 
     async updateOption(optionId: string, data: any) {
+        const { storeId, ...optionData } = data;
         return this.prisma.subscriptionOption.update({
             where: { id: optionId },
-            data
+            data: optionData
         });
     }
 

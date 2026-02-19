@@ -19,9 +19,10 @@ export class SuppliersService {
     }
 
     async create(data: any, organizationId: string) {
+        const { storeId, ...supplierData } = data;
         return this.prisma.supplier.create({
             data: {
-                ...data,
+                ...supplierData,
                 organizationId,
             },
         });

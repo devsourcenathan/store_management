@@ -41,11 +41,7 @@ export const mediaService = {
         if (metadata?.tags) formData.append('tags', metadata.tags.join(','));
         if (metadata?.isPublic !== undefined) formData.append('isPublic', metadata.isPublic.toString());
 
-        const response = await api.post('/media/upload', formData, {
-            headers: {
-                'Content-Type': 'multipart/form-data',
-            },
-        });
+        const response = await api.post('/media/upload', formData);
         return response.data;
     },
 

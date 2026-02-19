@@ -41,12 +41,20 @@ api.interceptors.request.use(
             } else {
                 // Add storeId to body for POST/PATCH/PUT requests
                 if (config.data && typeof config.data === 'object') {
-                    // Only add if not already present
-                    if (!config.data.storeId) {
-                        config.data = {
-                            ...config.data,
-                            storeId: currentStoreId
-                        };
+                    // Check if data is FormData (for file uploads)
+                    if (config.data instanceof FormData) {
+                        if (!config.data.has('storeId')) {
+                            config.data.append('storeId', currentStoreId);
+                        }
+                    } else {
+                        // Regular JSON object
+                        // Only add if not already present
+                        if (!config.data.storeId) {
+                            config.data = {
+                                ...config.data,
+                                storeId: currentStoreId
+                            };
+                        }
                     }
                 }
             }
