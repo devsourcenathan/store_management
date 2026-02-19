@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { AcceptLanguageResolver, I18nModule, QueryResolver } from 'nestjs-i18n';
 import * as path from 'path';
 import { APP_FILTER } from '@nestjs/core';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 // import { SentryGlobalFilter } from '@sentry/nestjs'; // Removed due to import issues
 import { SentryFilter } from './common/filters/sentry.filter';
 import { PrismaModule } from './common/prisma/prisma.module';
@@ -33,12 +34,14 @@ import { BillingModule } from './modules/billing/billing.module';
 import { DevicesModule } from './modules/devices/devices.module';
 import { MaintenancesModule } from './modules/maintenances/maintenances.module';
 import { PermissionsModule } from './permissions/permissions.module';
+import { CreditModule } from './modules/credit/credit.module';
 
 @Module({
     imports: [
         ConfigModule.forRoot({
             isGlobal: true,
         }),
+        EventEmitterModule.forRoot(),
         I18nModule.forRoot({
             fallbackLanguage: 'fr',
             loaderOptions: {
@@ -77,6 +80,7 @@ import { PermissionsModule } from './permissions/permissions.module';
         DevicesModule,
         MaintenancesModule,
         PermissionsModule,
+        CreditModule,
     ],
     controllers: [HealthController],
     providers: [

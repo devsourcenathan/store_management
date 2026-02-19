@@ -15,6 +15,10 @@ import {
 import { ExportButton } from '@/components/ExportButton';
 import { RefreshCw } from 'lucide-react';
 import { Skeleton } from "@/components/ui/skeleton";
+import { CreditStatusBadge } from './components/CreditStatusBadge';
+import { CreditDetailsWidget } from './components/CreditDetailsWidget';
+import { AddPaymentModal } from './components/AddPaymentModal';
+import { CreditDetails, CreditStatus, CreditSaleType } from '@/types/credit';
 
 interface Sale {
     id: string;
@@ -26,6 +30,7 @@ interface Sale {
     customer?: { name: string };
     creator?: { firstName: string; lastName: string };
     items: any[];
+    creditContract?: CreditDetails; // API returns creditContract, not creditDetails directly
 }
 
 
@@ -54,9 +59,12 @@ export function SalesPage() {
 
     const [selectedSale, setSelectedSale] = useState<Sale | null>(null);
     const [isDetailsOpen, setIsDetailsOpen] = useState(false);
-    const [paymentAmount, setPaymentAmount] = useState<number>(0);
-    const [paymentMethod, setPaymentMethod] = useState<'CASH' | 'CARD' | 'MOBILE'>('CASH');
-    const [isAddingPayment, setIsAddingPayment] = useState(false);
+    const [isAddPaymentModalOpen, setIsAddPaymentModalOpen] = useState(false);
+
+    // Filters
+    const [searchTerm, setSearchTerm] = useState('');
+    const [statusFilter, setStatusFilter] = useState('ALL');
+    const [dateFilter, setDateFilter] = useState('ALL'); // ALL, TODAY, WEEK, MONTH
 
     const queryClient = useQueryClient();
 
@@ -112,11 +120,27 @@ export function SalesPage() {
         mutationFn: async (data: any) => {
             return api.post(`/sales/${selectedSale?.id}/payments`, data);
         },
-        onSuccess: () => {
+        onSuccess: (response) => {
+            const data = response.data;
             queryClient.invalidateQueries({ queryKey: ['sales'] });
-            setIsAddingPayment(false);
-            setPaymentAmount(0);
-            setIsDetailsOpen(false);
+            setIsAddPaymentModalOpen(false);
+
+            // Update local state to reflect payment immediately
+            if (selectedSale && data.amount) {
+                const newPaidAmount = selectedSale.paidAmount + data.amount;
+                const newRemaining = (selectedSale.creditContract?.remainingAmount || 0) - data.amount;
+
+                setSelectedSale({
+                    ...selectedSale,
+                    paidAmount: newPaidAmount,
+                    creditContract: selectedSale.creditContract ? {
+                        ...selectedSale.creditContract,
+                        paidAmount: (selectedSale.creditContract.paidAmount || 0) + data.amount,
+                        remainingAmount: newRemaining,
+                        status: newRemaining <= 0 ? CreditStatus.COMPLETED : CreditStatus.ACTIVE
+                    } : undefined
+                });
+            }
         },
     });
 
@@ -156,20 +180,33 @@ export function SalesPage() {
     const handleViewDetails = (sale: Sale) => {
         setSelectedSale(sale);
         setIsDetailsOpen(true);
-        setIsAddingPayment(false);
     };
 
-    const handleAddPayment = (e: React.FormEvent) => {
-        e.preventDefault();
+    const handleConfirmPayment = (amount: number, method: string) => {
         if (!selectedSale) return;
         addPaymentMutation.mutate({
-            amount: paymentAmount,
-            method: paymentMethod,
+            amount,
+            method,
             notes: 'Payment added via Sales History'
         });
     };
 
     const remainingBalance = selectedSale ? selectedSale.totalAmount - selectedSale.paidAmount : 0;
+
+    // Filter Logic
+    const filteredSales = sales?.filter(sale => {
+        const matchesSearch = searchTerm === '' ||
+            sale.customer?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            sale.items?.some((item: any) => item.product?.name?.toLowerCase().includes(searchTerm.toLowerCase())) ||
+            sale.id.toLowerCase().includes(searchTerm.toLowerCase());
+
+        const matchesStatus = statusFilter === 'ALL' ||
+            (statusFilter === 'COMPLETED' && sale.status === 'COMPLETED') ||
+            (statusFilter === 'ACTIVE' && sale.status === 'PARTIAL') ||
+            (statusFilter === 'OVERDUE' && sale.creditContract?.status === 'OVERDUE');
+
+        return matchesSearch && matchesStatus;
+    });
 
     return (
         <div className="space-y-6">
@@ -178,59 +215,78 @@ export function SalesPage() {
                     <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100">{t('sales.title')}</h2>
                     <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">{t('sales.subtitle')}</p>
                 </div>
-                <div className="flex gap-2">
-                    <button
-                        onClick={() => refetch()}
-                        className="p-2 text-gray-600 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors border border-gray-200 dark:border-gray-700"
-                        title={t('common.refresh', 'Refresh')}
-                    >
-                        <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
-                    </button>
-                    <ExportButton
-                        data={sales || []}
-                        columns={[
-                            { header: t('common.date'), key: 'createdAt' },
-                            { header: t('invoice.customer'), key: 'customer.name' },
-                            { header: t('invoice.total'), key: 'totalAmount' },
-                            { header: t('invoice.paid'), key: 'paidAmount' },
-                            { header: t('common.seller'), key: 'creator.firstName' },
-                            { header: t('common.status'), key: 'status' },
-                        ]}
-                        title={t('sales.title')}
-                        format="pdf"
-                        variant="outline"
-                        size="sm"
-                    />
+            </div>
 
-                    <ExportButton
-                        data={sales || []}
-                        columns={[
-                            { header: t('common.date'), key: 'createdAt' },
-                            { header: t('invoice.customer'), key: 'customer.name' },
-                            { header: t('invoice.total'), key: 'totalAmount' },
-                            { header: t('invoice.paid'), key: 'paidAmount' },
-                            { header: t('common.status'), key: 'status' },
-                        ]}
-                        title={t('sales.title')}
-                        format="excel"
-                        variant="outline"
-                        size="sm"
+
+            {/* Filters */}
+            <div className="flex flex-col sm:flex-row gap-3 bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
+                <div className="flex-1">
+                    <input
+                        type="text"
+                        placeholder={t('common.search', 'Search...')} // Add to translations if missing
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="w-full border border-gray-300 dark:border-gray-600 rounded-md p-2 dark:bg-gray-700 dark:text-white"
                     />
                 </div>
-                {/* <button
-                    onClick={() => setIsModalOpen(true)}
-                    className={getThemedButtonClasses("w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors whitespace-nowrap", !!themedButtonStyle.backgroundColor)}
-                    style={themedButtonStyle}
+                <select
+                    value={statusFilter}
+                    onChange={(e) => setStatusFilter(e.target.value)}
+                    className="border border-gray-300 dark:border-gray-600 rounded-md p-2 dark:bg-gray-700 dark:text-white"
                 >
-                    {t('sales.new_sale')}
-                </button> */}
+                    <option value="ALL">{t('common.all_statuses', 'All Statuses')}</option>
+                    <option value="COMPLETED">{t('credit.status_completed', 'Completed')}</option>
+                    <option value="ACTIVE">{t('credit.status_active', 'Active (Credit)')}</option>
+                    <option value="OVERDUE">{t('credit.status_overdue', 'Overdue')}</option>
+                </select>
+                {/* Add Date Filter if needed, for now sticking to search and status */}
+            </div>
+
+            <div className="flex gap-2">
+                <button
+                    onClick={() => refetch()}
+                    className="p-2 text-gray-600 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors border border-gray-200 dark:border-gray-700"
+                    title={t('common.refresh', 'Refresh')}
+                >
+                    <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+                </button>
+                <ExportButton
+                    data={filteredSales || []}
+                    columns={[
+                        { header: t('common.date'), key: 'createdAt' },
+                        { header: t('invoice.customer'), key: 'customer.name' },
+                        { header: t('invoice.total'), key: 'totalAmount' },
+                        { header: t('invoice.paid'), key: 'paidAmount' },
+                        { header: t('common.seller'), key: 'creator.firstName' },
+                        { header: t('common.status'), key: 'status' },
+                    ]}
+                    title={t('sales.title')}
+                    format="pdf"
+                    variant="outline"
+                    size="sm"
+                />
+
+                <ExportButton
+                    data={filteredSales || []}
+                    columns={[
+                        { header: t('common.date'), key: 'createdAt' },
+                        { header: t('invoice.customer'), key: 'customer.name' },
+                        { header: t('invoice.total'), key: 'totalAmount' },
+                        { header: t('invoice.paid'), key: 'paidAmount' },
+                        { header: t('common.status'), key: 'status' },
+                    ]}
+                    title={t('sales.title')}
+                    format="excel"
+                    variant="outline"
+                    size="sm"
+                />
             </div>
 
             {/* Sales Display - Cards on Mobile, Table on Desktop */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden border border-gray-100 dark:border-gray-700">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden border border-gray-100 dark:border-gray-700" >
                 {/* Mobile Card View */}
-                <div className="md:hidden p-4 space-y-4">
-                    {isLoading || (sales && sales.length > 0 && isFetching) ? (
+                <div className="md:hidden p-4 space-y-4" >
+                    {isLoading || (filteredSales && filteredSales.length > 0 && isFetching) ? (
                         Array(3).fill(0).map((_, i) => (
                             <div key={i} className="bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-xl p-4 shadow-sm">
                                 <div className="flex items-start justify-between mb-3">
@@ -258,10 +314,10 @@ export function SalesPage() {
                             <p>Error loading sales.</p>
                             <p className="text-xs mt-1">{error?.message}</p>
                         </div>
-                    ) : !sales || sales.length === 0 ? (
-                        <div className="px-4 py-12 text-center text-gray-500 dark:text-gray-400">No sales found.</div>
+                    ) : !filteredSales || filteredSales.length === 0 ? (
+                        <div className="px-4 py-12 text-center text-gray-500 dark:text-gray-400">{t('sales.no_sales', 'No sales found.')}</div>
                     ) : (
-                        sales.map((sale) => (
+                        filteredSales.map((sale) => (
                             <div key={sale.id} className="bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-xl p-4 shadow-sm hover:shadow-md hover:border-blue-300 dark:hover:border-blue-600 transition-all">
                                 {/* Sale Header */}
                                 <div className="flex items-start justify-between mb-3">
@@ -285,13 +341,12 @@ export function SalesPage() {
                                                 </span>
                                             )}
                                         </p>
+                                        {/* Customer Name Mobile */}
+                                        <p className="text-xs font-medium text-blue-600 dark:text-blue-400 mt-1">
+                                            {sale.customer?.name || t('pos.walk_in_customer', 'Walk-in Customer')}
+                                        </p>
                                     </div>
-                                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${sale.status === 'PAID' ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300' :
-                                        sale.status === 'PARTIAL' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300' :
-                                            'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300'
-                                        }`}>
-                                        {sale.status}
-                                    </span>
+                                    <CreditStatusBadge status={sale.status} />
                                 </div>
 
                                 {/* Sale Details */}
@@ -321,15 +376,17 @@ export function SalesPage() {
                                 </div>
                             </div>
                         ))
-                    )}
+                    )
+                    }
                 </div>
 
                 {/* Desktop Table View */}
-                <div className="hidden md:block">
+                <div className="hidden md:block" >
                     <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                         <thead className="bg-gray-50 dark:bg-gray-700/50">
                             <tr>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.date', 'Date')}</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('invoice.customer', 'Customer')}</th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('sales.products', 'Products')}</th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.total', 'Total')}</th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.paid', 'Paid')}</th>
@@ -339,9 +396,10 @@ export function SalesPage() {
                             </tr>
                         </thead>
                         <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                            {isLoading || (sales && sales.length > 0 && isFetching) ? (
+                            {isLoading || (filteredSales && filteredSales.length > 0 && isFetching) ? (
                                 Array(5).fill(0).map((_, i) => (
                                     <tr key={i}>
+                                        <td className="px-6 py-4"><Skeleton className="h-4 w-32" /></td>
                                         <td className="px-6 py-4"><Skeleton className="h-4 w-32" /></td>
                                         <td className="px-6 py-4">
                                             <div className="space-y-1">
@@ -360,14 +418,17 @@ export function SalesPage() {
                                     </tr>
                                 ))
                             ) : isError ? (
-                                <tr><td colSpan={6} className="px-6 py-12 text-center text-red-500">Error: {error?.message}</td></tr>
-                            ) : !sales || sales.length === 0 ? (
-                                <tr><td colSpan={6} className="px-6 py-12 text-center text-gray-500 dark:text-gray-400">No sales found.</td></tr>
+                                <tr><td colSpan={8} className="px-6 py-12 text-center text-red-500">Error: {error?.message}</td></tr>
+                            ) : !filteredSales || filteredSales.length === 0 ? (
+                                <tr><td colSpan={8} className="px-6 py-12 text-center text-gray-500 dark:text-gray-400">{t('sales.no_sales', 'No sales found.')}</td></tr>
                             ) : (
-                                sales.map((sale) => (
+                                filteredSales.map((sale) => (
                                     <tr key={sale.id}>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                             {new Date(sale.createdAt).toLocaleDateString()} {new Date(sale.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
+                                            {sale.customer?.name || <span className="text-gray-400 italic">{t('pos.walk_in_customer', 'Walk-in Customer')}</span>}
                                         </td>
                                         <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-gray-100">
                                             <div className="max-w-xs">
@@ -384,12 +445,7 @@ export function SalesPage() {
                                             {sale.creator ? `${sale.creator.firstName} ${sale.creator.lastName}` : 'N/A'}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${sale.status === 'PAID' ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300' :
-                                                sale.status === 'PARTIAL' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300' :
-                                                    'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300'
-                                                }`}>
-                                                {sale.status}
-                                            </span>
+                                            <CreditStatusBadge status={sale.status} />
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                             <button
@@ -414,19 +470,14 @@ export function SalesPage() {
             </div>
 
             {/* Sale Details Sheet */}
-            <Sheet open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
+            <Sheet open={isDetailsOpen} onOpenChange={setIsDetailsOpen} >
                 <SheetContent side="right" className="sm:max-w-2xl overflow-y-auto w-full">
                     {selectedSale && (
                         <>
                             <SheetHeader className="mb-6">
                                 <SheetTitle className="flex justify-between items-center">
                                     <span>{t('sales.details', 'Sale Details')}</span>
-                                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${selectedSale.status === 'PAID' ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300' :
-                                        selectedSale.status === 'PARTIAL' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300' :
-                                            'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300'
-                                        }`}>
-                                        {selectedSale.status}
-                                    </span>
+                                    <CreditStatusBadge status={selectedSale.status} />
                                 </SheetTitle>
                                 <SheetDescription>
                                     {t('sales.ref')}: {selectedSale.id.substring(0, 8)} • {new Date(selectedSale.createdAt).toLocaleString()}
@@ -436,10 +487,22 @@ export function SalesPage() {
                                             <span>{selectedSale.creator.firstName} {selectedSale.creator.lastName}</span>
                                         </div>
                                     )}
+                                    <div className="mt-1 flex items-center gap-2">
+                                        <span className="font-medium text-gray-700 dark:text-gray-300">{t('invoice.customer')}:</span>
+                                        <span>{selectedSale.customer?.name || t('pos.walk_in_customer', 'Walk-in Customer')}</span>
+                                    </div>
                                 </SheetDescription>
                             </SheetHeader>
 
                             <div className="space-y-6">
+                                {/* Credit Details Widget */}
+                                {selectedSale.creditContract && (
+                                    <CreditDetailsWidget
+                                        creditDetails={selectedSale.creditContract}
+                                        paidAmount={selectedSale.paidAmount}
+                                    />
+                                )}
+
                                 {/* Items List */}
                                 <div>
                                     <h4 className="font-semibold text-gray-900 dark:text-gray-100 mb-3">
@@ -483,62 +546,15 @@ export function SalesPage() {
                                     </div>
                                 </div>
 
-                                {/* Add Payment Section */}
+                                {/* Add Payment Button */}
                                 {remainingBalance > 0 && (
                                     <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
-                                        {!isAddingPayment ? (
-                                            <button
-                                                onClick={() => {
-                                                    setPaymentAmount(remainingBalance);
-                                                    setIsAddingPayment(true);
-                                                }}
-                                                className="w-full btn-theme-primary py-3 rounded-lg font-medium"
-                                            >
-                                                {t('sales.add_payment', 'Add Payment')} ({remainingBalance} F)
-                                            </button>
-                                        ) : (
-                                            <form onSubmit={handleAddPayment} className="bg-gray-50 dark:bg-gray-900/50 rounded-lg p-4 space-y-4">
-                                                <h4 className="font-semibold text-gray-900 dark:text-gray-100">{t('sales.record_payment', 'Record New Payment')}</h4>
-                                                <div>
-                                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('sales.amount', 'Amount')}</label>
-                                                    <input
-                                                        type="number"
-                                                        max={remainingBalance}
-                                                        value={paymentAmount}
-                                                        onChange={(e) => setPaymentAmount(Number(e.target.value))}
-                                                        className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md shadow-sm p-2 dark:bg-gray-800 dark:text-white"
-                                                    />
-                                                </div>
-                                                <div>
-                                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('sales.payment_method', 'Method')}</label>
-                                                    <select
-                                                        value={paymentMethod}
-                                                        onChange={(e) => setPaymentMethod(e.target.value as any)}
-                                                        className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md shadow-sm p-2 dark:bg-gray-800 dark:text-white"
-                                                    >
-                                                        <option value="CASH">Cash</option>
-                                                        <option value="CARD">Card</option>
-                                                        <option value="MOBILE">Mobile Money</option>
-                                                    </select>
-                                                </div>
-                                                <div className="flex gap-3 pt-2">
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => setIsAddingPayment(false)}
-                                                        className="flex-1 px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg font-medium hover:bg-gray-300 dark:hover:bg-gray-600"
-                                                    >
-                                                        {t('sales.cancel', 'Cancel')}
-                                                    </button>
-                                                    <button
-                                                        type="submit"
-                                                        disabled={addPaymentMutation.isPending}
-                                                        className="flex-1 btn-theme-primary px-4 py-2 rounded-lg font-medium disabled:opacity-50"
-                                                    >
-                                                        {addPaymentMutation.isPending ? t('sales.processing', 'Processing...') : t('sales.confirm_payment', 'Confirm Payment')}
-                                                    </button>
-                                                </div>
-                                            </form>
-                                        )}
+                                        <button
+                                            onClick={() => setIsAddPaymentModalOpen(true)}
+                                            className="w-full btn-theme-primary py-3 rounded-lg font-medium"
+                                        >
+                                            {t('sales.add_payment', 'Add Payment')} ({remainingBalance} FCFA)
+                                        </button>
                                     </div>
                                 )}
                             </div>
@@ -546,6 +562,15 @@ export function SalesPage() {
                     )}
                 </SheetContent>
             </Sheet>
+
+            {/* Add Payment Modal */}
+            <AddPaymentModal
+                isOpen={isAddPaymentModalOpen}
+                onClose={() => setIsAddPaymentModalOpen(false)}
+                onConfirm={handleConfirmPayment}
+                remainingAmount={remainingBalance}
+                isProcessing={addPaymentMutation.isPending}
+            />
 
             {/* New Sale Sheet (Existing) */}
             <Sheet open={isModalOpen} onOpenChange={setIsModalOpen}>
@@ -557,121 +582,97 @@ export function SalesPage() {
                         </SheetDescription>
                     </SheetHeader>
                     <form onSubmit={handleSubmit} className="space-y-6">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Customer (Optional)</label>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                Customer
+                            </label>
+                            <select
+                                value={newSale.customerId}
+                                onChange={(e) => setNewSale({ ...newSale, customerId: e.target.value })}
+                                className="w-full rounded-md border border-gray-300 dark:border-gray-600 p-2 dark:bg-gray-700 dark:text-white"
+                                required
+                            >
+                                <option value="">Select a customer</option>
+                                <option value="WALK_IN">Walk-in Customer</option>
+                                {customers?.map((customer) => (
+                                    <option key={customer.id} value={customer.id}>
+                                        {customer.name}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                Add Products
+                            </label>
+                            <div className="flex gap-2">
                                 <select
-                                    className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md shadow-sm p-2 dark:bg-gray-700 dark:text-white"
-                                    value={newSale.customerId}
-                                    onChange={(e) => setNewSale({ ...newSale, customerId: e.target.value })}
-                                >
-                                    <option value="">Walk-in Customer</option>
-                                    {customers?.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                                </select>
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Add Product</label>
-                                <select
-                                    className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md shadow-sm p-2 dark:bg-gray-700 dark:text-white"
+                                    className="flex-1 rounded-md border border-gray-300 dark:border-gray-600 p-2 dark:bg-gray-700 dark:text-white"
                                     onChange={(e) => {
-                                        if (e.target.value) handleAddItem(e.target.value);
-                                        e.target.value = '';
+                                        if (e.target.value) {
+                                            handleAddItem(e.target.value);
+                                            e.target.value = '';
+                                        }
                                     }}
                                 >
-                                    <option value="">Search/Select product...</option>
-                                    {products?.map(p => (
-                                        <option key={p.id} value={p.id}>
-                                            {p.name} - {p.basePrice} FCFA (Stock: {getAvailableStock(p.id)})
+                                    <option value="">Select product to add...</option>
+                                    {products?.map((product) => (
+                                        <option key={product.id} value={product.id}>
+                                            {product.name} - {product.basePrice} FCFA
                                         </option>
                                     ))}
                                 </select>
-                                <p className="mt-1 text-xs text-gray-500">
-                                    💡 Tip: Current stock level is shown in parentheses.
-                                </p>
                             </div>
                         </div>
 
-                        <div>
-                            <h4 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">Items</h4>
-                            <div className="border border-gray-200 dark:border-gray-700 rounded-md overflow-hidden">
-                                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                                    <thead className="bg-gray-50 dark:bg-gray-700/50">
-                                        <tr>
-                                            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Item</th>
-                                            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Qty</th>
-                                            <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Total</th>
-                                            <th className="px-4 py-2"></th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                                        {newSale.items.map((item, index) => (
-                                            <tr key={index}>
-                                                <td className="px-4 py-2 text-sm">
-                                                    <div className="font-medium text-gray-900 dark:text-gray-100">{item.name}</div>
-                                                    <div className="text-xs text-gray-500 dark:text-gray-400">{item.unitPrice} FCFA/unit</div>
-                                                </td>
-                                                <td className="px-4 py-2 text-sm">
-                                                    <input
-                                                        type="number"
-                                                        min="1"
-                                                        className="w-16 border border-gray-300 dark:border-gray-600 rounded p-1 dark:bg-gray-700 dark:text-white"
-                                                        value={item.quantity}
-                                                        onChange={(e) => {
-                                                            const newItems = [...newSale.items];
-                                                            newItems[index].quantity = parseInt(e.target.value);
-                                                            setNewSale({ ...newSale, items: newItems });
-                                                        }}
-                                                    />
-                                                </td>
-                                                <td className="px-4 py-2 text-sm text-right font-medium text-gray-900 dark:text-gray-100">
-                                                    {item.quantity * item.unitPrice}
-                                                </td>
-                                                <td className="px-4 py-2 text-right">
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => handleRemoveItem(index)}
-                                                        className="text-red-600 hover:text-red-900 font-bold"
-                                                    >
-                                                        ×
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                        {newSale.items.length === 0 && (
-                                            <tr>
-                                                <td colSpan={4} className="px-4 py-8 text-center text-gray-500 italic">
-                                                    No items added yet. Search for a product above to add it to the sale.
-                                                </td>
-                                            </tr>
-                                        )}
-                                    </tbody>
-                                    {newSale.items.length > 0 && (
-                                        <tfoot className="bg-gray-50 dark:bg-gray-700/50 font-bold text-gray-900 dark:text-gray-100">
-                                            <tr>
-                                                <td colSpan={2} className="px-4 py-3 text-right">Total Amount:</td>
-                                                <td className="px-4 py-3 text-right text-blue-600 dark:text-blue-400 text-lg">
-                                                    {newSale.items.reduce((acc, item) => acc + (item.quantity * item.unitPrice), 0)} FCFA
-                                                </td>
-                                                <td></td>
-                                            </tr>
-                                        </tfoot>
-                                    )}
-                                </table>
-                            </div>
+                        <div className="space-y-3">
+                            {newSale.items.map((item, index) => (
+                                <div key={index} className="flex justify-between items-center bg-gray-50 dark:bg-gray-800 p-3 rounded-lg">
+                                    <div>
+                                        <p className="font-medium text-gray-900 dark:text-gray-100">{item.name}</p>
+                                        <p className="text-sm text-gray-500">{item.unitPrice} FCFA x {item.quantity}</p>
+                                    </div>
+                                    <div className="flex items-center gap-3">
+                                        <input
+                                            type="number"
+                                            min="1"
+                                            value={item.quantity}
+                                            onChange={(e) => {
+                                                const newItems = [...newSale.items];
+                                                newItems[index].quantity = parseInt(e.target.value) || 1;
+                                                setNewSale({ ...newSale, items: newItems });
+                                            }}
+                                            className="w-16 rounded-md border border-gray-300 dark:border-gray-600 p-1 dark:bg-gray-700 dark:text-white"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => handleRemoveItem(index)}
+                                            className="text-red-500 hover:text-red-700"
+                                        >
+                                            Remove
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
+                            {newSale.items.length === 0 && (
+                                <p className="text-center text-gray-500 text-sm py-4">No items added yet</p>
+                            )}
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Notes</label>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                Notes
+                            </label>
                             <textarea
-                                className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md shadow-sm p-2 dark:bg-gray-700 dark:text-white"
-                                rows={3}
                                 value={newSale.notes}
                                 onChange={(e) => setNewSale({ ...newSale, notes: e.target.value })}
-                                placeholder="Add any notes about this sale..."
+                                className="w-full rounded-md border border-gray-300 dark:border-gray-600 p-2 dark:bg-gray-700 dark:text-white h-24"
+                                placeholder="Optional notes..."
                             />
                         </div>
 
-                        <div className="flex flex-col gap-3 pt-6">
+                        <div className="flex gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
                             <button
                                 type="submit"
                                 disabled={createSaleMutation.isPending || newSale.items.length === 0}
@@ -690,6 +691,6 @@ export function SalesPage() {
                     </form>
                 </SheetContent>
             </Sheet>
-        </div >
+        </div>
     );
 }

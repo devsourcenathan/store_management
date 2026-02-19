@@ -1,4 +1,4 @@
-{
+﻿{
     "common": {
         "loading": "Loading...",
         "save": "Save",
@@ -34,7 +34,9 @@
         "updateDescription": "A new version of the app is available. Update to get the latest features.",
         "later": "Later",
         "update": "Update",
-        "seller": "Seller"
+        "seller": "Seller",
+        "refresh": "Refresh",
+        "all_statuses": "All Statuses"
     },
     "nav": {
         "dashboard": "Dashboard",
@@ -768,4 +770,4 @@
             "sidebar": "Users will see only the features they have access to in the sidebar"
         }
     }
-}
+, "credit": { "status_completed": "Paid", "status_active": "Active", "status_overdue": "Overdue" } }
