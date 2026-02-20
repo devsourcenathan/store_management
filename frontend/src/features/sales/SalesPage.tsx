@@ -30,6 +30,7 @@ interface Sale {
     customer?: { name: string };
     creator?: { firstName: string; lastName: string };
     items: any[];
+    payments?: any[];
     creditContract?: CreditDetails; // API returns creditContract, not creditDetails directly
 }
 
@@ -545,6 +546,63 @@ export function SalesPage() {
                                         )}
                                     </div>
                                 </div>
+
+                                {/* Payment History Universal */}
+                                {(() => {
+                                    // Combine and deduplicate payments
+                                    const rawPayments = [
+                                        ...(selectedSale.payments || []).map((p: any) => ({ id: p.id, amount: p.amount, method: p.method, date: p.createdAt || p.paidAt, source: 'sale' })),
+                                        ...(selectedSale.creditContract?.payments || []).map((p: any) => ({ id: p.id, amount: p.amount, method: p.method, date: p.paidAt, source: 'credit' }))
+                                    ];
+
+                                    // Deduplicate based on amount and time (within 10 seconds)
+                                    const uniquePayments: typeof rawPayments = [];
+                                    rawPayments.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()).forEach(p => {
+                                        const duplicate = uniquePayments.find(up =>
+                                            up.amount === p.amount &&
+                                            Math.abs(new Date(up.date).getTime() - new Date(p.date).getTime()) < 10000
+                                        );
+                                        if (!duplicate) {
+                                            uniquePayments.push(p);
+                                        }
+                                    });
+
+                                    if (uniquePayments.length === 0) return null;
+
+                                    return (
+                                        <div className="mt-6">
+                                            <h4 className="font-semibold text-gray-900 dark:text-gray-100 mb-3">
+                                                {t('credit.payment_history', 'Historique des paiements')}
+                                            </h4>
+                                            <div className="bg-gray-50 dark:bg-gray-900/50 rounded-lg overflow-hidden border border-gray-100 dark:border-gray-700">
+                                                <table className="min-w-full text-xs">
+                                                    <thead className="bg-gray-100 dark:bg-gray-800">
+                                                        <tr>
+                                                            <th className="px-3 py-2 text-left text-gray-500 dark:text-gray-400 font-medium">{t('common.date', 'Date')}</th>
+                                                            <th className="px-3 py-2 text-left text-gray-500 dark:text-gray-400 font-medium">{t('pos.amount', 'Montant')}</th>
+                                                            <th className="px-3 py-2 text-left text-gray-500 dark:text-gray-400 font-medium">{t('pos.payment_method', 'Mode')}</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                                                        {uniquePayments.map((payment) => (
+                                                            <tr key={payment.id}>
+                                                                <td className="px-3 py-2 text-gray-900 dark:text-gray-100">
+                                                                    {new Date(payment.date).toLocaleDateString()} {new Date(payment.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                                </td>
+                                                                <td className="px-3 py-2 text-gray-900 dark:text-gray-100 font-medium">
+                                                                    {payment.amount.toLocaleString()} FCFA
+                                                                </td>
+                                                                <td className="px-3 py-2 text-gray-500 dark:text-gray-400">
+                                                                    {t(`payment_methods.${payment.method?.toLowerCase()}`, payment.method) as string}
+                                                                </td>
+                                                            </tr>
+                                                        ))}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    );
+                                })()}
 
                                 {/* Add Payment Button */}
                                 {remainingBalance > 0 && (
