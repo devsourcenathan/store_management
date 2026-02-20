@@ -159,7 +159,7 @@
         "amount_paid": "Montant Payé",
         "customer_name_invoice": "Nom du Client (pour Facture)",
         "enter_customer_name": "Entrez le nom du client (optionnel)",
-        "credit_sale": "Vente à crédit",
+        "credit_sale": "Vente en tranches",
         "initial_payment": "Acompte initial",
         "delivery_mode": "Mode de Livraison",
         "immediate_delivery": "Livraison Immédiate",
@@ -556,6 +556,27 @@
             "new": "Nouveau Stock",
             "new_adjusted": "Nouveau Stock (Ajusté)",
             "set_to": "Défini à"
+        },
+        "transfer_modal": {
+            "title": "Transférer du Stock",
+            "description": "Déplacez l'inventaire entre vos magasins.",
+            "from_store": "Magasin d'origine",
+            "no_store_selected": "Aucun magasin sélectionné",
+            "to_store": "Magasin de destination",
+            "select_destination": "Sélectionner un magasin de destination...",
+            "product": "Produit",
+            "select_product": "Sélectionner un produit...",
+            "available_stock": "Stock disponible :",
+            "units": "unités",
+            "quantity": "Quantité",
+            "notes": "Notes (Optionnel)",
+            "notes_placeholder": "Ajoutez des notes concernant ce transfert...",
+            "moving": "Transfert de {{quantity}} unité(s) de {{product}}",
+            "success": "Transfert réussi !",
+            "processing": "Traitement...",
+            "complete_transfer": "Terminer le transfert",
+            "close": "Fermer",
+            "error_fallback": "Échec du transfert. Veuillez vérifier les niveaux de stock."
         }
     },
     "media": {
@@ -781,5 +802,52 @@
         "status_completed": "Payé",
         "status_active": "En cours",
         "status_overdue": "En retard"
+    },
+    "user_analytics": {
+        "title": "Analytiques Utilisateur",
+        "subtitle": "Suivez les performances de l'équipe et les contributions individuelles",
+        "access_denied_title": "Accès Refusé",
+        "access_denied_desc": "Cette page est uniquement accessible aux propriétaires et managers.",
+        "period": "Période",
+        "periods": {
+            "today": "Aujourd'hui",
+            "week": "Cette Semaine",
+            "month": "Ce Mois",
+            "quarter": "Ce Trimestre",
+            "year": "Cette Année",
+            "custom": "Personnalisé"
+        },
+        "start_date": "Date de début",
+        "end_date": "Date de fin",
+        "export_csv": "Exporter CSV",
+        "total_revenue": "Revenu Total",
+        "sales": "Ventes",
+        "maintenances": "Maintenances",
+        "subscriptions": "Abonnements",
+        "charts": {
+            "sales_trend": "Tendance des Ventes",
+            "revenue_distribution": "Répartition des Revenus",
+            "top_performers": "Meilleurs Performeurs"
+        },
+        "performance": {
+            "sales_perf": "Performances des Ventes",
+            "maintenance_perf": "Performances des Maintenances",
+            "subscription_perf": "Performances des Abonnements",
+            "total_sales": "Ventes Totales",
+            "total": "Total",
+            "revenue": "Revenu",
+            "avg_value": "Valeur Moyenne",
+            "completed": "Complété",
+            "active": "Actif"
+        },
+        "rankings": {
+            "title": "Classement des Utilisateurs",
+            "rank": "Rang",
+            "user": "Utilisateur",
+            "sales": "Ventes",
+            "maintenances": "Maintenances",
+            "subscriptions": "Abonnements",
+            "total_revenue": "Revenu Total"
+        }
     }
 }

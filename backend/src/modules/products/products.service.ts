@@ -221,18 +221,20 @@ export class ProductsService {
     }
 
     async createCategory(data: any, organizationId: string) {
+        const { storeId, ...categoryData } = data;
         return this.prisma.category.create({
             data: {
-                ...data,
+                ...categoryData,
                 organizationId,
             },
         });
     }
 
     async updateCategory(id: string, data: any, organizationId: string) {
+        const { storeId, ...categoryData } = data;
         return this.prisma.category.update({
             where: { id },
-            data,
+            data: categoryData,
         });
     }
 

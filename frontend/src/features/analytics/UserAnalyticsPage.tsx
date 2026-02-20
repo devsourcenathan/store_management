@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { userAnalyticsApi } from '@/services/api';
 import { useAuth } from '@/features/auth/useAuth';
 import { AlertCircle, Download, Trophy, Medal, Award } from 'lucide-react';
@@ -33,6 +34,7 @@ ChartJS.register(
 );
 
 export function UserAnalyticsPage() {
+    const { t } = useTranslation();
     const { user } = useAuth();
     const [period, setPeriod] = useState('month');
     const [selectedUserId, setSelectedUserId] = useState('');
@@ -93,10 +95,10 @@ export function UserAnalyticsPage() {
                 <div className="text-center">
                     <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
                     <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-                        Access Denied
+                        {t('user_analytics.access_denied_title')}
                     </h2>
                     <p className="text-gray-600 dark:text-gray-400">
-                        This page is only accessible to owners and managers.
+                        {t('user_analytics.access_denied_desc')}
                     </p>
                 </div>
             </div>
@@ -200,10 +202,10 @@ export function UserAnalyticsPage() {
             <div className="flex flex-col gap-4">
                 <div>
                     <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100">
-                        User Analytics
+                        {t('user_analytics.title')}
                     </h2>
                     <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">
-                        Track team performance and individual contributions
+                        {t('user_analytics.subtitle')}
                     </p>
                 </div>
 
@@ -213,19 +215,19 @@ export function UserAnalyticsPage() {
                         {/* Period Selector */}
                         <div>
                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                Period
+                                {t('user_analytics.period')}
                             </label>
                             <select
                                 value={period}
                                 onChange={(e) => setPeriod(e.target.value)}
                                 className="w-full border border-gray-300 dark:border-gray-600 rounded-lg p-2 dark:bg-gray-700 dark:text-white"
                             >
-                                <option value="today">Today</option>
-                                <option value="week">This Week</option>
-                                <option value="month">This Month</option>
-                                <option value="quarter">This Quarter</option>
-                                <option value="year">This Year</option>
-                                <option value="custom">Custom Range</option>
+                                <option value="today">{t('user_analytics.periods.today')}</option>
+                                <option value="week">{t('user_analytics.periods.week')}</option>
+                                <option value="month">{t('user_analytics.periods.month')}</option>
+                                <option value="quarter">{t('user_analytics.periods.quarter')}</option>
+                                <option value="year">{t('user_analytics.periods.year')}</option>
+                                <option value="custom">{t('user_analytics.periods.custom')}</option>
                             </select>
                         </div>
 
@@ -234,7 +236,7 @@ export function UserAnalyticsPage() {
                             <>
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                        Start Date
+                                        {t('user_analytics.start_date')}
                                     </label>
                                     <input
                                         type="date"
@@ -245,7 +247,7 @@ export function UserAnalyticsPage() {
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                        End Date
+                                        {t('user_analytics.end_date')}
                                     </label>
                                     <input
                                         type="date"
@@ -264,7 +266,7 @@ export function UserAnalyticsPage() {
                                 className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                             >
                                 <Download className="w-4 h-4" />
-                                Export CSV
+                                {t('user_analytics.export_csv')}
                             </button>
                         </div>
                     </div>
@@ -274,25 +276,25 @@ export function UserAnalyticsPage() {
                 {dashboard && (
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-100 dark:border-gray-700">
-                            <p className="text-sm text-gray-500 dark:text-gray-400">Total Revenue</p>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">{t('user_analytics.total_revenue')}</p>
                             <p className="text-2xl font-bold text-gray-900 dark:text-white">
                                 {totalRevenue.toLocaleString()} F
                             </p>
                         </div>
                         <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-100 dark:border-gray-700">
-                            <p className="text-sm text-gray-500 dark:text-gray-400">Sales</p>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">{t('user_analytics.sales')}</p>
                             <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
                                 {totalSales}
                             </p>
                         </div>
                         <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-100 dark:border-gray-700">
-                            <p className="text-sm text-gray-500 dark:text-gray-400">Maintenances</p>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">{t('user_analytics.maintenances')}</p>
                             <p className="text-2xl font-bold text-green-600 dark:text-green-400">
                                 {totalMaintenances}
                             </p>
                         </div>
                         <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-100 dark:border-gray-700">
-                            <p className="text-sm text-gray-500 dark:text-gray-400">Subscriptions</p>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">{t('user_analytics.subscriptions')}</p>
                             <p className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
                                 {totalSubscriptions}
                             </p>
@@ -307,7 +309,7 @@ export function UserAnalyticsPage() {
                     {/* Sales Trend */}
                     <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-100 dark:border-gray-700">
                         <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
-                            Sales Trend
+                            {t('user_analytics.charts.sales_trend')}
                         </h3>
                         <div className="h-64">
                             <Line data={salesTrendData} options={chartOptions} />
@@ -317,7 +319,7 @@ export function UserAnalyticsPage() {
                     {/* Revenue Distribution */}
                     <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-100 dark:border-gray-700">
                         <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
-                            Revenue Distribution
+                            {t('user_analytics.charts.revenue_distribution')}
                         </h3>
                         <div className="h-64">
                             <Pie data={revenueDistributionData} options={chartOptions} />
@@ -327,7 +329,7 @@ export function UserAnalyticsPage() {
                     {/* Top Performers */}
                     <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-100 dark:border-gray-700 lg:col-span-2">
                         <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
-                            Top Performers
+                            {t('user_analytics.charts.top_performers')}
                         </h3>
                         <div className="h-64">
                             <Bar data={topPerformersData} options={chartOptions} />
@@ -342,23 +344,23 @@ export function UserAnalyticsPage() {
                     {/* Sales Performance */}
                     <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-100 dark:border-gray-700">
                         <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
-                            Sales Performance
+                            {t('user_analytics.performance.sales_perf')}
                         </h3>
                         <div className="space-y-3">
                             <div className="flex justify-between">
-                                <span className="text-sm text-gray-600 dark:text-gray-400">Total Sales</span>
+                                <span className="text-sm text-gray-600 dark:text-gray-400">{t('user_analytics.performance.total_sales')}</span>
                                 <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
                                     {totalSales}
                                 </span>
                             </div>
                             <div className="flex justify-between">
-                                <span className="text-sm text-gray-600 dark:text-gray-400">Revenue</span>
+                                <span className="text-sm text-gray-600 dark:text-gray-400">{t('user_analytics.performance.revenue')}</span>
                                 <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
                                     {totalSalesRevenue.toLocaleString()} F
                                 </span>
                             </div>
                             <div className="flex justify-between">
-                                <span className="text-sm text-gray-600 dark:text-gray-400">Avg Value</span>
+                                <span className="text-sm text-gray-600 dark:text-gray-400">{t('user_analytics.performance.avg_value')}</span>
                                 <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
                                     {totalSales > 0
                                         ? (totalSalesRevenue / totalSales).toFixed(0)
@@ -372,23 +374,23 @@ export function UserAnalyticsPage() {
                     {/* Maintenance Performance */}
                     <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-100 dark:border-gray-700">
                         <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
-                            Maintenance Performance
+                            {t('user_analytics.performance.maintenance_perf')}
                         </h3>
                         <div className="space-y-3">
                             <div className="flex justify-between">
-                                <span className="text-sm text-gray-600 dark:text-gray-400">Total</span>
+                                <span className="text-sm text-gray-600 dark:text-gray-400">{t('user_analytics.performance.total')}</span>
                                 <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
                                     {totalMaintenances}
                                 </span>
                             </div>
                             <div className="flex justify-between">
-                                <span className="text-sm text-gray-600 dark:text-gray-400">Revenue</span>
+                                <span className="text-sm text-gray-600 dark:text-gray-400">{t('user_analytics.performance.revenue')}</span>
                                 <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
                                     {totalMaintenanceRevenue.toLocaleString()} F
                                 </span>
                             </div>
                             <div className="flex justify-between">
-                                <span className="text-sm text-gray-600 dark:text-gray-400">Completed</span>
+                                <span className="text-sm text-gray-600 dark:text-gray-400">{t('user_analytics.performance.completed')}</span>
                                 <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
                                     {completedMaintenances}
                                 </span>
@@ -399,23 +401,23 @@ export function UserAnalyticsPage() {
                     {/* Subscription Performance */}
                     <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-100 dark:border-gray-700">
                         <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
-                            Subscription Performance
+                            {t('user_analytics.performance.subscription_perf')}
                         </h3>
                         <div className="space-y-3">
                             <div className="flex justify-between">
-                                <span className="text-sm text-gray-600 dark:text-gray-400">Total</span>
+                                <span className="text-sm text-gray-600 dark:text-gray-400">{t('user_analytics.performance.total')}</span>
                                 <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
                                     {totalSubscriptions}
                                 </span>
                             </div>
                             <div className="flex justify-between">
-                                <span className="text-sm text-gray-600 dark:text-gray-400">Revenue</span>
+                                <span className="text-sm text-gray-600 dark:text-gray-400">{t('user_analytics.performance.revenue')}</span>
                                 <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
                                     {totalSubscriptionRevenue.toLocaleString()} F
                                 </span>
                             </div>
                             <div className="flex justify-between">
-                                <span className="text-sm text-gray-600 dark:text-gray-400">Active</span>
+                                <span className="text-sm text-gray-600 dark:text-gray-400">{t('user_analytics.performance.active')}</span>
                                 <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
                                     {activeSubscriptions}
                                 </span>
@@ -431,7 +433,7 @@ export function UserAnalyticsPage() {
                     <div className="p-6">
                         <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
                             <Trophy className="w-5 h-5 text-yellow-500" />
-                            User Rankings
+                            {t('user_analytics.rankings.title')}
                         </h3>
                     </div>
                     <div className="overflow-x-auto">
@@ -439,22 +441,22 @@ export function UserAnalyticsPage() {
                             <thead className="bg-gray-50 dark:bg-gray-700/50">
                                 <tr>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                        Rank
+                                        {t('user_analytics.rankings.rank')}
                                     </th>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                        User
+                                        {t('user_analytics.rankings.user')}
                                     </th>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                        Sales
+                                        {t('user_analytics.rankings.sales')}
                                     </th>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                        Maintenances
+                                        {t('user_analytics.rankings.maintenances')}
                                     </th>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                        Subscriptions
+                                        {t('user_analytics.rankings.subscriptions')}
                                     </th>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                        Total Revenue
+                                        {t('user_analytics.rankings.total_revenue')}
                                     </th>
                                 </tr>
                             </thead>
