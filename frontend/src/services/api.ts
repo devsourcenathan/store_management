@@ -41,12 +41,23 @@ api.interceptors.request.use(
             } else {
                 // Add storeId to body for POST/PATCH/PUT requests
                 if (config.data && typeof config.data === 'object') {
-                    // Only add if not already present
-                    if (!config.data.storeId) {
-                        config.data = {
-                            ...config.data,
-                            storeId: currentStoreId
-                        };
+                    if (config.data instanceof FormData) {
+                        if (!config.data.has('storeId')) {
+                            config.data.append('storeId', currentStoreId);
+                        }
+                        // Remove default Content-Type so browser can compute the boundary
+                        if (config.headers) {
+                            delete config.headers['Content-Type'];
+                            delete config.headers['content-type'];
+                        }
+                    } else {
+                        // Only add if not already present
+                        if (!config.data.storeId) {
+                            config.data = {
+                                ...config.data,
+                                storeId: currentStoreId
+                            };
+                        }
                     }
                 }
             }

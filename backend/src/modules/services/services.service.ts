@@ -46,11 +46,14 @@ export class ServicesService {
     }
 
     async create(data: any, organizationId: string) {
+        // Strip out storeId if present from frontend
+        const { storeId, ...validData } = data;
+
         // Create service and default account
         return this.prisma.$transaction(async (tx) => {
             const service = await tx.service.create({
                 data: {
-                    ...data,
+                    ...validData,
                     organizationId
                 }
             });
@@ -66,7 +69,7 @@ export class ServicesService {
 
     async update(id: string, data: any) {
         // Filter out fields that shouldn't be updated or cause issues
-        const { name, description, provider, isActive } = data;
+        const { storeId, name, description, provider, isActive } = data;
 
         return this.prisma.service.update({
             where: { id },

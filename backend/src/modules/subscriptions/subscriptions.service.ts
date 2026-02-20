@@ -102,7 +102,7 @@ export class SubscriptionsService {
         });
     }
 
-    async create(data: any) {
+    async create(data: any, userId: string) {
         // Fetch offer first to get duration and service details
         const offer = await this.prisma.subscriptionOffer.findUnique({
             where: { id: data.offerId },
@@ -169,7 +169,7 @@ export class SubscriptionsService {
                                 amount: data.balanceUsed,
                                 reference: sub.id,
                                 notes: `New subscription ${sub.id}`,
-                                createdBy: 'SYSTEM',
+                                createdBy: userId,
                             },
                         });
 
@@ -222,7 +222,7 @@ export class SubscriptionsService {
                         paidAmount: totalAmount, // Assuming fully paid for now
                         status: 'PAID',
                         notes: `Subscription: ${offer.name} (${sub.id})`,
-                        createdBy: 'SYSTEM',
+                        createdBy: userId,
                         items: {
                             create: {
                                 productId: product.id,
@@ -244,7 +244,7 @@ export class SubscriptionsService {
                             amount: balancePayment,
                             method: 'CREDIT', // Use CREDIT for balance
                             notes: 'Paid via Subscription Balance',
-                            createdBy: 'SYSTEM'
+                            createdBy: userId
                         }
                     });
                 }
@@ -258,7 +258,7 @@ export class SubscriptionsService {
                             amount: remaining,
                             method: 'CASH', // Default to CASH for remainder
                             notes: 'Cash/External Payment',
-                            createdBy: 'SYSTEM'
+                            createdBy: userId
                         }
                     });
                 }
