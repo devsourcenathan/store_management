@@ -1,4 +1,4 @@
-{
+﻿{
     "common": {
         "loading": "Loading...",
         "save": "Save",
@@ -34,7 +34,9 @@
         "updateDescription": "A new version of the app is available. Update to get the latest features.",
         "later": "Later",
         "update": "Update",
-        "seller": "Seller"
+        "seller": "Seller",
+        "refresh": "Refresh",
+        "all_statuses": "All Statuses"
     },
     "nav": {
         "dashboard": "Dashboard",
@@ -156,7 +158,13 @@
         "total_amount": "Total Amount",
         "amount_paid": "Amount Paid",
         "customer_name_invoice": "Customer Name (for Invoice)",
-        "enter_customer_name": "Enter customer name (optional)"
+        "enter_customer_name": "Enter customer name (optional)",
+        "credit_sale": "Partial Sales",
+        "initial_payment": "Initial Payment",
+        "delivery_mode": "Delivery Mode",
+        "immediate_delivery": "Immediate Delivery",
+        "delivery_after_payment": "Delivery after full payment",
+        "due_date": "Due Date"
     },
     "auth": {
         "login": "Login",
@@ -547,6 +555,27 @@
             "new": "New Stock",
             "new_adjusted": "New Stock (Adjusted)",
             "set_to": "Set to"
+        },
+        "transfer_modal": {
+            "title": "Transfer Stock",
+            "description": "Move inventory between your stores.",
+            "from_store": "From Store",
+            "no_store_selected": "No store selected",
+            "to_store": "To Store",
+            "select_destination": "Select destination store...",
+            "product": "Product",
+            "select_product": "Select product...",
+            "available_stock": "Available stock:",
+            "units": "units",
+            "quantity": "Quantity",
+            "notes": "Notes (Optional)",
+            "notes_placeholder": "Add any notes about this transfer...",
+            "moving": "Moving {{quantity}} unit(s) of {{product}}",
+            "success": "Transfer successful!",
+            "processing": "Processing...",
+            "complete_transfer": "Complete Transfer",
+            "close": "Close",
+            "error_fallback": "Transfer failed. Please check stock levels."
         }
     },
     "media": {
@@ -766,6 +795,58 @@
             "configurable": "MANAGER and STAFF permissions are configurable",
             "immediate": "Changes apply immediately after saving",
             "sidebar": "Users will see only the features they have access to in the sidebar"
+        }
+    },
+    "credit": {
+        "status_completed": "Paid",
+        "status_active": "Active",
+        "status_overdue": "Overdue"
+    },
+    "user_analytics": {
+        "title": "User Analytics",
+        "subtitle": "Track team performance and individual contributions",
+        "access_denied_title": "Access Denied",
+        "access_denied_desc": "This page is only accessible to owners and managers.",
+        "period": "Period",
+        "periods": {
+            "today": "Today",
+            "week": "This Week",
+            "month": "This Month",
+            "quarter": "This Quarter",
+            "year": "This Year",
+            "custom": "Custom Range"
+        },
+        "start_date": "Start Date",
+        "end_date": "End Date",
+        "export_csv": "Export CSV",
+        "total_revenue": "Total Revenue",
+        "sales": "Sales",
+        "maintenances": "Maintenances",
+        "subscriptions": "Subscriptions",
+        "charts": {
+            "sales_trend": "Sales Trend",
+            "revenue_distribution": "Revenue Distribution",
+            "top_performers": "Top Performers"
+        },
+        "performance": {
+            "sales_perf": "Sales Performance",
+            "maintenance_perf": "Maintenance Performance",
+            "subscription_perf": "Subscription Performance",
+            "total_sales": "Total Sales",
+            "total": "Total",
+            "revenue": "Revenue",
+            "avg_value": "Avg Value",
+            "completed": "Completed",
+            "active": "Active"
+        },
+        "rankings": {
+            "title": "User Rankings",
+            "rank": "Rank",
+            "user": "User",
+            "sales": "Sales",
+            "maintenances": "Maintenances",
+            "subscriptions": "Subscriptions",
+            "total_revenue": "Total Revenue"
         }
     }
 }

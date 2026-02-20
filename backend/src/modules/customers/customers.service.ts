@@ -19,18 +19,20 @@ export class CustomersService {
     }
 
     async create(data: any, organizationId: string) {
+        const { storeId, ...customerData } = data;
         return this.prisma.customer.create({
             data: {
-                ...data,
+                ...customerData,
                 organizationId,
             },
         });
     }
 
     async update(id: string, data: any, organizationId: string) {
+        const { storeId, ...customerData } = data;
         return this.prisma.customer.update({
             where: { id },
-            data,
+            data: customerData,
         });
     }
 

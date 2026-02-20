@@ -92,7 +92,7 @@ export class SyncService {
         }
 
         // Sanitize model-specific fields
-        if (entity === 'products') {
+        if (entity === 'products' || entity === 'customers' || entity === 'suppliers' || entity === 'categories') {
             delete enrichedData.storeId;
         }
 

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/services/api';
 import { useStore } from '../stores/StoreProvider';
@@ -23,6 +24,7 @@ interface TransferModalProps {
 }
 
 export function TransferModal({ onClose, onSuccess }: TransferModalProps) {
+    const { t } = useTranslation();
     const { currentStore, stores } = useStore();
     const [productId, setProductId] = useState('');
     const [destinationStoreId, setDestinationStoreId] = useState('');
@@ -45,8 +47,16 @@ export function TransferModal({ onClose, onSuccess }: TransferModalProps) {
         queryKey: ['stock-current', productId, currentStore?.id],
         queryFn: async () => {
             if (!productId || !currentStore?.id) return null;
-            const response = await api.get(`/stock/current?productId=${productId}&storeId=${currentStore.id}`);
-            return response.data;
+            try {
+                const response = await api.get(`/stock/current`, {
+                    params: { productId, storeId: currentStore.id }
+                });
+                console.log('TransferModal stock fetch:', response.data);
+                return response.data;
+            } catch (err) {
+                console.error('TransferModal stock fetch error:', err);
+                return null;
+            }
         },
         enabled: !!productId && !!currentStore?.id,
     });
@@ -89,31 +99,31 @@ export function TransferModal({ onClose, onSuccess }: TransferModalProps) {
         <Sheet open={true} onOpenChange={(open) => !open && onClose()}>
             <SheetContent side="right" className="sm:max-w-md overflow-y-auto">
                 <SheetHeader className="mb-6">
-                    <SheetTitle>Transfer Stock</SheetTitle>
+                    <SheetTitle>{t('stock.transfer_modal.title')}</SheetTitle>
                     <SheetDescription>
-                        Move inventory between your stores.
+                        {t('stock.transfer_modal.description')}
                     </SheetDescription>
                 </SheetHeader>
 
                 <form onSubmit={handleSubmit} className="space-y-6">
                     {/* Source Store (Read-only) */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">From Store</label>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('stock.transfer_modal.from_store')}</label>
                         <div className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md shadow-sm p-2 bg-gray-50 dark:bg-gray-700/50 text-gray-700 dark:text-gray-300">
-                            {currentStore?.name || 'No store selected'}
+                            {currentStore?.name || t('stock.transfer_modal.no_store_selected')}
                         </div>
                     </div>
 
                     {/* Destination Store */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">To Store</label>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('stock.transfer_modal.to_store')}</label>
                         <select
                             required
                             className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md shadow-sm p-2 dark:bg-gray-700 dark:text-white"
                             value={destinationStoreId}
                             onChange={(e) => setDestinationStoreId(e.target.value)}
                         >
-                            <option value="">Select destination store...</option>
+                            <option value="">{t('stock.transfer_modal.select_destination')}</option>
                             {availableDestinations.map(store => (
                                 <option key={store.id} value={store.id}>{store.name}</option>
                             ))}
@@ -122,30 +132,30 @@ export function TransferModal({ onClose, onSuccess }: TransferModalProps) {
 
                     {/* Product */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Product</label>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('stock.transfer_modal.product')}</label>
                         <select
                             required
                             className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md shadow-sm p-2 dark:bg-gray-700 dark:text-white"
                             value={productId}
                             onChange={(e) => setProductId(e.target.value)}
                         >
-                            <option value="">Select product...</option>
+                            <option value="">{t('stock.transfer_modal.select_product')}</option>
                             {products?.map(product => (
                                 <option key={product.id} value={product.id}>
                                     {product.name} ({product.sku})
                                 </option>
                             ))}
                         </select>
-                        {productId && currentStock && (
+                        {productId && currentStock !== undefined && (
                             <p className="mt-1 text-sm text-gray-600">
-                                Available stock: <span className="font-semibold">{currentStock.quantity || 0} units</span>
+                                {t('stock.transfer_modal.available_stock')} <span className="font-semibold">{currentStock?.quantity || 0} {t('stock.transfer_modal.units')}</span>
                             </p>
                         )}
                     </div>
 
                     {/* Quantity */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Quantity</label>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('stock.transfer_modal.quantity')}</label>
                         <input
                             type="number"
                             required
@@ -158,13 +168,13 @@ export function TransferModal({ onClose, onSuccess }: TransferModalProps) {
 
                     {/* Notes */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Notes (Optional)</label>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('stock.transfer_modal.notes')}</label>
                         <textarea
                             className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md shadow-sm p-2 dark:bg-gray-700 dark:text-white"
                             rows={3}
                             value={notes}
                             onChange={(e) => setNotes(e.target.value)}
-                            placeholder="Add any notes about this transfer..."
+                            placeholder={t('stock.transfer_modal.notes_placeholder')}
                         />
                     </div>
 
@@ -179,14 +189,14 @@ export function TransferModal({ onClose, onSuccess }: TransferModalProps) {
                                 </span>
                             </div>
                             <p className="text-xs text-blue-700 dark:text-blue-300 mt-2">
-                                Moving {quantity} unit(s) of {products?.find(p => p.id === productId)?.name}
+                                {t('stock.transfer_modal.moving', { quantity, product: products?.find(p => p.id === productId)?.name })}
                             </p>
                         </div>
                     )}
 
                     {showSuccess && (
                         <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-md text-sm text-center font-medium animate-in fade-in slide-in-from-top-2">
-                            ✅ Transfer successful!
+                            ✅ {t('stock.transfer_modal.success')}
                         </div>
                     )}
 
@@ -197,7 +207,7 @@ export function TransferModal({ onClose, onSuccess }: TransferModalProps) {
                             disabled={transferMutation.isPending || !currentStore || !destinationStoreId || !productId}
                             className="flex items-center justify-center w-full px-4 py-3 btn-theme-primary rounded-md font-medium disabled:opacity-50 transition-colors"
                         >
-                            {transferMutation.isPending ? 'Processing...' : 'Complete Transfer'}
+                            {transferMutation.isPending ? t('stock.transfer_modal.processing') : t('stock.transfer_modal.complete_transfer')}
                             {!transferMutation.isPending && <ArrowRight className="w-4 h-4 ml-2" />}
                         </button>
                         <button
@@ -205,13 +215,13 @@ export function TransferModal({ onClose, onSuccess }: TransferModalProps) {
                             onClick={onClose}
                             className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 font-medium transition-colors"
                         >
-                            Close
+                            {t('stock.transfer_modal.close')}
                         </button>
                     </div>
 
                     {transferMutation.isError && (
                         <div className="mt-2 text-sm text-red-600 bg-red-50 border border-red-100 p-3 rounded-md">
-                            {(transferMutation.error as any)?.response?.data?.message || 'Transfer failed. Please check stock levels.'}
+                            {(transferMutation.error as any)?.response?.data?.message || t('stock.transfer_modal.error_fallback')}
                         </div>
                     )}
                 </form>

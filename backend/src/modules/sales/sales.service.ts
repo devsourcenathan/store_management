@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '@/common/prisma/prisma.service';
 import { StockService } from '../stock/stock.service';
 
-import { UserRole } from '@prisma/client';
+import { UserRole, CreditSaleType, CreditStatus } from '@prisma/client';
 
 @Injectable()
 export class SalesService {
@@ -36,6 +36,13 @@ export class SalesService {
                         lastName: true,
                     },
                 },
+                creditContract: {
+                    include: {
+                        payments: {
+                            orderBy: { paidAt: 'desc' },
+                        },
+                    },
+                },
             },
             orderBy: { createdAt: 'desc' },
         });
@@ -58,7 +65,12 @@ export class SalesService {
 
         // Determine status
         let status = 'PAID';
-        if (paidAmount === 0 && totalAmount > 0) {
+        if (data.creditDetails) {
+            status = 'PENDING'; // Credit sales start as PENDING or PARTIAL depending on payment
+            if (data.creditDetails.initialPayment > 0) {
+                status = 'PARTIAL';
+            }
+        } else if (paidAmount === 0 && totalAmount > 0) {
             status = 'PENDING';
         } else if (paidAmount < totalAmount) {
             status = 'PARTIAL';
@@ -77,6 +89,7 @@ export class SalesService {
                     status: status as any,
                     notes,
                     createdBy: userId,
+                    hasCredit: !!data.creditDetails,
                     items: {
                         create: items.map((item: any) => ({
                             productId: item.productId,
@@ -88,6 +101,34 @@ export class SalesService {
                     },
                 },
             });
+
+            // 1.5 Create Credit Contract if needed
+            if (data.creditDetails) {
+                const { saleType, totalAmount, initialPayment, dueDate, creditPaymentMethod } = data.creditDetails;
+                const contract = await tx.creditContract.create({
+                    data: {
+                        saleId: sale.id,
+                        totalAmount: totalAmount, // Should match sale total ideally
+                        paidAmount: initialPayment || 0,
+                        remainingAmount: totalAmount - (initialPayment || 0),
+                        saleType: saleType, // IMMEDIATE_DELIVERY or DELIVERY_AFTER_FULL_PAYMENT
+                        status: 'ACTIVE',
+                        dueDate: dueDate ? new Date(dueDate) : null,
+                    }
+                });
+
+                // Initial Credit Payment
+                if (initialPayment && initialPayment > 0) {
+                    await tx.creditPayment.create({
+                        data: {
+                            contractId: contract.id,
+                            amount: initialPayment,
+                            method: creditPaymentMethod || 'CASH',
+                            paidAt: new Date(),
+                        }
+                    });
+                }
+            }
 
             // 2. Create Payment Record (only if there is a paid amount)
             if (paidAmount > 0) {
@@ -103,18 +144,23 @@ export class SalesService {
             }
 
             // 3. Create stock movements for each item
-            for (const item of items) {
-                await tx.stockMovement.create({
-                    data: {
-                        productId: item.productId,
-                        storeId,
-                        type: 'OUT',
-                        source: 'SALE',
-                        quantity: item.quantity,
-                        reference: `SALE-${sale.id}`,
-                        createdBy: userId,
-                    },
-                });
+            // CHECK: IF credit sale AND type is DELIVERY_AFTER_FULL_PAYMENT, SKIP movement
+            const shouldMoveStock = !data.creditDetails || data.creditDetails.saleType !== 'DELIVERY_AFTER_FULL_PAYMENT';
+
+            if (shouldMoveStock) {
+                for (const item of items) {
+                    await tx.stockMovement.create({
+                        data: {
+                            productId: item.productId,
+                            storeId,
+                            type: 'OUT',
+                            source: 'SALE',
+                            quantity: item.quantity,
+                            reference: `SALE-${sale.id}`,
+                            createdBy: userId,
+                        },
+                    });
+                }
             }
 
             // 5. Return full sale object for receipt

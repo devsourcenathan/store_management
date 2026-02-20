@@ -328,6 +328,7 @@ model Sale {
   totalAmount Decimal    @db.Decimal(10, 2)
   paidAmount  Decimal    @default(0) @db.Decimal(10, 2)
   discount    Decimal    @default(0) @db.Decimal(10, 2)
+  hasCredit   Boolean    @default(false)
   status      SaleStatus
   notes       String?
   createdBy   String
@@ -340,6 +341,7 @@ model Sale {
   customer Customer?  @relation(fields: [customerId], references: [id], onDelete: SetNull)
   items    SaleItem[]
   payments Payment[]
+  creditContract CreditContract?
   creator  User       @relation("SaleCreator", fields: [createdBy], references: [id])
 
   @@index([storeId, createdAt])
@@ -798,12 +800,57 @@ model PlatformPlan {
   trialDays       Int              @default(0)
   isActive        Boolean          @default(true)
   createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
-
+  
   subscriptions OrganizationSubscription[]
   invoices      BillingInvoice[]
 
   @@map("platform_plans")
+}
+
+// ============================================
+// CREDIT MODULE
+// ============================================
+
+model CreditContract {
+  id              String   @id @default(uuid())
+  saleId          String   @unique
+  totalAmount     Float
+  paidAmount      Float    @default(0)
+  remainingAmount Float
+  saleType        CreditSaleType
+  status          CreditStatus @default(ACTIVE)
+  dueDate         DateTime?
+  payments        CreditPayment[]
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  sale            Sale     @relation(fields: [saleId], references: [id])
+
+  @@map("credit_contracts")
+}
+
+model CreditPayment {
+  id         String   @id @default(uuid())
+  contractId String
+  amount     Float
+  method     PaymentMethod
+  paidAt     DateTime @default(now())
+
+  contract   CreditContract @relation(fields: [contractId], references: [id])
+
+  @@map("credit_payments")
+}
+
+enum CreditSaleType {
+  IMMEDIATE_DELIVERY
+  DELIVERY_AFTER_FULL_PAYMENT
+}
+
+enum CreditStatus {
+  ACTIVE
+  COMPLETED
+  OVERDUE
+  CANCELLED
 }
 
 model OrganizationSubscription {

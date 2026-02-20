@@ -1,4 +1,4 @@
-{
+﻿{
     "common": {
         "loading": "Chargement...",
         "save": "Enregistrer",
@@ -34,7 +34,9 @@
         "updateDescription": "Une nouvelle version de l'application est disponible. Mettez à jour pour obtenir les dernières fonctionnalités.",
         "later": "Plus tard",
         "update": "Mettre à jour",
-        "seller": "Vendeur"
+        "seller": "Vendeur",
+        "refresh": "Actualiser",
+        "all_statuses": "Tous les statuts"
     },
     "nav": {
         "dashboard": "Tableau de bord",
@@ -83,7 +85,7 @@
         "low_stock": "Alertes Stock",
         "pending_orders": "Commandes en cours",
         "sales_trend": "Tendance des ventes",
-        "revenue_trend": "Évolution du Revenu",
+        "revenue_trend": "Evolution du Revenu",
         "top_products": "Top Produits",
         "top_selling": "Produits les plus vendus",
         "period": "Période :",
@@ -149,14 +151,20 @@
         "error": {
             "process_sale": "Erreur lors du traitement de la vente",
             "network": "Erreur réseau. Vérifiez votre connexion internet.",
-            "timeout": "La requête a expiré. Veuillez réessayer."
+            "timeout": "La requête a expiré. Veuillez réeessayer."
         },
         "discount": "Remise",
         "global_discount": "Remise Globale",
         "total_amount": "Montant Total",
         "amount_paid": "Montant Payé",
         "customer_name_invoice": "Nom du Client (pour Facture)",
-        "enter_customer_name": "Entrez le nom du client (optionnel)"
+        "enter_customer_name": "Entrez le nom du client (optionnel)",
+        "credit_sale": "Vente en tranches",
+        "initial_payment": "Acompte initial",
+        "delivery_mode": "Mode de Livraison",
+        "immediate_delivery": "Livraison Immédiate",
+        "delivery_after_payment": "Livraison après paiement complet",
+        "due_date": "Date d'échéance"
     },
     "sales": {
         "title": "Ventes",
@@ -167,6 +175,8 @@
         "no_sales": "Aucune vente trouvée",
         "create_new": "Créer une Nouvelle Vente",
         "seller": "Vendeur",
+        "refresh": "Actualiser",
+        "all_statuses": "Tous les statuts",
         "by": "Par",
         "unknown_product": "Produit Inconnu",
         "details": "Détails de la Vente",
@@ -195,11 +205,11 @@
     },
     "suppliers": {
         "management_title": "Gestion des Stocks",
-        "management_subtitle": "Suivez les commandes et gérez le réapprovisionnement",
+        "management_subtitle": "Suivez les commandes et gère le rapprovisionnement",
         "new_order": "Nouvelle Commande",
         "no_orders": "Aucune commande",
         "start_creating": "Commencez par créer une commande fournisseur.",
-        "receive": "Réceptionner",
+        "receive": "Récéptionner",
         "supplier": "Fournisseur",
         "print_order": "Imprimer"
     },
@@ -209,7 +219,7 @@
         "new_subscription": "Nouvel Abonnement",
         "renew": "Renouveler",
         "expires_soon": "Expire bientôt !",
-        "no_subscriptions": "Aucun abonnement trouvé. Cliquez sur 'Nouvel Abonnement'.",
+        "no_subscriptions": "Aucun abonnement trouvée. Cliquez sur 'Nouvel Abonnement'.",
         "offer": "Offre",
         "duration": "Durée",
         "renewal": "Renouvellement",
@@ -283,7 +293,7 @@
         "stock_level": "Niveau de Stock",
         "category": "Catégorie",
         "min_stock": "Stock Min",
-        "no_products": "Aucun produit trouvé",
+        "no_products": "Aucun produit trouvée",
         "categories_title": "Catégories",
         "categories_subtitle": "Gérer les catégories de produits",
         "add_category": "Ajouter Catégorie",
@@ -294,7 +304,7 @@
         "description": "Description",
         "search_placeholder": "Rechercher par nom ou SKU...",
         "select_product": "Sélectionner un produit",
-        "no_results": "Aucun produit trouvé",
+        "no_results": "Aucun produit trouvée",
         "start_typing": "Commencez à taper pour rechercher...",
         "deleted_products": "Produits Supprimés",
         "deleted_products_description": "Produits supprimés dans le magasin actuel",
@@ -319,7 +329,7 @@
         "total_spent": "Total Dépensé",
         "last_purchase": "Dernier Achat",
         "purchase_history": "Historique d'Achat",
-        "no_customers": "Aucun client trouvé"
+        "no_customers": "Aucun client trouvée"
     },
     "settings": {
         "title": "Paramètres",
@@ -417,7 +427,7 @@
                 "first_name": "Prénom",
                 "last_name": "Nom",
                 "email": "Adresse Email",
-                "email_hint": "L'email ne peut pas être modifié une fois créé",
+                "email_hint": "L'email ne peut pas être modifié une fois crée",
                 "password": "Mot de passe",
                 "password_hint": "Mot de passe temporaire pour l'utilisateur",
                 "role": "Rôle",
@@ -546,6 +556,27 @@
             "new": "Nouveau Stock",
             "new_adjusted": "Nouveau Stock (Ajusté)",
             "set_to": "Défini à"
+        },
+        "transfer_modal": {
+            "title": "Transférer du Stock",
+            "description": "Déplacez l'inventaire entre vos magasins.",
+            "from_store": "Magasin d'origine",
+            "no_store_selected": "Aucun magasin sélectionné",
+            "to_store": "Magasin de destination",
+            "select_destination": "Sélectionner un magasin de destination...",
+            "product": "Produit",
+            "select_product": "Sélectionner un produit...",
+            "available_stock": "Stock disponible :",
+            "units": "unités",
+            "quantity": "Quantité",
+            "notes": "Notes (Optionnel)",
+            "notes_placeholder": "Ajoutez des notes concernant ce transfert...",
+            "moving": "Transfert de {{quantity}} unité(s) de {{product}}",
+            "success": "Transfert réussi !",
+            "processing": "Traitement...",
+            "complete_transfer": "Terminer le transfert",
+            "close": "Fermer",
+            "error_fallback": "Échec du transfert. Veuillez vérifier les niveaux de stock."
         }
     },
     "media": {
@@ -639,7 +670,7 @@
         "best_performing_store": "Meilleure Boutique",
         "revenue_by_store": "Revenu par Boutique",
         "sales_by_store": "Ventes par Boutique",
-        "no_data": "Aucune donnée disponible pour la période sélectionnée"
+        "no_data": "Aucune données disponible pour la période sélectionnée"
     },
     "devices": {
         "title": "Appareils",
@@ -655,7 +686,7 @@
             "name": "Nom",
             "model": "Modèle",
             "serial_number": "Numéro de série",
-            "owner_type": "Type de propriétaire",
+            "owner_type": "Type de proprietaire",
             "customer": "Client",
             "store": "Boutique",
             "notes": "Notes"
@@ -710,7 +741,7 @@
         "title": "Gestion des Permissions",
         "subtitle": "Configurez les fonctionnalités accessibles chaque rôle.",
         "role_permissions": "Permissions par Rôle",
-        "owner_description": "Configurez les permissions pour les MANAGERS et EMPLOYÉS.",
+        "owner_description": "Configurez les permissions pour les MANAGERS et EMPLOYÃ‰S.",
         "resource": "Ressource",
         "manager": "Manager",
         "staff": "Employé",
@@ -719,7 +750,7 @@
         "access_denied": "Accès Refusé",
         "owner_only": "Seuls les propriétaires peuvent gérer les permissions.",
         "load_error": "Erreur lors du chargement des permissions",
-        "save_success": "Permissions mises à jour avec succès",
+        "save_success": "Permissions mises à jour avec succés",
         "save_error": "Erreur lors de l'enregistrement",
         "reset_message": "Permissions réinitialisées",
         "resources": {
@@ -761,10 +792,62 @@
         },
         "how_it_works": {
             "title": "Comment ça marche",
-            "owner": "Le PROPRIÉTAIRE a accès à tout",
+            "owner": "Le PROPRIETAIRE a accès à tout",
             "configurable": "Les permissions MANAGER et EMPLOYÉ sont configurables",
             "immediate": "Les changements s'appliquent immédiatement",
             "sidebar": "Les utilisateurs ne verront que ce qui est autorisé"
+        }
+    },
+    "credit": {
+        "status_completed": "Payé",
+        "status_active": "En cours",
+        "status_overdue": "En retard"
+    },
+    "user_analytics": {
+        "title": "Analytiques Utilisateur",
+        "subtitle": "Suivez les performances de l'équipe et les contributions individuelles",
+        "access_denied_title": "Accès Refusé",
+        "access_denied_desc": "Cette page est uniquement accessible aux propriétaires et managers.",
+        "period": "Période",
+        "periods": {
+            "today": "Aujourd'hui",
+            "week": "Cette Semaine",
+            "month": "Ce Mois",
+            "quarter": "Ce Trimestre",
+            "year": "Cette Année",
+            "custom": "Personnalisé"
+        },
+        "start_date": "Date de début",
+        "end_date": "Date de fin",
+        "export_csv": "Exporter CSV",
+        "total_revenue": "Revenu Total",
+        "sales": "Ventes",
+        "maintenances": "Maintenances",
+        "subscriptions": "Abonnements",
+        "charts": {
+            "sales_trend": "Tendance des Ventes",
+            "revenue_distribution": "Répartition des Revenus",
+            "top_performers": "Meilleurs Performeurs"
+        },
+        "performance": {
+            "sales_perf": "Performances des Ventes",
+            "maintenance_perf": "Performances des Maintenances",
+            "subscription_perf": "Performances des Abonnements",
+            "total_sales": "Ventes Totales",
+            "total": "Total",
+            "revenue": "Revenu",
+            "avg_value": "Valeur Moyenne",
+            "completed": "Complété",
+            "active": "Actif"
+        },
+        "rankings": {
+            "title": "Classement des Utilisateurs",
+            "rank": "Rang",
+            "user": "Utilisateur",
+            "sales": "Ventes",
+            "maintenances": "Maintenances",
+            "subscriptions": "Abonnements",
+            "total_revenue": "Revenu Total"
         }
     }
 }

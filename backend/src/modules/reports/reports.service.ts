@@ -188,10 +188,10 @@ export class ReportsService {
                 profitChange: Math.round(profitChange * 100) / 100,
             },
             lowStockAlerts: alerts.map(a => ({
-                product: a.product.name,
-                store: a.store.name,
-                currentStock: a.currentLevel,
-                minStock: a.threshold,
+                product: { name: a.product.name },
+                store: { name: a.store.name },
+                currentLevel: a.currentLevel,
+                threshold: a.threshold,
             })),
             storePerformance: Array.from(storePerformance.values()),
         };

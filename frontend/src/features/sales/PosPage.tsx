@@ -28,6 +28,7 @@ import { printer } from '@/services/printing';
 import { useTranslation } from 'react-i18next';
 
 import { PosCart, CartItem } from './components/PosCart';
+import { CreditSaleType } from '@/types/credit';
 
 interface Product {
     id: string;
@@ -52,6 +53,11 @@ export function PosPage() {
     const [paymentMethod, setPaymentMethod] = useState<'CASH' | 'CARD' | 'MOBILE'>('CASH');
     const [paidAmount, setPaidAmount] = useState<number>(0);
     const [selectedCustomerId, setSelectedCustomerId] = useState<string>('');
+
+    // Credit Sale State
+    const [isCreditSale, setIsCreditSale] = useState(false);
+    const [creditSaleType, setCreditSaleType] = useState<CreditSaleType>(CreditSaleType.IMMEDIATE_DELIVERY);
+    const [dueDate, setDueDate] = useState<string>('');
 
     const { t } = useTranslation();
 
@@ -283,7 +289,14 @@ export function PosPage() {
             paymentMethod: paidAmount > 0 ? paymentMethod : undefined,
             paidAmount: paidAmount,
             discount: globalDiscount,
-            notes: `POS Sale - ${paymentMethod}`
+            notes: `POS Sale - ${paidAmount >= cartTotal ? 'PAID' : isCreditSale ? 'CREDIT' : 'PARTIAL'} - ${paymentMethod}`,
+            creditDetails: isCreditSale ? {
+                saleType: creditSaleType,
+                totalAmount: cartTotal,
+                initialPayment: paidAmount,
+                dueDate: dueDate ? new Date(dueDate) : undefined,
+                creditPaymentMethod: paidAmount > 0 ? paymentMethod : undefined,
+            } : undefined
         };
 
         console.log('📤 About to call mutate with data:', mutationData);
@@ -348,6 +361,9 @@ export function PosPage() {
 
     const handlePayment = () => {
         setPaidAmount(cartTotal);
+        setIsCreditSale(false);
+        setCreditSaleType(CreditSaleType.IMMEDIATE_DELIVERY);
+        setDueDate('');
         setIsPaymentModalOpen(true);
         setIsCartSheetOpen(false); // Close mobile sheet if open
     };
@@ -629,7 +645,7 @@ export function PosPage() {
 
                             <div className="flex flex-col gap-1.5">
                                 <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                                    {t('pos.amount_paid', 'Amount Paid')}
+                                    {isCreditSale ? t('pos.initial_payment', 'Acompte initial') : t('pos.amount_paid', 'Amount Paid')}
                                 </label>
                                 <input
                                     type="number"
@@ -640,7 +656,71 @@ export function PosPage() {
                                     className="w-full border border-gray-300 dark:border-gray-600 rounded-lg p-2.5 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none transition-all"
                                 />
                             </div>
-                            {/* Credit balance hidden as per user request */}
+                            {/* Credit Sale Toggle */}
+                            <div className="flex items-center justify-between py-2 border-t border-gray-200 dark:border-gray-700 mt-2">
+                                <label className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                                    <input
+                                        type="checkbox"
+                                        checked={isCreditSale}
+                                        onChange={(e) => {
+                                            setIsCreditSale(e.target.checked);
+                                            if (e.target.checked) {
+                                                setPaidAmount(0); // Default to 0 for credit
+                                            } else {
+                                                setPaidAmount(cartTotal); // Reset to full amount
+                                            }
+                                        }}
+                                        className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                                    />
+                                    {t('pos.credit_sale', 'Vente à crédit')}
+                                </label>
+                            </div>
+
+                            {isCreditSale && (
+                                <div className="space-y-4 pt-2 animate-in fade-in slide-in-from-top-2 duration-200">
+                                    {/* Sale Type Selection */}
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-medium text-gray-500 uppercase">
+                                            {t('pos.delivery_mode', 'Mode de livraison')}
+                                        </label>
+                                        <div className="grid grid-cols-2 gap-2">
+                                            <button
+                                                onClick={() => setCreditSaleType(CreditSaleType.IMMEDIATE_DELIVERY)}
+                                                className={`p-2 text-sm border rounded-lg transition-colors ${creditSaleType === CreditSaleType.IMMEDIATE_DELIVERY
+                                                    ? 'border-blue-500 bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300'
+                                                    : 'border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-400'
+                                                    }`}
+                                            >
+                                                {t('pos.immediate_delivery', 'Livraison immédiate')}
+                                            </button>
+                                            <button
+                                                onClick={() => setCreditSaleType(CreditSaleType.DELIVERY_AFTER_FULL_PAYMENT)}
+                                                className={`p-2 text-sm border rounded-lg transition-colors ${creditSaleType === CreditSaleType.DELIVERY_AFTER_FULL_PAYMENT
+                                                    ? 'border-blue-500 bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300'
+                                                    : 'border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-400'
+                                                    }`}
+                                            >
+                                                {t('pos.deferred_delivery', 'Livraison différée')}
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    {/* Due Date */}
+                                    <div className="flex flex-col gap-1.5">
+                                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                            {t('pos.due_date', 'Date d\'échéance')}
+                                        </label>
+                                        <input
+                                            type="date"
+                                            value={dueDate}
+                                            onChange={(e) => setDueDate(e.target.value)}
+                                            className="w-full border border-gray-300 dark:border-gray-600 rounded-lg p-2.5 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                                            min={new Date().toISOString().split('T')[0]}
+                                        />
+                                    </div>
+                                </div>
+                            )}
+
                         </div>
 
                         {paidAmount > 0 && (
