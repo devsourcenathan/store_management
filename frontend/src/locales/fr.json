@@ -108,6 +108,7 @@
         }
     },
     "pos": {
+        "amount": "Montant",
         "new_sale": "Nouvelle vente",
         "print_invoice": "Imprimer la facture",
         "search_placeholder": "Rechercher un produit...",
@@ -801,7 +802,8 @@
     "credit": {
         "status_completed": "Payé",
         "status_active": "En cours",
-        "status_overdue": "En retard"
+        "status_overdue": "En retard",
+        "payment_history": "Historique des paiements"
     },
     "user_analytics": {
         "title": "Analytiques Utilisateur",
@@ -849,5 +851,12 @@
             "subscriptions": "Abonnements",
             "total_revenue": "Revenu Total"
         }
+    },
+    "payment_methods": {
+        "cash": "Espèces",
+        "card": "Carte de Crédit",
+        "mobile": "Mobile Money",
+        "credit": "Crédit",
+        "bank_transfer": "Virement Bancaire"
     }
 }

@@ -69,41 +69,6 @@ export const CreditDetailsWidget: React.FC<CreditDetailsWidgetProps> = ({ credit
                     />
                 </div>
             </div>
-
-            {/* Payment History */}
-            {creditDetails.payments && creditDetails.payments.length > 0 && (
-                <div className="pt-2 border-t border-gray-100 dark:border-gray-700">
-                    <h5 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">
-                        {t('credit.payment_history', 'Historique des paiements')}
-                    </h5>
-                    <div className="bg-gray-50 dark:bg-gray-900/50 rounded-lg overflow-hidden border border-gray-100 dark:border-gray-700">
-                        <table className="min-w-full text-xs">
-                            <thead className="bg-gray-100 dark:bg-gray-800">
-                                <tr>
-                                    <th className="px-3 py-2 text-left text-gray-500 dark:text-gray-400 font-medium">{t('common.date', 'Date')}</th>
-                                    <th className="px-3 py-2 text-left text-gray-500 dark:text-gray-400 font-medium">{t('pos.amount', 'Montant')}</th>
-                                    <th className="px-3 py-2 text-left text-gray-500 dark:text-gray-400 font-medium">{t('pos.payment_method', 'Mode')}</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                                {creditDetails.payments.map((payment) => (
-                                    <tr key={payment.id}>
-                                        <td className="px-3 py-2 text-gray-900 dark:text-gray-100">
-                                            {new Date(payment.paidAt).toLocaleDateString()} {new Date(payment.paidAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                        </td>
-                                        <td className="px-3 py-2 text-gray-900 dark:text-gray-100 font-medium">
-                                            {payment.amount.toLocaleString()} FCFA
-                                        </td>
-                                        <td className="px-3 py-2 text-gray-500 dark:text-gray-400">
-                                            {payment.method}
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            )}
         </div>
     );
 };

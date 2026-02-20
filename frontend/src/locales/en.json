@@ -108,6 +108,7 @@
         }
     },
     "pos": {
+        "amount": "Amount",
         "new_sale": "New Sale",
         "print_invoice": "Print Invoice",
         "search_placeholder": "Search products...",
@@ -800,7 +801,8 @@
     "credit": {
         "status_completed": "Paid",
         "status_active": "Active",
-        "status_overdue": "Overdue"
+        "status_overdue": "Overdue",
+        "payment_history": "Payment History"
     },
     "user_analytics": {
         "title": "User Analytics",
@@ -848,5 +850,12 @@
             "subscriptions": "Subscriptions",
             "total_revenue": "Total Revenue"
         }
+    },
+    "payment_methods": {
+        "cash": "Cash",
+        "card": "Card",
+        "mobile": "Mobile Money",
+        "credit": "Credit",
+        "bank_transfer": "Bank Transfer"
     }
 }
