@@ -36,7 +36,15 @@
         "update": "Mettre à jour",
         "seller": "Vendeur",
         "refresh": "Actualiser",
-        "all_statuses": "Tous les statuts"
+        "all_statuses": "Tous les statuts",
+        "all_time": "Toute la période",
+        "today": "Aujourd'hui",
+        "this_week": "Cette semaine",
+        "this_month": "Ce mois",
+        "this_year": "Cette année",
+        "custom_date": "Date Personnalisée",
+        "start_date": "Date de début",
+        "end_date": "Date de fin"
     },
     "nav": {
         "dashboard": "Tableau de bord",

@@ -36,7 +36,15 @@
         "update": "Update",
         "seller": "Seller",
         "refresh": "Refresh",
-        "all_statuses": "All Statuses"
+        "all_statuses": "All Statuses",
+        "all_time": "All Time",
+        "today": "Today",
+        "this_week": "This Week",
+        "this_month": "This Month",
+        "this_year": "This Year",
+        "custom_date": "Custom Date",
+        "start_date": "Start Date",
+        "end_date": "End Date"
     },
     "nav": {
         "dashboard": "Dashboard",

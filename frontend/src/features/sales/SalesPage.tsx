@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { printer } from '@/services/printing';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -15,6 +15,8 @@ import {
 import { ExportButton } from '@/components/ExportButton';
 import { RefreshCw } from 'lucide-react';
 import { Skeleton } from "@/components/ui/skeleton";
+import { Pagination } from "@/components/ui/Pagination";
+import { usePagination } from "@/hooks/usePagination";
 import { CreditStatusBadge } from './components/CreditStatusBadge';
 import { CreditDetailsWidget } from './components/CreditDetailsWidget';
 import { AddPaymentModal } from './components/AddPaymentModal';
@@ -65,7 +67,9 @@ export function SalesPage() {
     // Filters
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('ALL');
-    const [dateFilter, setDateFilter] = useState('ALL'); // ALL, TODAY, WEEK, MONTH
+    const [dateFilter, setDateFilter] = useState('ALL'); // ALL, TODAY, WEEK, MONTH, YEAR, CUSTOM
+    const [startDate, setStartDate] = useState('');
+    const [endDate, setEndDate] = useState('');
 
     const queryClient = useQueryClient();
 
@@ -206,8 +210,58 @@ export function SalesPage() {
             (statusFilter === 'ACTIVE' && sale.status === 'PARTIAL') ||
             (statusFilter === 'OVERDUE' && sale.creditContract?.status === 'OVERDUE');
 
-        return matchesSearch && matchesStatus;
+        let matchesDate = true;
+        if (dateFilter !== 'ALL') {
+            const saleDate = new Date(sale.createdAt);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            if (dateFilter === 'TODAY') {
+                matchesDate = saleDate >= today;
+            } else if (dateFilter === 'WEEK') {
+                const firstDayOfWeek = new Date(today);
+                firstDayOfWeek.setDate(today.getDate() - today.getDay());
+                matchesDate = saleDate >= firstDayOfWeek;
+            } else if (dateFilter === 'MONTH') {
+                const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+                matchesDate = saleDate >= firstDayOfMonth;
+            } else if (dateFilter === 'YEAR') {
+                const firstDayOfYear = new Date(today.getFullYear(), 0, 1);
+                matchesDate = saleDate >= firstDayOfYear;
+            } else if (dateFilter === 'CUSTOM') {
+                if (startDate) {
+                    const start = new Date(startDate);
+                    start.setHours(0, 0, 0, 0);
+                    if (saleDate < start) matchesDate = false;
+                }
+                if (endDate && matchesDate) {
+                    const end = new Date(endDate);
+                    end.setHours(23, 59, 59, 999);
+                    if (saleDate > end) matchesDate = false;
+                }
+            }
+        }
+
+        return matchesSearch && matchesStatus && matchesDate;
     });
+
+    const {
+        currentItems,
+        currentPage,
+        totalPages,
+        goToPage: setPage,
+    } = usePagination({
+        totalItems: filteredSales?.length || 0,
+        itemsPerPage: 10,
+    });
+
+    // Reset page when filters change
+    React.useEffect(() => {
+        setPage(1);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [searchTerm, statusFilter, dateFilter, startDate, endDate]);
+
+    const paginatedSales = filteredSales && filteredSales.length > 0 ? currentItems(filteredSales) : [];
 
     return (
         <div className="space-y-6">
@@ -220,8 +274,8 @@ export function SalesPage() {
 
 
             {/* Filters */}
-            <div className="flex flex-col sm:flex-row gap-3 bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
-                <div className="flex-1">
+            <div className="flex flex-col sm:flex-row gap-3 bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm flex-wrap items-center">
+                <div className="flex-1 min-w-[200px]">
                     <input
                         type="text"
                         placeholder={t('common.search', 'Search...')} // Add to translations if missing
@@ -233,14 +287,46 @@ export function SalesPage() {
                 <select
                     value={statusFilter}
                     onChange={(e) => setStatusFilter(e.target.value)}
-                    className="border border-gray-300 dark:border-gray-600 rounded-md p-2 dark:bg-gray-700 dark:text-white"
+                    className="border border-gray-300 dark:border-gray-600 rounded-md p-2 dark:bg-gray-700 dark:text-white min-w-[150px]"
                 >
                     <option value="ALL">{t('common.all_statuses', 'All Statuses')}</option>
                     <option value="COMPLETED">{t('credit.status_completed', 'Completed')}</option>
                     <option value="ACTIVE">{t('credit.status_active', 'Active (Credit)')}</option>
                     <option value="OVERDUE">{t('credit.status_overdue', 'Overdue')}</option>
                 </select>
-                {/* Add Date Filter if needed, for now sticking to search and status */}
+
+                <select
+                    value={dateFilter}
+                    onChange={(e) => setDateFilter(e.target.value)}
+                    className="border border-gray-300 dark:border-gray-600 rounded-md p-2 dark:bg-gray-700 dark:text-white min-w-[150px]"
+                >
+                    <option value="ALL">{t('common.all_time', 'All Time')}</option>
+                    <option value="TODAY">{t('common.today', 'Today')}</option>
+                    <option value="WEEK">{t('common.this_week', 'This Week')}</option>
+                    <option value="MONTH">{t('common.this_month', 'This Month')}</option>
+                    <option value="YEAR">{t('common.this_year', 'This Year')}</option>
+                    <option value="CUSTOM">{t('common.custom_date', 'Custom Date')}</option>
+                </select>
+
+                {dateFilter === 'CUSTOM' && (
+                    <div className="flex items-center gap-2">
+                        <input
+                            type="date"
+                            value={startDate}
+                            onChange={(e) => setStartDate(e.target.value)}
+                            className="border border-gray-300 dark:border-gray-600 rounded-md p-2 dark:bg-gray-700 dark:text-white"
+                            title={t('common.start_date', 'Start Date')}
+                        />
+                        <span className="text-gray-500">-</span>
+                        <input
+                            type="date"
+                            value={endDate}
+                            onChange={(e) => setEndDate(e.target.value)}
+                            className="border border-gray-300 dark:border-gray-600 rounded-md p-2 dark:bg-gray-700 dark:text-white"
+                            title={t('common.end_date', 'End Date')}
+                        />
+                    </div>
+                )}
             </div>
 
             <div className="flex gap-2">
@@ -318,7 +404,7 @@ export function SalesPage() {
                     ) : !filteredSales || filteredSales.length === 0 ? (
                         <div className="px-4 py-12 text-center text-gray-500 dark:text-gray-400">{t('sales.no_sales', 'No sales found.')}</div>
                     ) : (
-                        filteredSales.map((sale) => (
+                        paginatedSales.map((sale) => (
                             <div key={sale.id} className="bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-xl p-4 shadow-sm hover:shadow-md hover:border-blue-300 dark:hover:border-blue-600 transition-all">
                                 {/* Sale Header */}
                                 <div className="flex items-start justify-between mb-3">
@@ -423,7 +509,7 @@ export function SalesPage() {
                             ) : !filteredSales || filteredSales.length === 0 ? (
                                 <tr><td colSpan={8} className="px-6 py-12 text-center text-gray-500 dark:text-gray-400">{t('sales.no_sales', 'No sales found.')}</td></tr>
                             ) : (
-                                filteredSales.map((sale) => (
+                                paginatedSales.map((sale) => (
                                     <tr key={sale.id}>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                             {new Date(sale.createdAt).toLocaleDateString()} {new Date(sale.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -469,6 +555,15 @@ export function SalesPage() {
                     </table>
                 </div>
             </div>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+                <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={setPage}
+                />
+            )}
 
             {/* Sale Details Sheet */}
             <Sheet open={isDetailsOpen} onOpenChange={setIsDetailsOpen} >
