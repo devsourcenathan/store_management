@@ -274,55 +274,58 @@ export function SalesPage() {
 
 
             {/* Filters */}
-            <div className="flex flex-col sm:flex-row gap-3 bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm flex-wrap items-center">
-                <div className="flex-1 min-w-[200px]">
-                    <input
-                        type="text"
-                        placeholder={t('common.search', 'Search...')} // Add to translations if missing
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full border border-gray-300 dark:border-gray-600 rounded-md p-2 dark:bg-gray-700 dark:text-white"
-                    />
+            <div className="flex flex-col gap-3 bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
+                {/* Row 1: search bar */}
+                <input
+                    type="text"
+                    placeholder={t('common.search', 'Search...')}
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full border border-gray-300 dark:border-gray-600 rounded-md p-2 dark:bg-gray-700 dark:text-white"
+                />
+                {/* Row 2: dropdowns */}
+                <div className="flex flex-col sm:flex-row gap-3">
+                    <select
+                        value={statusFilter}
+                        onChange={(e) => setStatusFilter(e.target.value)}
+                        className="w-full sm:w-auto flex-1 border border-gray-300 dark:border-gray-600 rounded-md p-2 dark:bg-gray-700 dark:text-white"
+                    >
+                        <option value="ALL">{t('common.all_statuses', 'All Statuses')}</option>
+                        <option value="COMPLETED">{t('credit.status_completed', 'Completed')}</option>
+                        <option value="ACTIVE">{t('credit.status_active', 'Active (Credit)')}</option>
+                        <option value="OVERDUE">{t('credit.status_overdue', 'Overdue')}</option>
+                    </select>
+
+                    <select
+                        value={dateFilter}
+                        onChange={(e) => setDateFilter(e.target.value)}
+                        className="w-full sm:w-auto flex-1 border border-gray-300 dark:border-gray-600 rounded-md p-2 dark:bg-gray-700 dark:text-white"
+                    >
+                        <option value="ALL">{t('common.all_time', 'All Time')}</option>
+                        <option value="TODAY">{t('common.today', 'Today')}</option>
+                        <option value="WEEK">{t('common.this_week', 'This Week')}</option>
+                        <option value="MONTH">{t('common.this_month', 'This Month')}</option>
+                        <option value="YEAR">{t('common.this_year', 'This Year')}</option>
+                        <option value="CUSTOM">{t('common.custom_date', 'Custom Date')}</option>
+                    </select>
                 </div>
-                <select
-                    value={statusFilter}
-                    onChange={(e) => setStatusFilter(e.target.value)}
-                    className="border border-gray-300 dark:border-gray-600 rounded-md p-2 dark:bg-gray-700 dark:text-white min-w-[150px]"
-                >
-                    <option value="ALL">{t('common.all_statuses', 'All Statuses')}</option>
-                    <option value="COMPLETED">{t('credit.status_completed', 'Completed')}</option>
-                    <option value="ACTIVE">{t('credit.status_active', 'Active (Credit)')}</option>
-                    <option value="OVERDUE">{t('credit.status_overdue', 'Overdue')}</option>
-                </select>
 
-                <select
-                    value={dateFilter}
-                    onChange={(e) => setDateFilter(e.target.value)}
-                    className="border border-gray-300 dark:border-gray-600 rounded-md p-2 dark:bg-gray-700 dark:text-white min-w-[150px]"
-                >
-                    <option value="ALL">{t('common.all_time', 'All Time')}</option>
-                    <option value="TODAY">{t('common.today', 'Today')}</option>
-                    <option value="WEEK">{t('common.this_week', 'This Week')}</option>
-                    <option value="MONTH">{t('common.this_month', 'This Month')}</option>
-                    <option value="YEAR">{t('common.this_year', 'This Year')}</option>
-                    <option value="CUSTOM">{t('common.custom_date', 'Custom Date')}</option>
-                </select>
-
+                {/* Row 3: custom date pickers (only when CUSTOM is selected) */}
                 {dateFilter === 'CUSTOM' && (
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                         <input
                             type="date"
                             value={startDate}
                             onChange={(e) => setStartDate(e.target.value)}
-                            className="border border-gray-300 dark:border-gray-600 rounded-md p-2 dark:bg-gray-700 dark:text-white"
+                            className="flex-1 border border-gray-300 dark:border-gray-600 rounded-md p-2 dark:bg-gray-700 dark:text-white"
                             title={t('common.start_date', 'Start Date')}
                         />
-                        <span className="text-gray-500">-</span>
+                        <span className="text-gray-500 text-center">—</span>
                         <input
                             type="date"
                             value={endDate}
                             onChange={(e) => setEndDate(e.target.value)}
-                            className="border border-gray-300 dark:border-gray-600 rounded-md p-2 dark:bg-gray-700 dark:text-white"
+                            className="flex-1 border border-gray-300 dark:border-gray-600 rounded-md p-2 dark:bg-gray-700 dark:text-white"
                             title={t('common.end_date', 'End Date')}
                         />
                     </div>
