@@ -40,7 +40,7 @@ export class ReportsService {
             },
         });
 
-        const revenue = sales.reduce((sum, sale) => sum + this.toNumber(sale.totalAmount), 0);
+        const revenue = sales.reduce((sum, sale) => sum + this.toNumber(sale.paidAmount), 0);
 
         // Calculate profit (Total Amount - Total Cost of items)
         let totalCost = 0;
@@ -54,21 +54,26 @@ export class ReportsService {
         const salesCount = sales.length;
 
         // Top products
-        const productSales = new Map<string, { name: string; quantity: number; revenue: number }>();
+        const productSales = new Map<string, { name: string; quantity: number; baseTotal: number; paidTotal: number }>();
         sales.forEach(sale => {
             sale.items.forEach(item => {
                 const existing = productSales.get(item.productId) || {
                     name: item.product.name,
                     quantity: 0,
-                    revenue: 0,
+                    baseTotal: 0,
+                    paidTotal: 0,
                 };
                 existing.quantity += item.quantity;
-                existing.revenue += this.toNumber(item.total);
+                // baseTotal = quantity × basePrice du produit
+                existing.baseTotal += item.quantity * this.toNumber(item.product.basePrice);
+                // paidTotal = prix réellement payé (unitPrice peut être différent du basePrice)
+                existing.paidTotal += this.toNumber(item.total);
                 productSales.set(item.productId, existing);
             });
         });
 
         const topProducts = Array.from(productSales.values())
+            .map(p => ({ name: p.name, quantity: p.quantity, baseTotal: p.baseTotal, revenue: p.paidTotal }))
             .sort((a, b) => b.revenue - a.revenue)
             .slice(0, 5);
 
@@ -98,7 +103,7 @@ export class ReportsService {
             }
         });
 
-        const prevRevenue = prevSales.reduce((sum, sale) => sum + this.toNumber(sale.totalAmount), 0);
+        const prevRevenue = prevSales.reduce((sum, sale) => sum + this.toNumber(sale.paidAmount), 0);
         let prevTotalCost = 0;
         prevSales.forEach(sale => {
             sale.items.forEach(item => {
@@ -127,14 +132,14 @@ export class ReportsService {
         });
 
         // Store performance
-        const storePerformance = new Map<string, { storeName: string; revenue: number; salesCount: number }>();
+        const storePerformance = new Map<string, { name: string; revenue: number; salesCount: number }>();
         sales.forEach(sale => {
             const existing = storePerformance.get(sale.storeId) || {
-                storeName: sale.store.name,
+                name: sale.store.name,
                 revenue: 0,
                 salesCount: 0,
             };
-            existing.revenue += this.toNumber(sale.totalAmount);
+            existing.revenue += this.toNumber(sale.paidAmount);
             existing.salesCount += 1;
             storePerformance.set(sale.storeId, existing);
         });
@@ -223,7 +228,7 @@ export class ReportsService {
             },
         });
 
-        const revenue = sales.reduce((sum, sale) => sum + this.toNumber(sale.totalAmount), 0);
+        const revenue = sales.reduce((sum, sale) => sum + this.toNumber(sale.paidAmount), 0);
         let totalCost = 0;
         sales.forEach(sale => {
             sale.items.forEach(item => {
@@ -232,23 +237,27 @@ export class ReportsService {
         });
         const profit = revenue - totalCost;
 
-        const productSales = new Map<string, { name: string; quantity: number; revenue: number }>();
+        const productSales = new Map<string, { name: string; quantity: number; baseTotal: number; paidTotal: number }>();
         sales.forEach(sale => {
             sale.items.forEach(item => {
                 const existing = productSales.get(item.productId) || {
                     name: item.product.name,
                     quantity: 0,
-                    revenue: 0,
+                    baseTotal: 0,
+                    paidTotal: 0,
                 };
                 existing.quantity += item.quantity;
-                existing.revenue += this.toNumber(item.total);
+                existing.baseTotal += item.quantity * this.toNumber(item.product.basePrice);
+                existing.paidTotal += this.toNumber(item.total);
                 productSales.set(item.productId, existing);
             });
         });
 
         const topProducts = Array.from(productSales.values())
+            .map(p => ({ name: p.name, quantity: p.quantity, baseTotal: p.baseTotal, revenue: p.paidTotal }))
             .sort((a, b) => b.revenue - a.revenue)
             .slice(0, 10);
+
 
         const customerSales = new Map<string, { name: string; purchases: number; totalSpent: number }>();
         sales.forEach(sale => {
@@ -259,7 +268,7 @@ export class ReportsService {
                     totalSpent: 0,
                 };
                 existing.purchases += 1;
-                existing.totalSpent += this.toNumber(sale.totalAmount);
+                existing.totalSpent += this.toNumber(sale.paidAmount);
                 customerSales.set(sale.customerId!, existing);
             }
         });
@@ -339,7 +348,7 @@ export class ReportsService {
             },
         });
 
-        const revenue = sales.reduce((sum, sale) => sum + this.toNumber(sale.totalAmount), 0);
+        const revenue = sales.reduce((sum, sale) => sum + this.toNumber(sale.paidAmount), 0);
         let totalCost = 0;
         sales.forEach(sale => {
             sale.items.forEach(item => {
@@ -361,6 +370,7 @@ export class ReportsService {
                         name: categoryName,
                         revenue: 0,
                     };
+                    // paidTotal = prix réellement payé par item
                     existing.revenue += this.toNumber(item.total);
                     categoryRevenue.set(categoryId, existing);
                 }
@@ -434,7 +444,7 @@ export class ReportsService {
             }
         });
 
-        const revenue = sales.reduce((sum, sale) => sum + this.toNumber(sale.totalAmount), 0);
+        const revenue = sales.reduce((sum, sale) => sum + this.toNumber(sale.paidAmount), 0);
         let totalCost = 0;
         sales.forEach(sale => {
             sale.items.forEach(item => {
@@ -511,7 +521,7 @@ export class ReportsService {
             }
         });
 
-        const revenue = sales.reduce((sum, sale) => sum + this.toNumber(sale.totalAmount), 0);
+        const revenue = sales.reduce((sum, sale) => sum + this.toNumber(sale.paidAmount), 0);
         let totalCost = 0;
         sales.forEach(sale => {
             sale.items.forEach(item => {
