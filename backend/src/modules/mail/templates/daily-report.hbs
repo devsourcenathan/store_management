@@ -220,7 +220,8 @@
                         <tr>
                             <th>{{t.product}}</th>
                             <th>{{t.qty}}</th>
-                            <th>{{t.revenue}}</th>
+                            <th>{{t.base_price}}</th>
+                            <th>{{t.paid_price}}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -228,7 +229,8 @@
                         <tr>
                             <td>{{this.name}}</td>
                             <td>{{this.quantity}}</td>
-                            <td>{{this.revenue}} FCFA</td>
+                            <td>{{this.baseTotal}} FCFA</td>
+                            <td><strong>{{this.revenue}} FCFA</strong></td>
                         </tr>
                         {{/each}}
                     </tbody>

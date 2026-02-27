@@ -190,7 +190,7 @@ export class AnalyticsService {
             SELECT 
                 p.name, 
                 SUM(si.quantity) as "totalQuantity",
-                SUM(si.quantity * si."unitPrice") as "totalRevenue"
+                SUM(si.total) as "totalRevenue"
             FROM sale_items si
             JOIN sales s ON si."saleId" = s.id
             JOIN products p ON si."productId" = p.id
