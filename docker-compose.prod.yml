@@ -74,8 +74,6 @@ services:
         condition: service_healthy
     networks:
       - stock-network
-    ports:
-      - "3000:3000"
     command: >
       sh -c "npx prisma migrate deploy && npm run start:prod"
     labels:
@@ -95,8 +93,6 @@ services:
     restart: unless-stopped
     networks:
       - stock-network
-    ports:
-      - "8080:80"
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.stock-frontend.rule=Host(`${FRONTEND_DOMAIN}`)"
