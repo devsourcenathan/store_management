@@ -29,21 +29,23 @@ services:
       NODE_ENV: production
       PORT: 3000
       DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-stock_management}?schema=public
+
+      # JWT
       JWT_SECRET: ${JWT_SECRET}
       JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
       JWT_EXPIRATION: ${JWT_EXPIRATION:-15m}
       JWT_REFRESH_EXPIRATION: ${JWT_REFRESH_EXPIRATION:-7d}
-      
+
       # CORS
-      CORS_ORIGIN: ${CORS_ORIGIN:-https://stock.sekuu.com,https://stock.byevastore.com}
-      
+      CORS_ORIGIN: ${CORS_ORIGIN}
+
       # AWS S3
       AWS_REGION: ${AWS_REGION:-us-east-1}
       AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
       AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
       AWS_S3_BUCKET: ${AWS_S3_BUCKET}
 
-      # Mail Configuration
+      # Mail
       MAIL_PROVIDER: ${MAIL_PROVIDER:-resend}
       MAIL_FALLBACK_ENABLED: ${MAIL_FALLBACK_ENABLED:-true}
       MAIL_FALLBACK_PROVIDER: ${MAIL_FALLBACK_PROVIDER:-ses}
@@ -63,28 +65,44 @@ services:
       # Sync
       SYNC_BATCH_SIZE: ${SYNC_BATCH_SIZE:-100}
       SYNC_CONFLICT_STRATEGY: ${SYNC_CONFLICT_STRATEGY:-last-write-wins}
+
+      # Monitoring
+      SENTRY_DSN: ${SENTRY_DSN}
+
     depends_on:
       postgres:
         condition: service_healthy
     networks:
       - stock-network
     ports:
-      - "127.0.0.1:3000:3000"
+      - "3000:3000"
     command: >
       sh -c "npx prisma migrate deploy && npm run start:prod"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.stock-backend.rule=Host(`${BACKEND_DOMAIN}`)"
+      - "traefik.http.routers.stock-backend.entrypoints=websecure"
+      - "traefik.http.routers.stock-backend.tls.certresolver=letsencrypt"
+      - "traefik.http.services.stock-backend.loadbalancer.server.port=3000"
 
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile.prod
       args:
-        VITE_API_URL: https://stockapi.sekuu.com/api
+        VITE_API_URL: ${VITE_API_URL}
     container_name: stock-frontend
     restart: unless-stopped
     networks:
       - stock-network
     ports:
-      - "127.0.0.1:8080:80"
+      - "8080:80"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.stock-frontend.rule=Host(`${FRONTEND_DOMAIN}`)"
+      - "traefik.http.routers.stock-frontend.entrypoints=websecure"
+      - "traefik.http.routers.stock-frontend.tls.certresolver=letsencrypt"
+      - "traefik.http.services.stock-frontend.loadbalancer.server.port=80"
 
 volumes:
   postgres_data:
