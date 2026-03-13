@@ -101,6 +101,8 @@ export function DashboardLayout() {
             items: [
                 { name: t('nav.subscriptions'), href: '/subscriptions', icon: CreditCard, resource: 'subscriptions' },
                 { name: t('nav.services'), href: '/subscriptions/offers', icon: Layers, resource: 'services' },
+                { name: 'Écarts de caisse', href: '/cash-adjustments', icon: Calculator, resource: 'statistics' }, // Owner/Manager role typical for stats
+                { name: 'Mouvements annexes', href: '/misc-transactions', icon: CreditCard, resource: 'statistics' },
             ]
         },
         {

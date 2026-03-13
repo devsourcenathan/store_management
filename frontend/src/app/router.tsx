@@ -30,6 +30,8 @@ import { MaintenancesPage } from '@/features/maintenances/MaintenancesPage';
 import { AuditLogsPage } from '@/features/audit/AuditLogsPage';
 import { UserAnalyticsPage } from '@/features/analytics/UserAnalyticsPage';
 import { StoreList } from '@/features/settings/components/StoreList';
+import { CashAdjustmentPage } from '@/features/cash-adjustments/CashAdjustmentPage';
+import { MiscTransactionsPage } from '@/features/misc-transactions/MiscTransactionsPage';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
     const { user, isLoading } = useAuth();
@@ -105,6 +107,8 @@ export function AppRouter() {
 
                 <Route path="audit-logs" element={<AuditLogsPage />} />
                 <Route path="user-analytics" element={<UserAnalyticsPage />} />
+                <Route path="cash-adjustments" element={<CashAdjustmentPage />} />
+                <Route path="misc-transactions" element={<MiscTransactionsPage />} />
 
 
                 {/* Platform Billing */}

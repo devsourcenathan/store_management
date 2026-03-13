@@ -1,4 +1,4 @@
-﻿{
+{
     "common": {
         "loading": "Loading...",
         "save": "Save",
@@ -865,5 +865,101 @@
         "mobile": "Mobile Money",
         "credit": "Credit",
         "bank_transfer": "Bank Transfer"
+    },
+    "cash_adjustments": {
+        "title": "Cash Adjustments",
+        "subtitle": "Record and track differences between expected and counted cash amounts.",
+        "new_adjustment": "New Adjustment",
+        "cancel": "Cancel",
+        "total_surplus": "Total Surplus",
+        "total_deficit": "Total Deficit",
+        "net_balance": "Net Balance",
+        "form": {
+            "title": "Record Cash Adjustment",
+            "desc": "Fill this form to declare an expected vs actual cash difference.",
+            "store": "Store",
+            "select_store": "Select a store",
+            "date": "Date (optional)",
+            "expected": "Expected Total (F)",
+            "expected_placeholder": "Ex: 150000",
+            "counted": "Counted Total (F)",
+            "counted_placeholder": "Ex: 148500",
+            "reason": "Reason / Explanation (optional)",
+            "reason_placeholder": "Explain the observed difference...",
+            "diff_calculated": "Calculated Difference:",
+            "surplus": "Surplus",
+            "deficit": "Deficit",
+            "balanced": "Balanced",
+            "save": "Save",
+            "saving": "Saving..."
+        },
+        "filters": {
+            "all_stores": "All Stores",
+            "date": "Filter by date",
+            "reset": "Reset"
+        },
+        "table": {
+            "date": "Date",
+            "expected": "Expected Total",
+            "counted": "Counted Total",
+            "difference": "Difference",
+            "reason": "Reason",
+            "created_by": "Created By",
+            "loading": "Loading...",
+            "empty": "No adjustments found."
+        },
+        "messages": {
+            "success": "Cash adjustment recorded successfully",
+            "error": "Error during recording"
+        }
+    },
+    "misc_transactions": {
+        "title": "Misc Transactions",
+        "subtitle": "Manage other cash inflows and outflows (expenses, contributions, etc.).",
+        "new_transaction": "New Transaction",
+        "cancel": "Cancel",
+        "total_in": "Total Inbound (IN)",
+        "total_out": "Total Outbound (OUT)",
+        "net_balance": "Net Balance",
+        "form": {
+            "title": "Record Misc Transaction",
+            "desc": "Enter details regarding cash contributions or expenses.",
+            "store": "Store",
+            "select_store": "Select a store",
+            "type": "Transaction Type",
+            "select_type": "Movement Type",
+            "type_in": "Cash In (IN)",
+            "type_out": "Cash Out (OUT)",
+            "date": "Date (optional)",
+            "amount": "Amount (F)",
+            "amount_placeholder": "Ex: 5000",
+            "description": "Description",
+            "description_placeholder": "Ex: Office supplies",
+            "save": "Save",
+            "saving": "Saving..."
+        },
+        "filters": {
+            "all_stores": "All Stores",
+            "all_types": "All Types",
+            "type_in": "Inbound (IN)",
+            "type_out": "Outbound (OUT)",
+            "date": "Filter by date",
+            "reset": "Reset"
+        },
+        "table": {
+            "date": "Date",
+            "type": "Type",
+            "type_in": "Inbound",
+            "type_out": "Outbound",
+            "amount": "Amount",
+            "description": "Description",
+            "created_by": "Created By",
+            "loading": "Loading...",
+            "empty": "No transactions found."
+        },
+        "messages": {
+            "success": "Transaction successfully recorded",
+            "error": "Error during recording"
+        }
     }
 }

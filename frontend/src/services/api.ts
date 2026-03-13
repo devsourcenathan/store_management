@@ -325,7 +325,7 @@ export const stockApi = {
             },
             async () => {
                 // Fallback: get from IndexedDB
-                let query = db.stockMovements.where('storeId').equals(storeId);
+                const query = db.stockMovements.where('storeId').equals(storeId);
                 if (productId) {
                     const movements = await query.toArray();
                     return movements.filter(m => m.productId === productId);

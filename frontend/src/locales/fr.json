@@ -1,4 +1,4 @@
-﻿{
+{
     "common": {
         "loading": "Chargement...",
         "save": "Enregistrer",
@@ -866,5 +866,101 @@
         "mobile": "Mobile Money",
         "credit": "Crédit",
         "bank_transfer": "Virement Bancaire"
+    },
+    "cash_adjustments": {
+        "title": "Écarts de caisse",
+        "subtitle": "Enregistrez et suivez les écarts entre le montant attendu et le montant compté en caisse.",
+        "new_adjustment": "Nouvel ajustement",
+        "cancel": "Annuler",
+        "total_surplus": "Total surplus",
+        "total_deficit": "Total manquant",
+        "net_balance": "Solde net",
+        "form": {
+            "title": "Enregistrer un ajustement de caisse",
+            "desc": "Remplissez ce formulaire pour déclarer un écart.",
+            "store": "Boutique",
+            "select_store": "Sélectionner une boutique",
+            "date": "Date (optionnel)",
+            "expected": "Total attendu (F)",
+            "expected_placeholder": "Ex: 150000",
+            "counted": "Total compté (F)",
+            "counted_placeholder": "Ex: 148500",
+            "reason": "Raison / Explication (optionnel)",
+            "reason_placeholder": "Expliquez l'écart observé...",
+            "diff_calculated": "Différence calculée :",
+            "surplus": "Surplus",
+            "deficit": "Manquant",
+            "balanced": "Équilibré",
+            "save": "Enregistrer",
+            "saving": "Enregistrement..."
+        },
+        "filters": {
+            "all_stores": "Toutes les boutiques",
+            "date": "Filtrer par date",
+            "reset": "Réinitialiser"
+        },
+        "table": {
+            "date": "Date",
+            "expected": "Total attendu",
+            "counted": "Total compté",
+            "difference": "Différence",
+            "reason": "Raison",
+            "created_by": "Créé par",
+            "loading": "Chargement...",
+            "empty": "Aucun ajustement trouvé."
+        },
+        "messages": {
+            "success": "Ajustement de caisse enregistré avec succès",
+            "error": "Erreur lors de l'enregistrement"
+        }
+    },
+    "misc_transactions": {
+        "title": "Mouvements annexes",
+        "subtitle": "Gérez les autres entrées et sorties de caisse (dépenses, apports, etc.).",
+        "new_transaction": "Nouvelle transaction",
+        "cancel": "Annuler",
+        "total_in": "Total Entrées (IN)",
+        "total_out": "Total Sorties (OUT)",
+        "net_balance": "Solde net",
+        "form": {
+            "title": "Enregistrer une transaction annexe",
+            "desc": "Saisissez les informations liés à votre apport ou votre dépense.",
+            "store": "Boutique",
+            "select_store": "Sélectionner une boutique",
+            "type": "Type de transaction",
+            "select_type": "Type de mouvement",
+            "type_in": "Entrée en caisse (IN)",
+            "type_out": "Retrait de caisse (OUT)",
+            "date": "Date (optionnel)",
+            "amount": "Montant (F)",
+            "amount_placeholder": "Ex: 5000",
+            "description": "Description",
+            "description_placeholder": "Ex: Achat de fournitures",
+            "save": "Enregistrer",
+            "saving": "Enregistrement..."
+        },
+        "filters": {
+            "all_stores": "Toutes les boutiques",
+            "all_types": "Tous les types",
+            "type_in": "Entrées (IN)",
+            "type_out": "Sorties (OUT)",
+            "date": "Filtrer par date",
+            "reset": "Réinitialiser"
+        },
+        "table": {
+            "date": "Date",
+            "type": "Type",
+            "type_in": "Entrée",
+            "type_out": "Sortie",
+            "amount": "Montant",
+            "description": "Description",
+            "created_by": "Créé par",
+            "loading": "Chargement...",
+            "empty": "Aucune transaction trouvée."
+        },
+        "messages": {
+            "success": "Transaction enregistrée avec succès",
+            "error": "Erreur lors de l'enregistrement"
+        }
     }
 }

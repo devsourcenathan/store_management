@@ -1068,3 +1068,52 @@ model UserPermission {
   @@unique([userId, permissionId])
   @@map("user_permissions")
 }
+
+// ============================================
+// CASH ADJUSTMENTS (Feature 1)
+// ============================================
+
+model CashAdjustment {
+  id             String   @id @default(uuid())
+  storeId        String
+  organizationId String
+  date           DateTime @default(now())
+  expected       Decimal  @db.Decimal(10, 2)
+  counted        Decimal  @db.Decimal(10, 2)
+  difference     Decimal  @db.Decimal(10, 2)
+  reason         String?
+  createdBy      String
+  createdAt      DateTime @default(now())
+
+  @@index([storeId, date])
+  @@index([organizationId, date])
+  @@index([createdBy])
+  @@map("cash_adjustments")
+}
+
+// ============================================
+// MISC TRANSACTIONS (Feature 2)
+// ============================================
+
+enum MiscTransactionType {
+  IN
+  OUT
+}
+
+model MiscTransaction {
+  id             String              @id @default(uuid())
+  storeId        String
+  organizationId String
+  date           DateTime            @default(now())
+  type           MiscTransactionType
+  amount         Decimal             @db.Decimal(10, 2)
+  description    String
+  createdBy      String
+  createdAt      DateTime            @default(now())
+
+  @@index([storeId, date])
+  @@index([organizationId, date])
+  @@index([type])
+  @@index([createdBy])
+  @@map("misc_transactions")
+}

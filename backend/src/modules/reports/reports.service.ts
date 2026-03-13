@@ -177,6 +177,42 @@ export class ReportsService {
         const totalRevenue = revenue + maintenanceRevenue;
         const totalProfit = profit + maintenanceProfit;
 
+        // Cash Adjustments Summary
+        const cashAdjustments = await this.prisma.cashAdjustment.findMany({
+            where: {
+                organizationId,
+                ...(storeId && { storeId }),
+                date: { gte: startDate, lte: endDate },
+            },
+            select: { difference: true },
+        });
+
+        let cashSurplus = 0;
+        let cashDeficit = 0;
+        for (const adj of cashAdjustments) {
+            const diff = this.toNumber(adj.difference);
+            if (diff > 0) cashSurplus += diff;
+            else cashDeficit += Math.abs(diff);
+        }
+
+        // Misc Transactions Summary
+        const miscTransactions = await this.prisma.miscTransaction.findMany({
+            where: {
+                organizationId,
+                ...(storeId && { storeId }),
+                date: { gte: startDate, lte: endDate },
+            },
+            select: { type: true, amount: true },
+        });
+
+        let miscTotalIn = 0;
+        let miscTotalOut = 0;
+        for (const tx of miscTransactions) {
+            const amt = this.toNumber(tx.amount);
+            if (tx.type === 'IN') miscTotalIn += amt;
+            else miscTotalOut += amt;
+        }
+
         return {
             date: yesterday.toISOString().split('T')[0],
             revenue: totalRevenue, // Combined
@@ -189,7 +225,7 @@ export class ReportsService {
             maintenanceCount,
             topProducts,
             comparison: {
-                revenueChange: Math.round(revenueChange * 100) / 100, // Note: this compares only sales revenue change unless we update prev period too. Keeping simple for now.
+                revenueChange: Math.round(revenueChange * 100) / 100,
                 profitChange: Math.round(profitChange * 100) / 100,
             },
             lowStockAlerts: alerts.map(a => ({
@@ -199,6 +235,18 @@ export class ReportsService {
                 threshold: a.threshold,
             })),
             storePerformance: Array.from(storePerformance.values()),
+            cashAdjustmentsSummary: {
+                count: cashAdjustments.length,
+                totalSurplus: cashSurplus,
+                totalDeficit: cashDeficit,
+                netDifference: cashSurplus - cashDeficit,
+            },
+            miscTransactionsSummary: {
+                count: miscTransactions.length,
+                totalIn: miscTotalIn,
+                totalOut: miscTotalOut,
+                netMisc: miscTotalIn - miscTotalOut,
+            },
         };
     }
 
@@ -406,6 +454,42 @@ export class ReportsService {
         const maintenanceProfit = maintenanceRevenue - maintenanceCost;
         const maintenanceCount = maintenances.length;
 
+        // Cash Adjustments Summary
+        const cashAdjMonthly = await this.prisma.cashAdjustment.findMany({
+            where: {
+                organizationId,
+                ...(storeId && { storeId }),
+                date: { gte: startDate, lte: endDate },
+            },
+            select: { difference: true },
+        });
+
+        let monthlyCashSurplus = 0;
+        let monthlyCashDeficit = 0;
+        for (const adj of cashAdjMonthly) {
+            const diff = this.toNumber(adj.difference);
+            if (diff > 0) monthlyCashSurplus += diff;
+            else monthlyCashDeficit += Math.abs(diff);
+        }
+
+        // Misc Transactions Summary
+        const miscTxMonthly = await this.prisma.miscTransaction.findMany({
+            where: {
+                organizationId,
+                ...(storeId && { storeId }),
+                date: { gte: startDate, lte: endDate },
+            },
+            select: { type: true, amount: true },
+        });
+
+        let monthlyMiscIn = 0;
+        let monthlyMiscOut = 0;
+        for (const tx of miscTxMonthly) {
+            const amt = this.toNumber(tx.amount);
+            if (tx.type === 'IN') monthlyMiscIn += amt;
+            else monthlyMiscOut += amt;
+        }
+
         return {
             month: date.toLocaleString('default', { month: 'long', year: 'numeric' }),
             revenue: revenue + maintenanceRevenue,
@@ -416,6 +500,18 @@ export class ReportsService {
             maintenanceCount,
             categoryPerformance: Array.from(categoryRevenue.values())
                 .sort((a, b) => b.revenue - a.revenue),
+            cashAdjustmentsSummary: {
+                count: cashAdjMonthly.length,
+                totalSurplus: monthlyCashSurplus,
+                totalDeficit: monthlyCashDeficit,
+                netDifference: monthlyCashSurplus - monthlyCashDeficit,
+            },
+            miscTransactionsSummary: {
+                count: miscTxMonthly.length,
+                totalIn: monthlyMiscIn,
+                totalOut: monthlyMiscOut,
+                netMisc: monthlyMiscIn - monthlyMiscOut,
+            },
         };
     }
 
