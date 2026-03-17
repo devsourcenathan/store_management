@@ -80,7 +80,7 @@ services:
       context: ./frontend
       dockerfile: Dockerfile.prod
       args:
-        VITE_API_URL: https://stockapi.sekuu.com/api
+        VITE_API_URL: https://stocknapi.byevastore.com/api
     container_name: stock-frontend
     restart: unless-stopped
     networks:
