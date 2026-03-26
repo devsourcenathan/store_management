@@ -258,7 +258,7 @@ docker-compose -f docker-compose.prod.yml up -d
 ### Accéder à la base de données
 
 ```bash
-docker exec -it stock-postgres psql -U postgres -d stock_management
+docker exec -it stock-postgres psql -U postgres -d stock_management_prod
 ```
 
 ### Nettoyer les images inutilisées
@@ -347,10 +347,10 @@ sudo ufw enable
 
 ```bash
 # Créer un backup
-docker exec stock-postgres pg_dump -U postgres stock_management > backup_$(date +%Y%m%d).sql
+docker exec stock-postgres pg_dump -U postgres stock_management_prod > backup_$(date +%Y%m%d).sql
 
 # Restaurer un backup
-cat backup_20260119.sql | docker exec -i stock-postgres psql -U postgres stock_management
+cat backup_20260119.sql | docker exec -i stock-postgres psql -U postgres stock_management_prod
 ```
 
 ### Automatiser les backups (cron)
@@ -360,7 +360,7 @@ cat backup_20260119.sql | docker exec -i stock-postgres psql -U postgres stock_m
 crontab -e
 
 # Ajouter cette ligne pour backup quotidien à 2h du matin
-0 2 * * * cd ~/apps/stock && docker exec stock-postgres pg_dump -U postgres stock_management > ~/backups/stock_$(date +\%Y\%m\%d).sql
+0 2 * * * cd ~/apps/stock && docker exec stock-postgres pg_dump -U postgres stock_management_prod > ~/backups/stock_$(date +\%Y\%m\%d).sql
 ```
 
 ## 📈 Monitoring
