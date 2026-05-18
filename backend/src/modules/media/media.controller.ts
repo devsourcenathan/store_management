@@ -10,6 +10,7 @@ import {
     UseGuards,
     UseInterceptors,
     UploadedFile,
+    Res,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { MediaService } from './media.service';
@@ -17,11 +18,40 @@ import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
 import { StoreAuthGuard } from '@/common/guards/store-auth.guard';
 import { CurrentOrganization, CurrentUser } from '@/common/decorators/user.decorator';
 import { MediaEntityType } from '@prisma/client';
+import type { Response } from 'express';
+import { createReadStream } from 'fs';
+import { ConfigService } from '@nestjs/config';
+import { LocalStorageService } from './local-storage.service';
 
 @Controller('media')
 @UseGuards(JwtAuthGuard, StoreAuthGuard)
 export class MediaController {
-    constructor(private mediaService: MediaService) { }
+    constructor(
+        private mediaService: MediaService,
+        private configService: ConfigService,
+        private localStorageService: LocalStorageService,
+    ) { }
+
+    @Get('files/:id')
+    async getLocalFile(
+        @Param('id') id: string,
+        @CurrentOrganization() organizationId: string,
+        @Res() res: Response,
+    ) {
+        const storageMode = (this.configService.get<string>('MEDIA_STORAGE') || 's3').toLowerCase();
+        if (storageMode !== 'local') {
+            return res.status(404).send('Not found');
+        }
+
+        const media = await this.mediaService.findOne(id, organizationId);
+        const filepath = this.localStorageService.getFilePath(media.organizationId, media.entityType, media.filename);
+
+        res.setHeader('Content-Type', media.mimeType || 'application/octet-stream');
+        res.setHeader('Content-Length', String(media.size || 0));
+        res.setHeader('Cache-Control', 'private, max-age=3600');
+
+        return createReadStream(filepath).pipe(res);
+    }
 
     @Post('upload')
     @UseInterceptors(FileInterceptor('file'))

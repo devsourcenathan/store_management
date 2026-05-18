@@ -27,6 +27,7 @@ Thumbs.db
 
 # Prisma
 prisma/migrations/
+generated/
 
 # Logs
 logs/
