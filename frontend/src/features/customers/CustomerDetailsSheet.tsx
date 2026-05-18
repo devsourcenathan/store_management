@@ -100,7 +100,7 @@ export function CustomerDetailsSheet({ customerId, isOpen, onClose }: CustomerDe
                                                         {format(new Date(sale.createdAt), 'PPP')}
                                                     </p>
                                                     <button
-                                                        onClick={() => printer.printInvoice(sale, currentStore?.name)}
+                                                        onClick={() => printer.printInvoice(sale, currentStore || undefined, t)}
                                                         className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                                                         title="Print Invoice"
                                                     >

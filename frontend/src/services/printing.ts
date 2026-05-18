@@ -1,5 +1,17 @@
 export const printer = {
-    printInvoice: (sale: any, storeName: string = "STORE MANAGEMENT", t: (key: string) => string = (key) => key) => {
+    printInvoice: (
+        sale: any,
+        store:
+            | string
+            | {
+                name?: string;
+                phone?: string;
+                email?: string;
+                address?: string;
+                receiptFooter?: string;
+            } = "STORE MANAGEMENT",
+        t: (key: string) => string = (key) => key
+    ) => {
         const win = window.open('', '', 'width=800,height=600');
         if (!win) return;
 
@@ -11,6 +23,27 @@ export const printer = {
             const translated = t(key);
             return translated === key ? defaultText : translated;
         };
+
+        const escapeHtml = (value: any) => {
+            const str = String(value ?? '');
+            return str
+                .replaceAll('&', '&amp;')
+                .replaceAll('<', '&lt;')
+                .replaceAll('>', '&gt;')
+                .replaceAll('"', '&quot;')
+                .replaceAll("'", '&#39;');
+        };
+
+        const storeInfo =
+            typeof store === 'string'
+                ? { name: store }
+                : {
+                    name: store?.name || 'STORE MANAGEMENT',
+                    phone: store?.phone,
+                    email: store?.email,
+                    address: store?.address,
+                    receiptFooter: store?.receiptFooter,
+                };
 
         const html = `
             <html>
@@ -31,16 +64,19 @@ export const printer = {
             </head>
             <body>
                 <div class="header">
-                    <div class="store-name">${storeName}</div>
+                    <div class="store-name">${escapeHtml(storeInfo.name)}</div>
+                    ${storeInfo.phone ? `<div class="meta">${tr('invoice.phone', 'Phone')}: ${escapeHtml(storeInfo.phone)}</div>` : ''}
+                    ${storeInfo.email ? `<div class="meta">${tr('invoice.email', 'Email')}: ${escapeHtml(storeInfo.email)}</div>` : ''}
+                    ${storeInfo.address ? `<div class="meta">${tr('invoice.location', 'Location')}: ${escapeHtml(storeInfo.address)}</div>` : ''}
                     <div class="meta">${tr('invoice.date', 'Date')}: ${date} ${time}</div>
                     <div class="meta">${tr('invoice.receipt', 'Receipt')}: #${sale.id.slice(0, 8).toUpperCase()}</div>
-                    ${sale.customer ? `<div class="meta">${tr('invoice.customer', 'Customer')}: ${sale.customer.name}</div>` : ''}
+                    ${sale.customer ? `<div class="meta">${tr('invoice.customer', 'Customer')}: ${escapeHtml(sale.customer.name)}</div>` : ''}
                 </div>
 
                 <div class="items">
                     ${(sale.items || []).map((item: any) => `
                         <div class="item">
-                            <span>${item.product?.name || item.name || 'Unknown Item'} x${item.quantity}</span>
+                            <span>${escapeHtml(item.product?.name || item.name || 'Unknown Item')} x${escapeHtml(item.quantity)}</span>
                             <span>${Number(item.total).toLocaleString()}</span>
                         </div>
                     `).join('')}
@@ -68,6 +104,7 @@ export const printer = {
                 </div>
 
                 <div class="footer">
+                    ${storeInfo.receiptFooter ? `<p>${tr('invoice.message', 'Message')}: ${escapeHtml(storeInfo.receiptFooter)}</p>` : ''}
                     <p>${tr('invoice.thank_you', 'Thank you for your business!')}</p>
                     <p>${tr('invoice.powered_by', 'Powered by StockManagement')}</p>
                 </div>
