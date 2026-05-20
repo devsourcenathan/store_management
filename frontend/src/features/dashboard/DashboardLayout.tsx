@@ -95,14 +95,14 @@ export function DashboardLayout() {
                 { name: t('maintenances.title'), href: '/maintenances', icon: Wrench, resource: 'maintenances' },
             ]
         },
-        {
-            id: 'finance',
-            title: t('nav.titles.finance'),
-            items: [
-                { name: t('nav.subscriptions'), href: '/subscriptions', icon: CreditCard, resource: 'subscriptions' },
-                { name: t('nav.services'), href: '/subscriptions/offers', icon: Layers, resource: 'services' },
-            ]
-        },
+        // {
+        //     id: 'finance',
+        //     title: t('nav.titles.finance'),
+        //     items: [
+        //         { name: t('nav.subscriptions'), href: '/subscriptions', icon: CreditCard, resource: 'subscriptions' },
+        //         { name: t('nav.services'), href: '/subscriptions/offers', icon: Layers, resource: 'services' },
+        //     ]
+        // },
         {
             id: 'content',
             title: t('nav.titles.content'),
@@ -158,15 +158,15 @@ export function DashboardLayout() {
     }
 
     // Billing - For OWNER only
-    if (hasPermission('billing')) {
-        allNavigation.push({
-            id: 'billing',
-            title: t('nav.titles.billing'),
-            items: [
-                { name: t('nav.my_plan'), href: '/billing/subscription', icon: CreditCard, resource: 'billing' }
-            ]
-        });
-    }
+    // if (hasPermission('billing')) {
+    //     allNavigation.push({
+    //         id: 'billing',
+    //         title: t('nav.titles.billing'),
+    //         items: [
+    //             { name: t('nav.my_plan'), href: '/billing/subscription', icon: CreditCard, resource: 'billing' }
+    //         ]
+    //     });
+    // }
 
     // Admin Panel - For GLOBAL_ADMIN only
     if (user?.role === 'GLOBAL_ADMIN') {

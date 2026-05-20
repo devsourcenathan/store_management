@@ -104,9 +104,7 @@ export const printer = {
                 </div>
 
                 <div class="footer">
-                    ${storeInfo.receiptFooter ? `<p>${tr('invoice.message', 'Message')}: ${escapeHtml(storeInfo.receiptFooter)}</p>` : ''}
-                    <p>${tr('invoice.thank_you', 'Thank you for your business!')}</p>
-                    <p>${tr('invoice.powered_by', 'Powered by StockManagement')}</p>
+                    ${storeInfo.receiptFooter ? `<p>${escapeHtml(storeInfo.receiptFooter)}</p>` : ''}
                 </div>
 
                 <script>
