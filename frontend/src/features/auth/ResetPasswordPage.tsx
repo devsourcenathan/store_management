@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import axios from 'axios';
+import { getApiOrigin } from '@/lib/apiBaseUrl';
 import { AuthLayout } from './AuthLayout';
 import { Lock } from 'lucide-react';
 
@@ -29,8 +30,8 @@ export function ResetPasswordPage() {
         setMessage('');
 
         try {
-            const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-            await axios.post(`${apiUrl}/auth/reset-password`, { token, password });
+            const apiUrl = getApiOrigin();
+            await axios.post(`${apiUrl}/api/auth/reset-password`, { token, password });
             setStatus('success');
             setMessage(t('auth.password_reset_success', 'Password reset successfully. You can now login.'));
             setTimeout(() => navigate('/login'), 3000);

@@ -1,8 +1,8 @@
-
-// Import dotenv to ensure environment variables are loaded for local development
-// This is not strictly necessary in production if env vars are injected by the container, 
-// but it helps locally when running `npm run start:dev` without the Nest CLI's help in the instrument file.
-import 'dotenv/config';
+// Desktop bundle injects env from Electron — do not load backend/.env (often Postgres).
+if (process.env.LOCAL_BUNDLE !== 'true') {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    require('dotenv/config');
+}
 import * as Sentry from '@sentry/nestjs';
 
 Sentry.init({

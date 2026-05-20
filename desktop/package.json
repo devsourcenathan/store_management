@@ -3,11 +3,13 @@
   "version": "0.1.0",
   "private": true,
   "main": "main.js",
-  "scripts": {
+    "scripts": {
     "start": "electron .",
-    "dist:zip": "electron-builder --win zip --publish never"
+    "prepare:bundle": "npm --prefix ../backend run desktop:build-seed-db && npm --prefix ../backend run build && npm --prefix ../frontend run build:desktop",
+    "dist:zip": "npm run prepare:bundle && electron-builder --win zip --publish never"
   },
   "devDependencies": {
+    "@electron/rebuild": "^4.0.4",
     "electron": "^31.0.0",
     "electron-builder": "^24.13.3"
   },
@@ -32,6 +34,10 @@
       {
         "from": "../backend/generated/sqlite-client",
         "to": "backend/generated/sqlite-client"
+      },
+      {
+        "from": "../backend/generated/desktop-stock.db",
+        "to": "backend/seed/desktop-stock.db"
       },
       {
         "from": "../frontend/dist",

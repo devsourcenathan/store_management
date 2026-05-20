@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { registerSW } from 'virtual:pwa-register';
+import { isDesktopBundle } from '@/lib/apiBaseUrl';
 
 export function usePWAUpdate() {
     const [needRefresh, setNeedRefresh] = useState(false);
@@ -7,15 +7,19 @@ export function usePWAUpdate() {
     const [updateSW, setUpdateSW] = useState<((reloadPage?: boolean) => Promise<void>) | undefined>(undefined);
 
     useEffect(() => {
-        const updateServiceWorker = registerSW({
-            onNeedRefresh() {
-                setNeedRefresh(true);
-            },
-            onOfflineReady() {
-                setOfflineReady(true);
-            },
+        if (isDesktopBundle()) return;
+
+        import('virtual:pwa-register').then(({ registerSW }) => {
+            const updateServiceWorker = registerSW({
+                onNeedRefresh() {
+                    setNeedRefresh(true);
+                },
+                onOfflineReady() {
+                    setOfflineReady(true);
+                },
+            });
+            setUpdateSW(() => updateServiceWorker);
         });
-        setUpdateSW(() => updateServiceWorker);
     }, []);
 
     const updateServiceWorker = async (reloadPage = true) => {

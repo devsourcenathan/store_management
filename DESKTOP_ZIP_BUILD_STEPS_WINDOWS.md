@@ -10,34 +10,51 @@ Objectif: générer un **zip desktop** utilisable en local, avec:
 - Node.js + npm installés
 - Lancer les commandes depuis le repo: `C:\\Users\\nathan.tchinda\\projects\\stock`
 
-## 1) Build frontend (UI)
+## 1) Personnaliser le seed desktop (optionnel)
 
-```powershell
-cd C:\Users\nathan.tchinda\projects\stock\frontend
-npm install
-npm run build
-```
+Édite `backend\\prisma\\desktop-seed.config.json` (organisation, magasins, utilisateurs, mots de passe).
 
-## 2) Build backend (API)
+Exemple de connexion par défaut:
+- `owner@demo.com` / `password123`
 
-```powershell
-cd C:\Users\nathan.tchinda\projects\stock\backend
-npm install
-npm run prisma:sqlite:generate
-npm run build
-```
-
-Notes:
-- `npm run prisma:sqlite:generate` génère `backend\\generated\\schema.sqlite.prisma` + `backend\\generated\\sqlite-client\\...` (non commit).
-- Le mode bundle utilise `DB_PROVIDER=sqlite` (injecté par Electron) et place la DB dans `%APPDATA%\\StockManagement\\stock.db`.
-
-## 3) Build zip desktop (Electron)
+## 2) Build zip desktop (tout-en-un)
 
 ```powershell
 cd C:\Users\nathan.tchinda\projects\stock\desktop
 npm install
 npm run dist:zip
 ```
+
+`dist:zip` exécute automatiquement:
+- génération SQLite + DB seedée (`backend\\generated\\desktop-stock.db`)
+- build backend NestJS
+- build frontend mode desktop (`VITE_DESKTOP=true`, API = même origine que l'UI)
+- packaging Electron
+
+Notes:
+- Au **premier lancement**, la DB seedée est copiée vers `%APPDATA%\\StockManagement\\stock.db`.
+- Pour repartir de zéro: supprime `%APPDATA%\\StockManagement\\stock.db` puis relance l'app.
+
+## Build manuel (étape par étape)
+
+```powershell
+cd C:\Users\nathan.tchinda\projects\stock\backend
+npm install
+npm run desktop:build-seed-db
+npm run build
+
+cd C:\Users\nathan.tchinda\projects\stock\frontend
+npm install
+npm run build:desktop
+
+cd C:\Users\nathan.tchinda\projects\stock\desktop
+npm install
+npx electron-builder --win zip --publish never
+```
+
+Important:
+- le backend NestJS tourne dans un processus enfant (`utilityProcess`), pas dans le processus UI Electron.
+- si l'exe ne démarre pas, consulte `%APPDATA%\\StockManagement\\logs\\desktop.log` et `backend.log`.
 
 ## 4) Récupérer l’archive zip
 
@@ -56,4 +73,3 @@ Le zip est généré dans:
 
 - Si l’UI ne charge pas: refaire `frontend\\npm run build`, puis re-packager.
 - Si le backend ne démarre pas: refaire `backend\\npm run build` + `backend\\npm run prisma:sqlite:generate`, puis re-packager.
-

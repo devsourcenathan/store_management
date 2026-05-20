@@ -34,7 +34,12 @@ export function LoginPage() {
                 navigate('/dashboard');
             }
         } catch (err: any) {
-            setError(err.response?.data?.message || err.message || t('common.error'));
+            const msg = err.response?.data?.message || err.message || t('common.error');
+            setError(
+                err.code === 'ERR_NETWORK'
+                    ? `${msg} — vérifie que l'API répond sur ${window.location.origin}/api`
+                    : msg,
+            );
         } finally {
             setIsLoading(false);
         }

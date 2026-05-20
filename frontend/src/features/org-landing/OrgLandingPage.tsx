@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { OrganizationLandingData } from '@/types/landing';
 import { SectionRenderer } from './render';
+import { getApiBaseUrl } from '@/lib/apiBaseUrl';
 
 export const OrgLandingPage = () => {
     const { subdomain } = useParams();
@@ -11,7 +12,7 @@ export const OrgLandingPage = () => {
     const iframeRef = useRef<HTMLIFrameElement>(null);
 
     useEffect(() => {
-        const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+        const API_BASE_URL = getApiBaseUrl();
         fetch(`${API_BASE_URL}/org-landing/subdomain/${subdomain}`)
             .then(res => res.json())
             .then(data => {

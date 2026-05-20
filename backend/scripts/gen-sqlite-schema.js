@@ -13,6 +13,10 @@ function main() {
   // Switch provider to sqlite
   out = out.replace(/provider\s*=\s*"postgresql"/g, 'provider = "sqlite"');
 
+  // For desktop/local bundle, prefer Prisma "library" engine on Windows to avoid spawning a separate engine binary.
+  // (Binary engine requires spawning an executable which often fails in packaged contexts.)
+  out = out.replace(/engineType\s*=\s*"binary"/g, 'engineType = "library"');
+
   // SQLite does not support scalar lists; store tags as Json array instead
   out = out.replace(
     /tags\s+String\[\]\s*\/\/ For search and filtering/g,

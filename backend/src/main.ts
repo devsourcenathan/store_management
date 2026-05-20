@@ -1,3 +1,4 @@
+import 'reflect-metadata';
 import './instrument';
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
@@ -5,6 +6,7 @@ import { AppModule } from './app.module';
 import * as path from 'path';
 import * as fs from 'fs';
 import { NestExpressApplication } from '@nestjs/platform-express';
+import { ensureDesktopDatabase } from './common/prisma/desktop-db.init';
 
 async function bootstrap() {
     // Local bundle support:
@@ -16,13 +18,26 @@ async function bootstrap() {
             fs.mkdirSync(resolved, { recursive: true });
         } catch { }
 
+        if ((process.env.DB_PROVIDER || '').toLowerCase() === 'sqlite') {
+            await ensureDesktopDatabase(resolved);
+        }
+
+        // In desktop/local-bundle mode we use SQLite; prefer the "library" engine to avoid spawning.
+        // (Binary engine requires spawning an engine executable which often fails in packaged contexts.)
+        if (!process.env.PRISMA_CLIENT_ENGINE_TYPE) {
+            const dbProvider = (process.env.DB_PROVIDER || '').toLowerCase();
+            process.env.PRISMA_CLIENT_ENGINE_TYPE = dbProvider === 'sqlite' ? 'library' : 'binary';
+        }
+
         if (!process.env.LOCAL_MEDIA_DIR) {
             process.env.LOCAL_MEDIA_DIR = path.join(resolved, 'media');
         }
 
         const dbProvider = (process.env.DB_PROVIDER || '').toLowerCase();
-        if (dbProvider === 'sqlite' && !process.env.DATABASE_URL) {
-            process.env.DATABASE_URL = `file:${path.join(resolved, 'stock.db')}`;
+        if (dbProvider === 'sqlite') {
+            const dbPath = path.join(resolved, 'stock.db').replaceAll('\\', '/');
+            // Always override: desktop child must not use Postgres DATABASE_URL from .env.
+            process.env.DATABASE_URL = `file:${dbPath}`;
         }
     }
 
@@ -30,9 +45,19 @@ async function bootstrap() {
 
     // Enable CORS
     const corsEnv = process.env.CORS_ORIGIN;
-    const origins = corsEnv && corsEnv.trim() !== ''
-        ? corsEnv.split(',').map((origin) => origin.trim())
-        : ['http://localhost:5173'];
+    let origins =
+        corsEnv && corsEnv.trim() !== ''
+            ? corsEnv.split(',').map((origin) => origin.trim())
+            : ['http://localhost:5173'];
+
+    if (process.env.LOCAL_BUNDLE === 'true') {
+        const port = process.env.PORT || '3100';
+        const desktopOrigins = [
+            `http://127.0.0.1:${port}`,
+            `http://localhost:${port}`,
+        ];
+        origins = [...new Set([...origins, ...desktopOrigins])];
+    }
 
     console.log('Configured CORS Origins:', origins);
 
@@ -58,9 +83,9 @@ async function bootstrap() {
     if (frontendDist && frontendDist.trim() !== '') {
         const resolvedDist = path.resolve(frontendDist);
         app.useStaticAssets(resolvedDist);
-        // SPA fallback (exclude API routes)
-        app.getHttpAdapter().get('*', (req: any, res: any) => {
-            if (req?.url?.startsWith('/api')) return res.status(404).send('Not found');
+        // SPA fallback (exclude API routes). Use middleware so it doesn't interfere with Nest route registration.
+        app.use((req: any, res: any, next: any) => {
+            if (req?.url?.startsWith('/api')) return next();
             return res.sendFile(path.join(resolvedDist, 'index.html'));
         });
     }

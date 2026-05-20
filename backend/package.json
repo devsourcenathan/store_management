@@ -25,6 +25,7 @@
     "prisma:sqlite:schema": "node scripts/gen-sqlite-schema.js",
     "prisma:sqlite:generate": "node scripts/gen-sqlite-schema.js > NUL && prisma generate --schema generated/schema.sqlite.prisma",
     "prisma:sqlite:migrate": "node scripts/gen-sqlite-schema.js > NUL && prisma migrate dev --schema generated/schema.sqlite.prisma",
+    "desktop:build-seed-db": "node scripts/build-desktop-seed-db.js",
     "seed:permissions:prod": "node dist/prisma/seed-permissions.js",
     "fix:sales-creator": "node dist/scripts/fix-sales-creator.js"
   },
@@ -56,7 +57,7 @@
     "date-fns": "^4.1.0",
     "handlebars": "^4.7.8",
     "multer": "^2.0.2",
-    "nestjs-i18n": "^10.6.0",
+    "nestjs-i18n": "^10.4.9",
     "nodemailer": "^7.0.12",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
@@ -67,6 +68,7 @@
     "uuid": "^9.0.1"
   },
   "devDependencies": {
+    "@electron/rebuild": "^4.0.4",
     "@nestjs/cli": "^10.0.0",
     "@nestjs/schematics": "^10.0.0",
     "@nestjs/testing": "^10.0.0",

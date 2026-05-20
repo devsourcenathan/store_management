@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Link, useNavigate } from 'react-router-dom';
+import { getApiBaseUrl } from '@/lib/apiBaseUrl';
 
 interface LandingContent {
     heroTitle: string;
@@ -15,9 +16,8 @@ export const LandingPage = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
-        // Fetch content from backend
-        fetch(`${API_BASE_URL}/landing/content`) // Adjust API URL as needed
+        const API_BASE_URL = getApiBaseUrl();
+        fetch(`${API_BASE_URL}/landing/content`)
             .then(res => res.json())
             .then(data => setContent(data))
             .catch(err => console.error('Failed to fetch landing content', err));

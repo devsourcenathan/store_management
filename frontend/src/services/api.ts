@@ -1,13 +1,10 @@
 import axios from 'axios';
 import { saveOffline, deleteOffline, withOfflineFallback, extractEntityFromUrl, getTableForEntity } from '@/offline/offlineOperations';
 import { db } from '@/offline/db';
-
-const API_BASE_URL =
-    import.meta.env.VITE_API_URL ||
-    (typeof window !== 'undefined' ? `${window.location.origin}/api` : 'http://localhost:3000/api');
+import { getApiBaseUrl } from '@/lib/apiBaseUrl';
 
 export const api = axios.create({
-    baseURL: API_BASE_URL,
+    baseURL: '/api',
     timeout: 10000, // 10 seconds timeout
     headers: {
         'Content-Type': 'application/json',
@@ -17,6 +14,7 @@ export const api = axios.create({
 // Request interceptor to add auth token and storeId
 api.interceptors.request.use(
     (config) => {
+        config.baseURL = getApiBaseUrl();
         const token = localStorage.getItem('access_token');
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;

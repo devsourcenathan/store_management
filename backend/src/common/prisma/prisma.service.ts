@@ -1,12 +1,15 @@
 import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import { PrismaClient as PostgresPrismaClient } from '@prisma/client';
+import * as path from 'path';
 
 function loadPrismaClientCtor() {
     const dbProvider = (process.env.DB_PROVIDER || '').toLowerCase();
     if (dbProvider === 'sqlite') {
-        // Generated via: `node scripts/gen-sqlite-schema.js` + `prisma generate --schema generated/schema.sqlite.prisma`
+        // Generated via: `npm run prisma:sqlite:generate`
+        // At runtime, compiled JS lives under `dist/common/prisma`, so we resolve from that location.
+        const sqliteClientPath = path.resolve(__dirname, '../../../generated/sqlite-client');
         // eslint-disable-next-line @typescript-eslint/no-var-requires
-        const sqliteClient = require('../../../generated/sqlite-client');
+        const sqliteClient = require(sqliteClientPath);
         return sqliteClient.PrismaClient;
     }
 

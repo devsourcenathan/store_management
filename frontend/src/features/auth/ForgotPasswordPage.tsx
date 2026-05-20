@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import axios from 'axios';
+import { getApiOrigin } from '@/lib/apiBaseUrl';
 import { AuthLayout } from './AuthLayout';
 import { Mail } from 'lucide-react';
 
@@ -22,8 +23,8 @@ export function ForgotPasswordPage() {
         setMessage('');
 
         try {
-            const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-            await axios.post(`${apiUrl}/auth/forgot-password`, {
+            const apiUrl = getApiOrigin();
+            await axios.post(`${apiUrl}/api/auth/forgot-password`, {
                 email,
                 origin: window.location.origin
             });

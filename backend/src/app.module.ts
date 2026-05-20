@@ -40,13 +40,14 @@ import { CreditModule } from './modules/credit/credit.module';
     imports: [
         ConfigModule.forRoot({
             isGlobal: true,
+            ignoreEnvFile: process.env.LOCAL_BUNDLE === 'true',
         }),
         EventEmitterModule.forRoot(),
         I18nModule.forRoot({
             fallbackLanguage: 'fr',
             loaderOptions: {
                 path: path.join(__dirname, '/i18n/'),
-                watch: true,
+                watch: process.env.LOCAL_BUNDLE !== 'true',
             },
             resolvers: [
                 { use: QueryResolver, options: ['lang'] },
