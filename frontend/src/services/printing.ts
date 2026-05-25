@@ -1,5 +1,19 @@
 export const printer = {
-    printInvoice: (sale: any, storeName: string = "STORE MANAGEMENT", t: (key: string) => string = (key) => key) => {
+    printInvoice: (
+        sale: any,
+        storeName: string = "STORE MANAGEMENT",
+        t: (key: string) => string = (key) => key,
+        branding?: {
+            organizationName?: string;
+            logoUrl?: string;
+            footer?: string;
+            address?: string;
+            phone?: string;
+            email?: string;
+            website?: string;
+            taxId?: string;
+        }
+    ) => {
         const win = window.open('', '', 'width=800,height=600');
         if (!win) return;
 
@@ -12,64 +26,94 @@ export const printer = {
             return translated === key ? defaultText : translated;
         };
 
+        const receiptNo = sale.id?.slice?.(0, 8)?.toUpperCase?.() || '';
+        const logoUrl = branding?.logoUrl;
+        const orgName = branding?.organizationName || storeName;
+
         const html = `
             <html>
             <head>
-                <title>${tr('invoice.title', 'INVOICE')} #${sale.id.slice(0, 8)}</title>
+                <title>${tr('invoice.title', 'INVOICE')} #${receiptNo}</title>
                 <style>
-                    body { font-family: 'Courier New', monospace; padding: 20px; max-width: 400px; margin: 0 auto; }
-                    .header { text-align: center; margin-bottom: 20px; border-bottom: 1px dashed #000; padding-bottom: 10px; }
-                    .store-name { font-size: 18px; font-weight: bold; }
-                    .meta { font-size: 12px; margin-bottom: 5px; }
-                    .divider { border-top: 1px dashed #000; margin: 10px 0; }
-                    .item { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 5px; }
-                    .totals { margin-top: 15px; border-top: 1px dashed #000; pt-2; }
-                    .total-row { display: flex; justify-content: space-between; font-weight: bold; margin-top: 5px; }
-                    .footer { text-align: center; font-size: 10px; margin-top: 30px; }
-                    @media print { @page { margin: 0; } body { padding: 10px; } }
+                    body { font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Noto Sans", "Liberation Sans", sans-serif; background: #fff; color: #111827; padding: 16px; }
+                    .receipt { max-width: 430px; margin: 0 auto; border: 1px solid #e5e7eb; border-radius: 14px; padding: 16px; }
+                    .header { text-align: center; padding-bottom: 12px; border-bottom: 1px dashed #9ca3af; }
+                    .logo { height: 52px; max-width: 100%; object-fit: contain; margin: 0 auto 8px; display: block; }
+                    .org-name { font-size: 18px; font-weight: 800; letter-spacing: .2px; }
+                    .store-name { font-size: 12px; color: #6b7280; margin-top: 2px; }
+                    .meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 12px; margin-top: 12px; font-size: 12px; }
+                    .meta-grid .cell { display: flex; justify-content: space-between; gap: 8px; }
+                    .meta-grid .label { color: #6b7280; }
+                    .meta-grid .value { font-weight: 600; color: #111827; }
+                    .items { margin-top: 12px; }
+                    table { width: 100%; border-collapse: collapse; font-size: 12px; }
+                    th { text-align: left; font-size: 11px; color: #6b7280; font-weight: 700; border-bottom: 1px solid #e5e7eb; padding: 8px 0; }
+                    td { padding: 6px 0; border-bottom: 1px solid #f3f4f6; vertical-align: top; }
+                    th.qty, td.qty { text-align: center; width: 56px; }
+                    th.total, td.total { text-align: right; width: 90px; }
+                    .name { font-weight: 600; }
+                    .muted { color: #6b7280; font-weight: 500; }
+                    .totals { margin-top: 12px; padding-top: 12px; border-top: 1px dashed #9ca3af; font-size: 12px; }
+                    .row { display: flex; justify-content: space-between; margin: 6px 0; }
+                    .grand { font-size: 16px; font-weight: 800; margin-top: 8px; }
+                    .footer { text-align: center; font-size: 10px; color: #6b7280; margin-top: 14px; }
+                    .footer p { margin: 4px 0; }
+                    @media print { @page { margin: 0; } body { padding: 10px; } .receipt { border: none; border-radius: 0; padding: 0; } }
                 </style>
             </head>
             <body>
-                <div class="header">
-                    <div class="store-name">${storeName}</div>
-                    <div class="meta">${tr('invoice.date', 'Date')}: ${date} ${time}</div>
-                    <div class="meta">${tr('invoice.receipt', 'Receipt')}: #${sale.id.slice(0, 8).toUpperCase()}</div>
-                    ${sale.customer ? `<div class="meta">${tr('invoice.customer', 'Customer')}: ${sale.customer.name}</div>` : ''}
-                </div>
+                <div class="receipt">
+                    <div class="header">
+                        ${logoUrl ? `<img class="logo" src="${logoUrl}" alt="Logo" />` : ''}
+                        <div class="org-name">${orgName}</div>
+                        <div class="store-name">${storeName || ''}</div>
 
-                <div class="items">
-                    ${(sale.items || []).map((item: any) => `
-                        <div class="item">
-                            <span>${item.product?.name || item.name || 'Unknown Item'} x${item.quantity}</span>
-                            <span>${Number(item.total).toLocaleString()}</span>
+                        <div class="meta-grid">
+                            <div class="cell"><span class="label">${tr('invoice.date', 'Date')}</span><span class="value">${date} ${time}</span></div>
+                            <div class="cell"><span class="label">${tr('invoice.receipt', 'Receipt')}</span><span class="value">#${receiptNo}</span></div>
+                            ${sale.customer ? `<div class="cell" style="grid-column: 1 / -1;"><span class="label">${tr('invoice.customer', 'Customer')}</span><span class="value">${sale.customer.name}</span></div>` : ''}
                         </div>
-                    `).join('')}
-                </div>
-
-                <div class="totals">
-                    ${(sale.discount || 0) > 0 ? `
-                    <div class="item" style="color: #666;">
-                        <span>${tr('invoice.discount', 'Discount')}</span>
-                        <span>-${Number(sale.discount).toLocaleString()}</span>
-                    </div>` : ''}
-                    <div class="total-row">
-                        <span>${tr('invoice.total', 'TOTAL')}</span>
-                        <span>${Number(sale.totalAmount).toLocaleString()} FCFA</span>
                     </div>
-                    <div class="item" style="margin-top: 5px">
-                        <span>${tr('invoice.paid', 'Paid')}</span>
-                        <span>${Number(sale.paidAmount).toLocaleString()}</span>
-                    </div>
-                    ${(sale.totalAmount - sale.paidAmount) > 0 ? `
-                    <div class="total-row" style="margin-top: 5px; border-top: 1px dotted #000; padding-top: 5px;">
-                        <span>${tr('invoice.remaining', 'Remaining')}</span>
-                        <span>${Number(sale.totalAmount - sale.paidAmount).toLocaleString()}</span>
-                    </div>` : ''}
-                </div>
 
-                <div class="footer">
-                    <p>${tr('invoice.thank_you', 'Thank you for your business!')}</p>
-                    <p>${tr('invoice.powered_by', 'Powered by StockManagement')}</p>
+                    <div class="items">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>${tr('invoice.item', 'Item')}</th>
+                                    <th class="qty">${tr('invoice.qty', 'Qty')}</th>
+                                    <th class="total">${tr('invoice.total', 'Total')}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${(sale.items || []).map((item: any) => `
+                                    <tr>
+                                        <td>
+                                            <div class="name">${item.product?.name || item.name || 'Unknown Item'}</div>
+                                            ${item.product?.sku ? `<div class="muted">${item.product.sku}</div>` : ''}
+                                        </td>
+                                        <td class="qty">${Number(item.quantity || 0)}</td>
+                                        <td class="total">${Number(item.total || 0).toLocaleString()}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="totals">
+                        ${(sale.discount || 0) > 0 ? `
+                            <div class="row"><span class="muted">${tr('invoice.discount', 'Discount')}</span><span class="muted">-${Number(sale.discount).toLocaleString()}</span></div>
+                        ` : ''}
+                        <div class="row grand"><span>${tr('invoice.total', 'TOTAL')}</span><span>${Number(sale.totalAmount || 0).toLocaleString()} FCFA</span></div>
+                        <div class="row"><span class="muted">${tr('invoice.paid', 'Paid')}</span><span>${Number(sale.paidAmount || 0).toLocaleString()}</span></div>
+                        ${(Number(sale.totalAmount || 0) - Number(sale.paidAmount || 0)) > 0 ? `
+                            <div class="row"><span class="muted">${tr('invoice.remaining', 'Remaining')}</span><span>${(Number(sale.totalAmount || 0) - Number(sale.paidAmount || 0)).toLocaleString()}</span></div>
+                        ` : ''}
+                    </div>
+
+                    <div class="footer">
+                        ${branding?.footer ? `<p>${branding.footer}</p>` : `<p>${tr('invoice.thank_you', 'Thank you for your business!')}</p>`}
+                        <p>${tr('invoice.powered_by', 'Powered by StockManagement')}</p>
+                    </div>
                 </div>
 
                 <script>
@@ -150,7 +194,7 @@ export const printer = {
                             <tr>
                                 <td>
                                     <div style="font-weight: bold">${item.product.name}</div>
-                                    <div style="font-size: 12px; color: #666">${item.product.sku}</div>
+                                    <div style="font-size: 12px; color: #666">${item.product.sku || ''}</div>
                                 </td>
                                 <td style="text-align: center">${item.quantity}</td>
                                 <td style="text-align: right">${Number(item.unitCost).toLocaleString()}</td>

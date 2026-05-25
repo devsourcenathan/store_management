@@ -125,7 +125,7 @@ model UserStore {
 model Product {
   id             String   @id @default(uuid())
   name           String
-  sku            String
+  sku            String?
   description    String?
   categoryId     String?
   organizationId String

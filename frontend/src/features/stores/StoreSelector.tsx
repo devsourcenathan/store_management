@@ -1,15 +1,13 @@
 import { useState } from 'react';
 import { useStore } from './StoreProvider';
 import { useTranslation } from 'react-i18next';
-import { Store, Plus, Check, ChevronDown, Settings } from 'lucide-react';
-import { NewStoreModal } from './NewStoreModal';
+import { Store, Check, ChevronDown, Settings } from 'lucide-react';
 import { EditStoreModal } from './EditStoreModal';
 
 export function StoreSelector() {
     const { t } = useTranslation();
     const { currentStore, setCurrentStore, stores } = useStore();
     const [isOpen, setIsOpen] = useState(false);
-    const [isModalOpen, setIsModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [editingStore, setEditingStore] = useState<any>(null);
 
@@ -88,35 +86,8 @@ export function StoreSelector() {
                             ))}
                         </div>
 
-                        <div className="border-t border-gray-100 dark:border-gray-700 p-2">
-                            <button
-                                onClick={() => {
-                                    setIsOpen(false);
-                                    setIsModalOpen(true);
-                                }}
-                                className="w-full flex items-center justify-center space-x-2 px-3 py-2 text-sm text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
-                            >
-                                <Plus className="w-4 h-4" />
-                                <span>{t('stores.add_store')}</span>
-                            </button>
-                        </div>
                     </div>
                 </>
-            )}
-
-            {/* New Store Modal */}
-            {isModalOpen && (
-                <NewStoreModal
-                    onClose={() => setIsModalOpen(false)}
-                    onSuccess={() => {
-                        // StoreProvider listens to user which should update internally properly if we invalidate user query?
-                        // Or we might need to manually refresh user data or stores list.
-                        // Currently StoreProvider derives specific stores from User context.
-                        // So invalidate 'user' query or reload page might be needed, or let NewStoreModal handle it.
-                        // Ideally we force a reload of user profile.
-                        window.location.reload(); // Simple brute force for now to refresh user context
-                    }}
-                />
             )}
 
             {/* Edit Store Modal */}

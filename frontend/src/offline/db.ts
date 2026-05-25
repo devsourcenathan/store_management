@@ -27,7 +27,7 @@ export interface Store {
 export interface Product {
     id: string;
     name: string;
-    sku: string;
+    sku?: string | null;
     description?: string;
     categoryId?: string;
     organizationId: string;

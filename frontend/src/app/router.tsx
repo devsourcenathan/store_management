@@ -13,11 +13,9 @@ import { PosPage } from '@/features/sales/PosPage';
 import { CustomersPage } from '@/features/customers/CustomersPage';
 import { CategoriesPage } from '@/features/products/CategoriesPage';
 import { DeletedProductsPage } from '@/features/products/DeletedProductsPage';
-import { SuppliersPage } from '@/features/suppliers/SuppliersPage';
 import { SubscriptionsPage } from '@/features/subscriptions/SubscriptionsPage';
 import { BalanceManagementPage } from '@/features/subscriptions/BalanceManagementPage';
 import { OffersManagementPage } from '@/features/subscriptions/OffersManagementPage';
-import { SupplyOrdersPage } from '@/features/suppliers/SupplyOrdersPage';
 import { SettingsPage } from '@/features/settings/SettingsPage';
 import { PermissionsPage } from '@/features/settings/PermissionsPage';
 import { MediaLibrary } from '@/features/media/MediaLibrary';
@@ -25,11 +23,8 @@ import { OwnerStatisticsPage } from '@/features/statistics/OwnerStatisticsPage';
 import PricingPage from '@/features/billing/PricingPage';
 import SubscriptionPage from '@/features/billing/SubscriptionPage';
 import BillingCallbackPage from '@/features/billing/BillingCallbackPage';
-import { DevicesPage } from '@/features/devices/DevicesPage';
-import { MaintenancesPage } from '@/features/maintenances/MaintenancesPage';
 import { AuditLogsPage } from '@/features/audit/AuditLogsPage';
 import { UserAnalyticsPage } from '@/features/analytics/UserAnalyticsPage';
-import { StoreList } from '@/features/settings/components/StoreList';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
     const { user, isLoading } = useAuth();
@@ -45,7 +40,6 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
     return <>{children}</>;
 }
 
-import { LandingPage } from '@/features/landing/LandingPage';
 import { RegisterOrgPage } from '@/features/landing/RegisterOrgPage';
 import { OrgLandingPage } from '@/features/org-landing/OrgLandingPage';
 import { OrgLandingEditor } from '@/features/org-landing/OrgLandingEditor';
@@ -90,8 +84,6 @@ export function AppRouter() {
                 <Route path="sales" element={<SalesPage />} />
                 <Route path="pos" element={<PosPage />} />
                 <Route path="customers" element={<CustomersPage />} />
-                <Route path="suppliers" element={<SuppliersPage />} />
-                <Route path="supplies" element={<SupplyOrdersPage />} />
                 <Route path="subscriptions" element={<SubscriptionsPage />} />
                 <Route path="subscriptions/balance" element={<BalanceManagementPage />} />
                 <Route path="subscriptions/offers" element={<OffersManagementPage />} />
@@ -100,8 +92,12 @@ export function AppRouter() {
                 <Route path="settings/landing" element={<OrgLandingEditor />} />
                 <Route path="media" element={<MediaLibrary />} />
                 <Route path="statistics" element={<OwnerStatisticsPage />} />
-                <Route path="devices" element={<DevicesPage />} />
-                <Route path="maintenances" element={<MaintenancesPage />} />
+
+                {/* Hidden sections */}
+                <Route path="suppliers" element={<Navigate to="/dashboard" replace />} />
+                <Route path="supplies" element={<Navigate to="/dashboard" replace />} />
+                <Route path="devices" element={<Navigate to="/dashboard" replace />} />
+                <Route path="maintenances" element={<Navigate to="/dashboard" replace />} />
 
                 <Route path="audit-logs" element={<AuditLogsPage />} />
                 <Route path="user-analytics" element={<UserAnalyticsPage />} />
