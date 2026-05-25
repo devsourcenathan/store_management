@@ -5,6 +5,15 @@ import { PrismaService } from '@/common/prisma/prisma.service';
 export class HealthController {
     constructor(private prisma: PrismaService) { }
 
+    /** Fast liveness probe (no DB) — used by Electron startup. */
+    @Get('live')
+    live() {
+        return {
+            status: 'ok',
+            timestamp: new Date().toISOString(),
+        };
+    }
+
     @Get()
     async check() {
         // Check database connection

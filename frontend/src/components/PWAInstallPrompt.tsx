@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { X, Download } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
+import { isOfflineEnabled } from '@/lib/apiBaseUrl';
 
 interface BeforeInstallPromptEvent extends Event {
     prompt: () => Promise<void>;
@@ -14,6 +15,8 @@ export function PWAInstallPrompt() {
     const { t } = useTranslation();
 
     useEffect(() => {
+        if (!isOfflineEnabled()) return;
+
         const handler = (e: Event) => {
             e.preventDefault();
             setDeferredPrompt(e as BeforeInstallPromptEvent);
@@ -51,7 +54,7 @@ export function PWAInstallPrompt() {
         localStorage.setItem('pwa-install-dismissed', 'true');
     };
 
-    if (!showPrompt || !deferredPrompt) {
+    if (!isOfflineEnabled() || !showPrompt || !deferredPrompt) {
         return null;
     }
 

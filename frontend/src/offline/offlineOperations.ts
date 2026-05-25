@@ -1,5 +1,6 @@
 import { db, OfflineOperation } from './db';
 import { v4 as uuidv4 } from 'uuid';
+import { isOfflineEnabled } from '@/lib/apiBaseUrl';
 
 /**
  * Queue an operation for offline sync
@@ -114,6 +115,7 @@ export function getTableForEntity(entity: string): any {
  * Check if we're online
  */
 export function isOnline(): boolean {
+    if (!isOfflineEnabled()) return true;
     return navigator.onLine;
 }
 
@@ -124,6 +126,10 @@ export async function withOfflineFallback<T>(
     apiCall: () => Promise<T>,
     offlineFallback: () => Promise<T>
 ): Promise<T> {
+    if (!isOfflineEnabled()) {
+        return apiCall();
+    }
+
     if (!isOnline()) {
         return offlineFallback();
     }
@@ -131,7 +137,6 @@ export async function withOfflineFallback<T>(
     try {
         return await apiCall();
     } catch (error: any) {
-        // If network error, use offline fallback
         if (error.message?.includes('Network') || error.code === 'ERR_NETWORK') {
             return offlineFallback();
         }

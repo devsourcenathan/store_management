@@ -1,8 +1,11 @@
 const { app, BrowserWindow, dialog, utilityProcess } = require('electron');
+const { spawn } = require('child_process');
 const path = require('path');
 const fs = require('fs');
 
 let backendProcess = null;
+let splashWindow = null;
+let mainWindow = null;
 let logFile = null;
 let pendingEarlyLogs = [];
 
@@ -53,33 +56,58 @@ function sleep(ms) {
   return new Promise((r) => setTimeout(r, ms));
 }
 
-async function waitForHealth(url, timeoutMs = 30000) {
-  const start = Date.now();
-  // Lazy require to avoid ESM issues
+function pingHealth(url) {
   const http = require('http');
+  return new Promise((resolve) => {
+    const req = http.get(url, (res) => {
+      res.resume();
+      resolve(res.statusCode && res.statusCode >= 200 && res.statusCode < 300);
+    });
+    req.on('error', () => resolve(false));
+    req.setTimeout(2000, () => {
+      req.destroy();
+      resolve(false);
+    });
+  });
+}
+
+async function waitForHealth(urls, timeoutMs = 30000, isBackendAlive, onProgress) {
+  const start = Date.now();
+  const list = Array.isArray(urls) ? urls : [urls];
   let lastLog = 0;
   while (Date.now() - start < timeoutMs) {
+    if (typeof isBackendAlive === 'function' && !isBackendAlive()) {
+      log('Backend process exited before health check succeeded');
+      return false;
+    }
     const elapsed = Date.now() - start;
     if (elapsed - lastLog > 5000) {
-      log(`Waiting for health (${Math.round(elapsed / 1000)}s): ${url}`);
+      const sec = Math.round(elapsed / 1000);
+      log(`Waiting for health (${sec}s): ${list[0]}`);
+      if (typeof onProgress === 'function') onProgress(sec);
       lastLog = elapsed;
     }
-    const ok = await new Promise((resolve) => {
-      const req = http.get(url, (res) => {
-        res.resume();
-        resolve(res.statusCode && res.statusCode >= 200 && res.statusCode < 300);
-      });
-      req.on('error', () => resolve(false));
-      req.setTimeout(1500, () => {
-        req.destroy();
-        resolve(false);
-      });
-    });
-    if (ok) return true;
+    for (const url of list) {
+      if (await pingHealth(url)) {
+        log(`Health OK: ${url}`);
+        return true;
+      }
+    }
     await sleep(500);
   }
-  log(`Health timeout after ${Math.round((Date.now() - start) / 1000)}s: ${url}`);
+  log(`Health timeout after ${Math.round((Date.now() - start) / 1000)}s`);
   return false;
+}
+
+function readLogTail(filePath, maxLines = 40) {
+  try {
+    if (!fs.existsSync(filePath)) return '';
+    const content = fs.readFileSync(filePath, 'utf8');
+    const lines = content.split(/\r?\n/).filter(Boolean);
+    return lines.slice(-maxLines).join('\n');
+  } catch {
+    return '';
+  }
 }
 
 function getAppDataDir() {
@@ -191,6 +219,16 @@ function assertLocalBundleFiles({ backendEntry, backendNodeModulesDir, frontendD
     missing.push(`Backend dependency missing: ${reflectMetadataDir}`);
   }
 
+  const backendRoot = path.resolve(path.dirname(backendEntry), '..');
+  const sqliteClientIndex = path.join(backendRoot, 'generated', 'sqlite-client', 'index.js');
+  const prismaEngine = path.join(backendRoot, 'generated', 'sqlite-client', 'query_engine-windows.dll.node');
+  if (!fs.existsSync(sqliteClientIndex)) {
+    missing.push(`SQLite client missing: ${sqliteClientIndex}`);
+  }
+  if (process.platform === 'win32' && !fs.existsSync(prismaEngine)) {
+    missing.push(`Prisma engine missing (antivirus may have deleted it): ${prismaEngine}`);
+  }
+
   if (missing.length) {
     const msg = missing.join('\n');
     log(msg);
@@ -206,22 +244,79 @@ function assertLocalBundleFiles({ backendEntry, backendNodeModulesDir, frontendD
   return true;
 }
 
-async function createWindow(port) {
-  const win = new BrowserWindow({
+let splashStatusText = 'Initialisation…';
+
+function setSplashStatus(message) {
+  splashStatusText = String(message || '');
+  if (!splashWindow || splashWindow.isDestroyed()) return;
+  splashWindow.webContents
+    .executeJavaScript(`window.setStatus && window.setStatus(${JSON.stringify(splashStatusText)})`)
+    .catch(() => {});
+}
+
+function createSplashWindow() {
+  splashWindow = new BrowserWindow({
+    width: 440,
+    height: 320,
+    frame: false,
+    resizable: false,
+    center: true,
+    show: false,
+    backgroundColor: '#2563eb',
+    webPreferences: {
+      contextIsolation: true,
+      nodeIntegration: false,
+    },
+  });
+  splashWindow.loadFile(path.join(__dirname, 'splash.html'));
+  splashWindow.webContents.once('did-finish-load', () => {
+    setSplashStatus(splashStatusText);
+  });
+  splashWindow.once('ready-to-show', () => {
+    if (splashWindow && !splashWindow.isDestroyed()) splashWindow.show();
+  });
+  return splashWindow;
+}
+
+function closeSplashWindow() {
+  if (splashWindow && !splashWindow.isDestroyed()) {
+    splashWindow.close();
+  }
+  splashWindow = null;
+}
+
+async function createMainWindow(port) {
+  setSplashStatus('Chargement de l\'interface…');
+
+  mainWindow = new BrowserWindow({
     width: 1280,
     height: 800,
     show: false,
     webPreferences: {
-      contextIsolation: true
-    }
+      contextIsolation: true,
+    },
   });
 
   try {
-    await win.webContents.session.clearStorageData({ storages: ['serviceworkers', 'cachestorage'] });
+    await mainWindow.webContents.session.clearStorageData({
+      storages: ['serviceworkers', 'cachestorage'],
+    });
   } catch { }
 
-  await win.loadURL(`http://127.0.0.1:${port}/`);
-  win.show();
+  const showMain = () => {
+    closeSplashWindow();
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.show();
+      mainWindow.focus();
+    }
+  };
+
+  mainWindow.once('ready-to-show', showMain);
+  mainWindow.webContents.on('did-fail-load', () => {
+    setSplashStatus('Erreur de chargement. Nouvelle tentative…');
+  });
+
+  await mainWindow.loadURL(`http://127.0.0.1:${port}/`);
 }
 
 function buildBackendEnv({ port, appDataDir, frontendDistDir }) {
@@ -244,6 +339,67 @@ function buildBackendEnv({ port, appDataDir, frontendDistDir }) {
       process.env.JWT_SECRET ||
       'desktop-local-jwt-secret-change-before-production',
   };
+}
+
+function startBackendProcess(entry, backendRoot, env, backendLogPath, logsDir) {
+  const logBackend = (chunk) => {
+    if (!chunk) return;
+    try {
+      fs.appendFileSync(backendLogPath, chunk);
+    } catch { }
+  };
+
+  // Fresh log per session (easier to debug on another PC).
+  try {
+    fs.mkdirSync(path.dirname(backendLogPath), { recursive: true });
+    fs.writeFileSync(backendLogPath, `[${new Date().toISOString()}] Backend starting...\n`);
+  } catch { }
+
+  const useSpawn = process.env.DESKTOP_BACKEND_SPAWN === '1' || process.platform === 'win32';
+
+  if (useSpawn) {
+    log(`Backend spawn (ELECTRON_RUN_AS_NODE): ${process.execPath} ${entry}`);
+    const child = spawn(process.execPath, [entry], {
+      cwd: backendRoot,
+      env: { ...env, ELECTRON_RUN_AS_NODE: '1' },
+      windowsHide: true,
+      stdio: ['ignore', 'pipe', 'pipe'],
+    });
+    child.stdout?.on('data', logBackend);
+    child.stderr?.on('data', logBackend);
+    child.on('spawn', () => {
+      log(`Backend spawned (pid=${child.pid})`);
+    });
+    child.on('error', (err) => {
+      log(`Backend spawn error: ${err && err.stack ? err.stack : String(err)}`);
+    });
+    child.on('exit', (code) => {
+      log(`Backend exited (code=${code})`);
+      backendProcess = null;
+    });
+    return child;
+  }
+
+  log(`Backend utilityProcess.fork: ${entry}`);
+  const child = utilityProcess.fork(entry, [], {
+    cwd: backendRoot,
+    env,
+    stdio: 'pipe',
+    serviceName: 'stock-backend',
+  });
+  child.stdout?.on('data', logBackend);
+  child.stderr?.on('data', logBackend);
+  child.on('spawn', () => {
+    log(`Backend spawned (pid=${child.pid})`);
+  });
+  child.on('error', (err) => {
+    log(`Backend process error: ${err && err.stack ? err.stack : String(err)}`);
+  });
+  child.on('exit', (code) => {
+    log(`Backend exited (code=${code})`);
+    backendProcess = null;
+  });
+  return child;
 }
 
 function startBackend({ port, appDataDir, frontendDistDir }) {
@@ -274,46 +430,8 @@ function startBackend({ port, appDataDir, frontendDistDir }) {
 
   try {
     const env = buildBackendEnv({ port, appDataDir, frontendDistDir });
-    const opened = safeOpenAppend(backendLogPath, logsDir);
-    const logBackend = (chunk) => {
-      if (!chunk) return;
-      if (opened.fd) {
-        try {
-          fs.writeSync(opened.fd, chunk);
-        } catch { }
-      }
-    };
-    if (opened.path) log(`Backend log: ${opened.path}`);
-    else log(`Backend log open failed: ${backendLogPath}`);
-
-    // utilityProcess runs Nest in an isolated Node child (avoids Electron singleton + broken DI).
-    log(`Backend utilityProcess.fork: ${entry}`);
-    backendProcess = utilityProcess.fork(entry, [], {
-      cwd: backendRoot,
-      env,
-      stdio: 'pipe',
-      serviceName: 'stock-backend',
-    });
-
-    backendProcess.stdout?.on('data', logBackend);
-    backendProcess.stderr?.on('data', logBackend);
-    backendProcess.on('spawn', () => {
-      log(`Backend spawned (pid=${backendProcess.pid})`);
-    });
-    backendProcess.on('error', (err) => {
-      log(`Backend process error: ${err && err.stack ? err.stack : String(err)}`);
-      try {
-        dialog.showErrorBox(
-          'StockManagement',
-          `Impossible de démarrer le backend:\n${String(err && err.message ? err.message : err)}`
-        );
-      } catch { }
-      app.quit();
-    });
-    backendProcess.on('exit', (code) => {
-      log(`Backend exited (code=${code})`);
-      backendProcess = null;
-    });
+    log(`Backend log: ${backendLogPath}`);
+    backendProcess = startBackendProcess(entry, backendRoot, env, backendLogPath, logsDir);
   } catch (e) {
     log(`Backend start error: ${e && e.message ? e.message : String(e)}`);
     throw e;
@@ -337,8 +455,11 @@ if (!gotSingleInstanceLock) {
   app.quit();
 } else {
   app.on('second-instance', () => {
-    const wins = BrowserWindow.getAllWindows();
-    const win = wins && wins[0];
+    const win = mainWindow && !mainWindow.isDestroyed()
+      ? mainWindow
+      : splashWindow && !splashWindow.isDestroyed()
+        ? splashWindow
+        : null;
     if (win) {
       if (win.isMinimized()) win.restore();
       win.focus();
@@ -350,6 +471,9 @@ app.whenReady().then(async () => {
   const port = Number(process.env.LOCAL_PORT || 3100);
   const appDataDir = getAppDataDir();
   logFile = path.join(appDataDir, 'logs', 'desktop.log');
+
+  createSplashWindow();
+  setSplashStatus('Initialisation…');
 
   process.on('uncaughtException', (err) => {
     log(`UncaughtException: ${err && err.stack ? err.stack : String(err)}`);
@@ -366,20 +490,37 @@ app.whenReady().then(async () => {
     ? devFrontendDist
     : path.join(process.resourcesPath, 'frontend', 'dist');
 
+  setSplashStatus('Préparation de la base de données…');
   startBackend({ port, appDataDir, frontendDistDir });
 
-  const ok = await waitForHealth(`http://127.0.0.1:${port}/api/health`, 90000);
+  setSplashStatus('Démarrage du serveur…');
+  const healthUrls = [
+    `http://127.0.0.1:${port}/api/health/live`,
+    `http://localhost:${port}/api/health/live`,
+    `http://127.0.0.1:${port}/api/health`,
+  ];
+  const isBackendAlive = () => backendProcess && backendProcess.exitCode == null && !backendProcess.killed;
+  setSplashStatus('Connexion au serveur…');
+  const ok = await waitForHealth(healthUrls, 180000, isBackendAlive, (sec) => {
+    setSplashStatus(sec > 0 ? `Connexion au serveur… (${sec} s)` : 'Connexion au serveur…');
+  });
   if (!ok) {
+    closeSplashWindow();
     log('Health check failed; quitting app');
+    const tail = readLogTail(path.join(appDataDir, 'logs', 'backend.log'));
     try {
       dialog.showErrorBox(
         'StockManagement',
-        `Le backend ne démarre pas.\n\nVérifie le log:\n${path.join(appDataDir, 'logs', 'desktop.log')}`
+        `Le backend ne démarre pas (jusqu'à 3 min).\n\n` +
+          `1) Ouvre: ${path.join(appDataDir, 'logs', 'backend.log')}\n` +
+          `2) Autorise l'app dans l'antivirus (Prisma: query_engine-windows.dll.node)\n` +
+          `3) Installe VC++ Redistributable x64 si besoin\n\n` +
+          (tail ? `Dernières lignes:\n${tail}` : '')
       );
     } catch { }
     app.quit();
     return;
   }
 
-  await createWindow(port);
+  await createMainWindow(port);
 });

@@ -27,3 +27,8 @@ export function getApiOrigin(): string {
 export function isDesktopBundle(): boolean {
     return import.meta.env.VITE_DESKTOP === 'true';
 }
+
+/** PWA/offline sync is disabled in the Electron desktop build. */
+export function isOfflineEnabled(): boolean {
+    return !isDesktopBundle();
+}

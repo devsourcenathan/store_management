@@ -5,6 +5,7 @@ import { Media } from '@/services/mediaService';
 import { useStore } from '../stores/StoreProvider';
 import { useSync } from '@/offline/SyncProvider';
 import { saveOffline } from '@/offline/offlineOperations';
+import { isOfflineEnabled } from '@/lib/apiBaseUrl';
 import { db } from '@/offline/db';
 import { v4 as uuidv4 } from 'uuid';
 import { Search, ShoppingCart, Trash2, Plus, Minus, CreditCard, Banknote, Smartphone, LayoutGrid, List, User, Printer, ShoppingBag } from 'lucide-react';
@@ -106,15 +107,13 @@ export function PosPage() {
     });
 
     const createSaleMutation = useMutation({
-        networkMode: 'always', // CRITICAL: Execute mutation even when offline
+        networkMode: isOfflineEnabled() ? 'always' : 'online',
         mutationFn: async (data: any) => {
             console.log('🔍 ===== MUTATION FUNCTION STARTED =====');
-            console.log('🔍 Mutation started, navigator.onLine:', navigator.onLine);
             console.log('📦 Mutation data:', data);
 
             try {
-                // If offline, save locally
-                if (!navigator.onLine) {
+                if (isOfflineEnabled() && !navigator.onLine) {
                     console.log('💾 Saving offline...');
                     const saleId = uuidv4();
                     const userId = localStorage.getItem('userId') || 'unknown';
@@ -187,8 +186,7 @@ export function PosPage() {
             queryClient.invalidateQueries({ queryKey: ['sales'] });
             queryClient.invalidateQueries({ queryKey: ['stock-alerts'] });
 
-            // Different message based on mode
-            if (!navigator.onLine) {
+            if (isOfflineEnabled() && !navigator.onLine) {
                 toast.success(t('pos.success.saved_offline', 'Vente enregistrée localement. Elle sera synchronisée automatiquement.'));
             }
         },
@@ -371,7 +369,7 @@ export function PosPage() {
     return (
         <div className="h-[calc(100vh-8rem)] sm:h-[calc(100vh-6rem)] flex flex-col lg:flex-row gap-4 lg:gap-6">
             {/* Offline Indicator */}
-            {!isOnline && (
+            {isOfflineEnabled() && !isOnline && (
                 <div className="fixed top-16 left-0 right-0 z-50 bg-yellow-500 text-white px-4 py-2 text-center text-sm font-medium shadow-lg">
                     ⚠️ {t('common.offline', 'Mode hors ligne - Les ventes seront synchronisées automatiquement')}
                 </div>
@@ -764,7 +762,7 @@ export function PosPage() {
                         >
                             {createSaleMutation.isPending
                                 ? t('pos.payment.processing')
-                                : !isOnline
+                                : isOfflineEnabled() && !isOnline
                                     ? t('pos.payment.save_offline', 'Enregistrer (Hors ligne)')
                                     : t('pos.payment.confirm')
                             }

@@ -1,9 +1,11 @@
 import { useSync } from '@/offline/SyncProvider';
 import { WifiOff, Wifi, RefreshCw } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { isOfflineEnabled } from '@/lib/apiBaseUrl';
 
 export function OfflineIndicator() {
     const { isOnline, isSyncing, pendingOperations } = useSync();
+    if (!isOfflineEnabled()) return null;
     const { t } = useTranslation();
 
     if (isOnline && !isSyncing && pendingOperations === 0) {

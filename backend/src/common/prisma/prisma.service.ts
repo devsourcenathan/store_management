@@ -45,8 +45,25 @@ export class PrismaService extends PostgresPrismaClient implements OnModuleInit,
         });
     }
     async onModuleInit() {
-        await this.client.$connect();
-        console.log('✅ Database connected');
+        const isDesktop = process.env.LOCAL_BUNDLE === 'true';
+        try {
+            if (isDesktop) {
+                console.log('[desktop] connecting to SQLite...');
+                await Promise.race([
+                    this.client.$connect(),
+                    new Promise((_, reject) =>
+                        setTimeout(() => reject(new Error('Database connect timeout (30s)')), 30000),
+                    ),
+                ]);
+            } else {
+                await this.client.$connect();
+            }
+            console.log('✅ Database connected');
+        } catch (error) {
+            console.error('❌ Database connection failed:', error);
+            // Desktop: still start HTTP so Electron health + backend.log show the real error.
+            if (!isDesktop) throw error;
+        }
     }
 
     async onModuleDestroy() {

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/features/auth/useAuth';
 import { useSync } from '@/offline/SyncProvider';
+import { isOfflineEnabled } from '@/lib/apiBaseUrl';
 import { useOrganization } from '@/contexts/OrganizationContext';
 import { useTheme } from '@/components/ThemeProvider';
 import { usePermissions } from '@/contexts/PermissionContext';
@@ -372,34 +373,35 @@ export function DashboardLayout() {
                                 )}
                             </div>
 
-                            {/* Sync Status */}
-                            <div className="flex items-center space-x-1 sm:space-x-2">
-                                {isOnline ? (
-                                    <Wifi className="w-4 h-4 sm:w-5 sm:h-5 text-green-500" />
-                                ) : (
-                                    <WifiOff className="w-4 h-4 sm:w-5 sm:h-5 text-red-500" />
-                                )}
-                                <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-300 hidden lg:inline">
-                                    {isOnline ? t('nav.online') : t('nav.offline')}
-                                </span>
-
-                                {pendingOperations > 0 && (
-                                    <span className="px-1.5 sm:px-2 py-0.5 sm:py-1 text-xs bg-yellow-100 dark:bg-yellow-900/40 text-yellow-800 dark:text-yellow-300 rounded-full hidden sm:inline">
-                                        {pendingOperations}
+                            {isOfflineEnabled() && (
+                                <div className="flex items-center space-x-1 sm:space-x-2">
+                                    {isOnline ? (
+                                        <Wifi className="w-4 h-4 sm:w-5 sm:h-5 text-green-500" />
+                                    ) : (
+                                        <WifiOff className="w-4 h-4 sm:w-5 sm:h-5 text-red-500" />
+                                    )}
+                                    <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-300 hidden lg:inline">
+                                        {isOnline ? t('nav.online') : t('nav.offline')}
                                     </span>
-                                )}
 
-                                {isOnline && pendingOperations > 0 && (
-                                    <button
-                                        onClick={sync}
-                                        disabled={isSyncing}
-                                        className="p-1.5 sm:p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded touch-target"
-                                        title="Sync now"
-                                    >
-                                        <RefreshCw className={`w-4 h-4 ${isSyncing ? 'animate-spin' : ''}`} />
-                                    </button>
-                                )}
-                            </div>
+                                    {pendingOperations > 0 && (
+                                        <span className="px-1.5 sm:px-2 py-0.5 sm:py-1 text-xs bg-yellow-100 dark:bg-yellow-900/40 text-yellow-800 dark:text-yellow-300 rounded-full hidden sm:inline">
+                                            {pendingOperations}
+                                        </span>
+                                    )}
+
+                                    {isOnline && pendingOperations > 0 && (
+                                        <button
+                                            onClick={sync}
+                                            disabled={isSyncing}
+                                            className="p-1.5 sm:p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded touch-target"
+                                            title="Sync now"
+                                        >
+                                            <RefreshCw className={`w-4 h-4 ${isSyncing ? 'animate-spin' : ''}`} />
+                                        </button>
+                                    )}
+                                </div>
+                            )}
 
                             {/* Balance Button - Desktop only */}
                             <Link

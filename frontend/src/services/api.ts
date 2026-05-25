@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { saveOffline, deleteOffline, withOfflineFallback, extractEntityFromUrl, getTableForEntity } from '@/offline/offlineOperations';
 import { db } from '@/offline/db';
-import { getApiBaseUrl } from '@/lib/apiBaseUrl';
+import { getApiBaseUrl, isOfflineEnabled } from '@/lib/apiBaseUrl';
 
 export const api = axios.create({
     baseURL: '/api',
@@ -76,8 +76,12 @@ import { toast } from 'sonner';
 api.interceptors.response.use(
     (response) => response,
     async (error) => {
-        // Handle offline/network errors
-        if (!error.response && (error.code === 'ERR_NETWORK' || !navigator.onLine)) {
+        // Handle offline/network errors (disabled in desktop bundle)
+        if (
+            isOfflineEnabled() &&
+            !error.response &&
+            (error.code === 'ERR_NETWORK' || !navigator.onLine)
+        ) {
             const config = error.config;
             const url = config.url || '';
 

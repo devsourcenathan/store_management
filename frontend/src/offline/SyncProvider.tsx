@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect, ReactNode, useCallback 
 import { db } from './db';
 import { syncApi } from '@/services/api';
 import { toast } from 'sonner';
+import { isOfflineEnabled } from '@/lib/apiBaseUrl';
 
 interface SyncContextType {
     isOnline: boolean;
@@ -18,7 +19,25 @@ const MAX_RETRY_ATTEMPTS = 3;
 const RETRY_DELAY_MS = 2000;
 const AUTO_SYNC_INTERVAL_MS = 60000; // 1 minute
 
+const desktopSyncValue: SyncContextType = {
+    isOnline: true,
+    isSyncing: false,
+    lastSyncAt: null,
+    pendingOperations: 0,
+    syncError: null,
+    sync: async () => {},
+};
+
 export function SyncProvider({ children }: { children: ReactNode }) {
+    if (!isOfflineEnabled()) {
+        return (
+            <SyncContext.Provider value={desktopSyncValue}>{children}</SyncContext.Provider>
+        );
+    }
+    return <OfflineSyncProvider>{children}</OfflineSyncProvider>;
+}
+
+function OfflineSyncProvider({ children }: { children: ReactNode }) {
     const [isOnline, setIsOnline] = useState(navigator.onLine);
     const [isSyncing, setIsSyncing] = useState(false);
     const [lastSyncAt, setLastSyncAt] = useState<Date | null>(() => {

@@ -9,6 +9,11 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 import { ensureDesktopDatabase } from './common/prisma/desktop-db.init';
 
 async function bootstrap() {
+    const isDesktop = process.env.LOCAL_BUNDLE === 'true';
+    if (isDesktop) {
+        console.log('[desktop] bootstrap start');
+    }
+
     // Local bundle support:
     // If APP_DATA_DIR is provided (e.g. from Electron), default local paths are derived from it.
     const appDataDir = process.env.APP_DATA_DIR;
@@ -41,7 +46,9 @@ async function bootstrap() {
         }
     }
 
+    if (isDesktop) console.log('[desktop] creating Nest application...');
     const app = await NestFactory.create<NestExpressApplication>(AppModule);
+    if (isDesktop) console.log('[desktop] Nest application created');
 
     // Enable CORS
     const corsEnv = process.env.CORS_ORIGIN;
@@ -90,10 +97,11 @@ async function bootstrap() {
         });
     }
 
-    const port = process.env.PORT || 3000;
-    await app.listen(port);
+    const port = Number(process.env.PORT || 3000);
+    const host = isDesktop ? '127.0.0.1' : '0.0.0.0';
+    await app.listen(port, host);
 
-    console.log(`🚀 Application is running on: http://localhost:${port}/api`);
+    console.log(`🚀 Application is running on: http://${host}:${port}/api`);
 }
 
 bootstrap();

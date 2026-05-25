@@ -53,7 +53,7 @@ npx electron-builder --win zip --publish never
 ```
 
 Important:
-- le backend NestJS tourne dans un processus enfant (`utilityProcess`), pas dans le processus UI Electron.
+- le backend NestJS tourne dans un processus enfant Node (`ELECTRON_RUN_AS_NODE` sur Windows), pas dans le processus UI Electron.
 - si l'exe ne démarre pas, consulte `%APPDATA%\\StockManagement\\logs\\desktop.log` et `backend.log`.
 
 ## 4) Récupérer l’archive zip
@@ -71,5 +71,11 @@ Le zip est généré dans:
 
 ## Dépannage
 
-- Si l’UI ne charge pas: refaire `frontend\\npm run build`, puis re-packager.
-- Si le backend ne démarre pas: refaire `backend\\npm run build` + `backend\\npm run prisma:sqlite:generate`, puis re-packager.
+- Si l’UI ne charge pas: refaire `frontend\\npm run build:desktop`, puis re-packager.
+- Si le backend ne démarre pas: refaire `backend\\npm run build` + `npm run desktop:build-seed-db`, puis `desktop\\npm run dist:zip`.
+- **Health timeout sur un autre PC** (log: `Waiting for health` puis `Health check failed`):
+  1. Ouvre `%APPDATA%\\StockManagement\\logs\\backend.log` — l’erreur Prisma/SQLite y est en général.
+  2. Vérifie que ce fichier existe dans le zip extrait: `resources\\backend\\generated\\sqlite-client\\query_engine-windows.dll.node` (souvent supprimé par l’antivirus).
+  3. Ne lance l’exe qu’**une fois** (`Single instance lock not acquired` = double clic).
+  4. Installe [VC++ Redistributable x64](https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist) si `backend.log` mentionne une DLL manquante.
+  5. Connexion démo: `owner@demo.com` / `password123` (voir `backend\\prisma\\desktop-seed.config.json`).
