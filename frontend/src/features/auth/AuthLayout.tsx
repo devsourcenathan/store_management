@@ -22,11 +22,11 @@ export function AuthLayout({ children, title, subtitle }: AuthLayoutProps) {
                 <div className="relative z-10 w-full flex flex-col justify-center px-12 text-white">
                     <div className="mb-8">
                         <div className="h-12 w-12 bg-white rounded-xl flex items-center justify-center mb-6 shadow-lg">
-                            <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            {/* <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                            </svg>
+                            </svg> */}
                         </div>
-                        <h1 className="text-4xl font-bold mb-4 tracking-tight">Stock Management Protocol</h1>
+                        <h1 className="text-4xl font-bold mb-4 tracking-tight">Roxanne App</h1>
                         <p className="text-lg text-blue-100 max-w-md leading-relaxed">
                             {t('auth.branding_quote', 'Manage your inventory with precision and ease. The modern solution for growing businesses.')}
                         </p>
