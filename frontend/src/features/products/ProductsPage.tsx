@@ -703,7 +703,7 @@ export function ProductsPage() {
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('products.fields.base_price')}</label>
                                     <input
-                                        type="number"
+                                        type="text"
                                         required
                                         className="mt-1 block w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500"
                                         value={formData.basePrice}
@@ -714,7 +714,7 @@ export function ProductsPage() {
                                         }}
                                     />
                                 </div>
-                                {editingProduct ? (
+                                {/* {editingProduct ? (
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('products.fields.cost_price')}</label>
                                         <input
@@ -726,7 +726,7 @@ export function ProductsPage() {
                                     </div>
                                 ) : (
                                     <input type="hidden" value={formData.costPrice} readOnly />
-                                )}
+                                )} */}
                             </div>
                             {!editingProduct && (
                                 <div>
