@@ -96,6 +96,32 @@ export class ProductsService {
     async create(data: any, organizationId: string, userId: string) {
         const { initialStock, storeId, ...productData } = data;
 
+        // Generate SKU if not provided
+        if (!productData.sku && productData.name) {
+            const cleanName = productData.name.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+            const prefix = cleanName.substring(0, 3).padEnd(3, 'X');
+            const randomSuffix = Math.floor(1000 + Math.random() * 9000).toString();
+            productData.sku = `${prefix}-${randomSuffix}`;
+        }
+
+        // Assign default category if not provided
+        if (!productData.categoryId) {
+            let defaultCategory = await this.prisma.category.findFirst({
+                where: { organizationId, name: 'Général' },
+            });
+
+            if (!defaultCategory) {
+                defaultCategory = await this.prisma.category.create({
+                    data: {
+                        name: 'Général',
+                        description: 'Catégorie par défaut (Générée automatiquement)',
+                        organizationId,
+                    }
+                });
+            }
+            productData.categoryId = defaultCategory.id;
+        }
+
         return this.prisma.$transaction(async (tx) => {
             const product = await tx.product.create({
                 data: {
