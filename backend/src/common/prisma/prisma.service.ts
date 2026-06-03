@@ -1,6 +1,8 @@
 import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import { PrismaClient as PostgresPrismaClient } from '@prisma/client';
 import * as path from 'path';
+import { withSyncExtension } from './prisma-sync.extension';
+
 
 function loadPrismaClientCtor() {
     const dbProvider = (process.env.DB_PROVIDER || '').toLowerCase();
@@ -20,18 +22,25 @@ function loadPrismaClientCtor() {
 
 @Injectable()
 export class PrismaService extends PostgresPrismaClient implements OnModuleInit, OnModuleDestroy {
-    private readonly client: any;
+    public readonly client: any;
+    private readonly extendedClient: any;
 
     constructor() {
         super();
         const PrismaClientCtor = loadPrismaClientCtor();
         this.client = new PrismaClientCtor();
+        this.extendedClient = withSyncExtension(this.client);
 
         return new Proxy(this, {
             get: (target, prop, receiver) => {
-                if (prop === 'client') return Reflect.get(target, prop, receiver);
+                if (prop === 'client' || prop === 'extendedClient') return Reflect.get(target, prop, receiver);
                 if (prop === 'onModuleInit' || prop === 'onModuleDestroy') {
                     return Reflect.get(target, prop, receiver).bind(target);
+                }
+
+                if (target.extendedClient && prop in target.extendedClient) {
+                    const value = target.extendedClient[prop as any];
+                    return typeof value === 'function' ? value.bind(target.extendedClient) : value;
                 }
 
                 if (target.client && prop in target.client) {

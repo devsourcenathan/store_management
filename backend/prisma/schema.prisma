@@ -1069,3 +1069,37 @@ model UserPermission {
   @@unique([userId, permissionId])
   @@map("user_permissions")
 }
+
+// ============================================
+// DESKTOP SYNC SYSTEM
+// ============================================
+
+model SyncOperation {
+  id        String   @id @default(uuid())
+  action    String   // CREATE, UPDATE, DELETE
+  entity    String   // e.g., "Product", "Sale"
+  entityId  String   // UUID of the modified record
+  data      Json     // The complete row data
+  clientId  String   // Client ID or "SERVER"
+  synced    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([synced])
+  @@index([clientId])
+  @@index([createdAt])
+  @@map("sync_operations")
+}
+
+model DesktopConfig {
+  id           String   @id @default(uuid())
+  remoteUrl    String?
+  syncEmail    String?
+  syncToken    String?  @db.Text
+  lastSyncAt   DateTime?
+  autoSync     Boolean  @default(true)
+  clientId     String   @unique @default(uuid()) // Unique ID for this desktop instance
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("desktop_config")
+}

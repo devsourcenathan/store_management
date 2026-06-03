@@ -7,10 +7,12 @@ import { UserList } from './components/UserList';
 import { NotificationSettings } from './components/NotificationSettings';
 import { PermissionsPage } from './PermissionsPage';
 import { OrgLandingEditor } from '@/features/org-landing/OrgLandingEditor';
-import { Building, Store as StoreIcon, Users, Globe, Bell, Shield } from 'lucide-react';
+import { DesktopSyncSettings } from './components/DesktopSyncSettings';
+import { isDesktopBundle } from '@/lib/apiBaseUrl';
+import { Building, Store as StoreIcon, Users, Globe, Bell, Shield, Cloud } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
-type Tab = 'organization' | 'stores' | 'team' | 'notifications' | 'permissions';
+type Tab = 'organization' | 'stores' | 'team' | 'notifications' | 'permissions' | 'cloud_sync';
 
 export function SettingsPage() {
     const { t } = useTranslation();
@@ -31,6 +33,15 @@ export function SettingsPage() {
             label: t('settings.tabs.permissions'),
             icon: Shield,
             component: PermissionsPage
+        } as any);
+    }
+
+    if (isDesktopBundle()) {
+        tabs.push({
+            id: 'cloud_sync',
+            label: 'Cloud Sync',
+            icon: Cloud,
+            component: DesktopSyncSettings
         } as any);
     }
 
