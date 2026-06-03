@@ -116,7 +116,7 @@ export function DesktopSyncSettings() {
                 )}
 
                 <div className="pt-4 flex gap-3">
-                    <Button onClick={handleSave} isLoading={saving}>
+                    <Button onClick={handleSave} disabled={saving}>
                         Save Configuration
                     </Button>
                 </div>
