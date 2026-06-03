@@ -27,7 +27,7 @@ import {
 interface Product {
     id: string;
     name: string;
-    sku: string;
+    sku?: string | null;
 }
 
 interface StockMovementSheetProps {
@@ -144,7 +144,7 @@ export function StockMovementSheet({
         const query = productSearchQuery.toLowerCase();
         return products.filter(p =>
             p.name.toLowerCase().includes(query) ||
-            p.sku.toLowerCase().includes(query)
+            (p.sku || '').toLowerCase().includes(query)
         );
     }, [products, productSearchQuery]);
 
@@ -234,7 +234,7 @@ export function StockMovementSheet({
                                                     >
                                                         <div>
                                                             <div className={`font-medium ${formData.productId === p.id ? 'text-blue-700 dark:text-blue-400' : 'text-gray-900 dark:text-gray-100'}`}>{p.name}</div>
-                                                            <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">SKU: {p.sku}</div>
+                                                            <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">SKU: {p.sku || '-'}</div>
                                                         </div>
                                                         {formData.productId === p.id && (
                                                             <div className="w-2 h-2 rounded-full bg-blue-600 dark:bg-blue-400" />
@@ -260,7 +260,7 @@ export function StockMovementSheet({
                                                         {products?.find(p => p.id === formData.productId)?.name}
                                                     </div>
                                                     <div className="text-xs text-gray-500 dark:text-gray-400">
-                                                        SKU: {products?.find(p => p.id === formData.productId)?.sku}
+                                                        SKU: {products?.find(p => p.id === formData.productId)?.sku || '-'}
                                                     </div>
                                                 </div>
                                             </div>

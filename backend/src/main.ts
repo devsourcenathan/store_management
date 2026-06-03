@@ -73,7 +73,6 @@ async function bootstrap() {
         credentials: true,
     });
 
-    // Enable validation
     app.useGlobalPipes(
         new ValidationPipe({
             whitelist: true,
@@ -82,7 +81,6 @@ async function bootstrap() {
         }),
     );
 
-    // Global prefix
     app.setGlobalPrefix('api');
 
     // Optional: serve built frontend (SPA) from the same local server

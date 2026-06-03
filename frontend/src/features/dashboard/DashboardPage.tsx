@@ -6,7 +6,6 @@ import { useStore } from '../stores/StoreProvider';
 import { SalesChart } from './components/SalesChart';
 import { TopProducts } from './components/TopProducts';
 import { useTranslation } from 'react-i18next';
-import { StoreFormSheet } from '../settings/components/StoreFormSheet';
 
 export function DashboardPage() {
     const { currentStore } = useStore();
@@ -109,7 +108,6 @@ export function DashboardPage() {
     });
 
     const { stores, isLoading: isLoadingStores } = useStore();
-    const [isCreateStoreOpen, setIsCreateStoreOpen] = useState(false);
 
     if (!isLoadingStores && stores.length === 0) {
         return (
@@ -123,20 +121,6 @@ export function DashboardPage() {
                         {t('dashboard.welcome_subtitle')}
                     </p>
                 </div>
-                <button
-                    onClick={() => setIsCreateStoreOpen(true)}
-                    className="inline-flex items-center gap-2 px-6 py-3 btn-theme-primary rounded-lg transition-colors font-medium shadow-md hover:shadow-lg"
-                >
-                    <div className="w-5 h-5">
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
-                    </div>
-                    {t('dashboard.create_first_store')}
-                </button>
-
-                <StoreFormSheet
-                    isOpen={isCreateStoreOpen}
-                    onClose={() => setIsCreateStoreOpen(false)}
-                />
             </div>
         );
     }
@@ -231,13 +215,6 @@ export function DashboardPage() {
                     isLoading={isLoadingStats}
                 />
                 <StatCard
-                    title={t('dashboard.stats.maintenance_revenue', 'Revenus Maintenance')}
-                    value={stats?.maintenanceRevenue ? `${stats.maintenanceRevenue.toLocaleString()} F` : '0 F'}
-                    icon={<WrenchIcon />}
-                    color="green"
-                    isLoading={isLoadingStats}
-                />
-                <StatCard
                     title={t('dashboard.total_products')}
                     value={stats?.totalProducts || 0}
                     icon={<BoxIcon />}
@@ -249,20 +226,6 @@ export function DashboardPage() {
                     value={stats?.lowStockItems || 0}
                     icon={<AlertIcon />}
                     color="yellow"
-                    isLoading={isLoadingStats}
-                />
-                <StatCard
-                    title={t('dashboard.pending_orders')}
-                    value={stats?.pendingOrders || 0}
-                    icon={<TruckIcon />}
-                    color="purple"
-                    isLoading={isLoadingStats}
-                />
-                <StatCard
-                    title={t('dashboard.stats.pending_maintenances', 'Maintenances en cours')}
-                    value={stats?.pendingMaintenances || 0}
-                    icon={<WrenchIcon />}
-                    color="blue"
                     isLoading={isLoadingStats}
                 />
             </div>
@@ -347,7 +310,4 @@ const TruckIcon = ({ className = "w-6 h-6" }: { className?: string }) => (
 );
 const CalculatorIcon = ({ className = "w-6 h-6" }: { className?: string }) => (
     <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>
-);
-const WrenchIcon = ({ className = "w-6 h-6" }: { className?: string }) => (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" /></svg>
 );

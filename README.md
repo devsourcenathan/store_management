@@ -4,8 +4,6 @@
 
 ## 🚀 Quick Start
 
-**New to the project?** Start here: **[QUICK_START.md](QUICK_START.md)** - 5-minute setup guide
-
 **Current Status:** ✅ Core features complete and ready for testing
 - Phases 1-6 complete (Authentication, Products, Stock Management)
 - Backend API fully functional
@@ -426,5 +424,6 @@ For questions or issues:
 
 **Status**: Phase 1 Complete ✅
 **Next**: Phase 2 - Database Schema & Core Models
-#   s t o r e _ m a n a g e m e n t  
+#   s t o r e _ m a n a g e m e n t 
+ 
  

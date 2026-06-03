@@ -4,8 +4,8 @@ import { db } from '@/offline/db';
 import { getApiBaseUrl, isOfflineEnabled } from '@/lib/apiBaseUrl';
 
 export const api = axios.create({
-    baseURL: '/api',
-    timeout: 10000, // 10 seconds timeout
+    baseURL: API_BASE_URL,
+    timeout: 60000, // 60 seconds timeout
     headers: {
         'Content-Type': 'application/json',
     },

@@ -27,6 +27,7 @@ import {
 import { toast } from 'sonner';
 import { printer } from '@/services/printing';
 import { useTranslation } from 'react-i18next';
+import { useOrganization } from '@/contexts/OrganizationContext';
 
 import { PosCart, CartItem } from './components/PosCart';
 import { CreditSaleType } from '@/types/credit';
@@ -34,7 +35,7 @@ import { CreditSaleType } from '@/types/credit';
 interface Product {
     id: string;
     name: string;
-    sku: string;
+    sku?: string | null;
     basePrice: number;
     category?: { id: string; name: string };
     media?: Media[];
@@ -42,6 +43,7 @@ interface Product {
 
 export function PosPage() {
     const { currentStore } = useStore();
+    const { organization } = useOrganization();
     const queryClient = useQueryClient();
     const { isOnline, isSyncing, pendingOperations } = useSync();
     const [searchQuery, setSearchQuery] = useState('');
@@ -208,7 +210,7 @@ export function PosPage() {
         if (!products) return [];
         return products.filter(p => {
             const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                p.sku.toLowerCase().includes(searchQuery.toLowerCase());
+                (p.sku || '').toLowerCase().includes(searchQuery.toLowerCase());
             const matchesCategory = selectedCategory === 'all' || p.category?.id === selectedCategory;
             return matchesSearch && matchesCategory;
         });
@@ -227,7 +229,7 @@ export function PosPage() {
             return [...prev, {
                 productId: product.id,
                 name: product.name,
-                sku: product.sku,
+                sku: product.sku || '',
                 unitPrice: product.basePrice,
                 quantity: 1,
                 discount: 0
@@ -329,20 +331,20 @@ export function PosPage() {
                 });
 
                 // 3. Print with the updated sale data
-                printer.printInvoice(updatedSaleRes.data, currentStore || undefined, t);
+                printer.printInvoice(updatedSaleRes.data, currentStore?.name, t, { organizationName: organization?.name, logoUrl: organization?.logoUrl, footer: organization?.footer });
 
                 // Update local state to reflect the change (prevents asking again if they print again)
                 setLastSale(updatedSaleRes.data);
             } catch (error) {
                 console.error("Error assigning customer:", error);
                 toast.error("Failed to assign customer. Printing without name.");
-                printer.printInvoice(lastSale, currentStore || undefined, t);
+                printer.printInvoice(lastSale, currentStore?.name, t, { organizationName: organization?.name, logoUrl: organization?.logoUrl, footer: organization?.footer });
             } finally {
                 setIsProcessingPrint(false);
             }
         } else {
             // Standard print
-            printer.printInvoice(lastSale, currentStore || undefined, t);
+            printer.printInvoice(lastSale, currentStore?.name, t, { organizationName: organization?.name, logoUrl: organization?.logoUrl, footer: organization?.footer });
         }
     };
 

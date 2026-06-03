@@ -21,7 +21,6 @@ import {
     Warehouse,
     ShoppingCart,
     Users,
-    Truck,
     CreditCard,
     Layers,
     Wifi,
@@ -34,9 +33,6 @@ import {
     Shield,
     Image,
     BarChart3,
-    Store,
-    Smartphone,
-    Wrench,
     FileText,
     TrendingUp,
     PanelLeftClose,
@@ -48,7 +44,7 @@ export function DashboardLayout() {
     const { isOnline, isSyncing, pendingOperations, sync } = useSync();
     const { organization } = useOrganization();
     const { theme } = useTheme();
-    const { hasPermission, isLoading: permissionsLoading } = usePermissions();
+    const { hasPermission } = usePermissions();
     const location = useLocation();
     const { t } = useTranslation();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -75,8 +71,6 @@ export function DashboardLayout() {
                 { name: t('nav.sales_history'), href: '/sales', icon: ShoppingCart, resource: 'sales' },
                 { name: t('nav.pos'), href: '/pos', icon: Calculator, resource: 'pos' },
                 { name: t('nav.customers'), href: '/customers', icon: Users, resource: 'customers' },
-                { name: t('nav.suppliers'), href: '/suppliers', icon: Truck, resource: 'suppliers' },
-                { name: t('nav.supply_orders'), href: '/supplies', icon: Package, resource: 'supply_orders' },
             ]
         },
         {
@@ -86,14 +80,6 @@ export function DashboardLayout() {
                 { name: t('nav.products'), href: '/products', icon: Package, resource: 'products' },
                 { name: t('nav.categories'), href: '/categories', icon: Tags, resource: 'categories' },
                 { name: t('nav.stock'), href: '/stock', icon: Warehouse, resource: 'stock' },
-            ]
-        },
-        {
-            id: 'maintenance',
-            title: t('nav.titles.maintenance'),
-            items: [
-                { name: t('devices.title'), href: '/devices', icon: Smartphone, resource: 'devices' },
-                { name: t('maintenances.title'), href: '/maintenances', icon: Wrench, resource: 'maintenances' },
             ]
         },
         // {
@@ -528,7 +514,7 @@ export function DashboardLayout() {
             <OfflineIndicator />
 
             {/* PWA Install Prompt */}
-            <PWAInstallPrompt />
+            {/* <PWAInstallPrompt /> */}
         </div>
     );
 }

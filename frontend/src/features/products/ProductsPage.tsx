@@ -24,7 +24,7 @@ import { StockMovementSheet } from '@/features/stock/components/StockMovementShe
 interface Product {
     id: string;
     name: string;
-    sku: string;
+    sku?: string | null;
     description?: string;
     basePrice: number;
     costPrice: number;
@@ -230,7 +230,7 @@ export function ProductsPage() {
         setEditingProduct(product);
         setFormData({
             name: product.name,
-            sku: product.sku,
+            sku: product.sku || '',
             basePrice: Number(product.basePrice),
             costPrice: Number(product.costPrice || 0),
             minStock: product.minStock || 10,
@@ -258,6 +258,14 @@ export function ProductsPage() {
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
 
+        const normalizedSku = (formData.sku || '').trim();
+        const payload = {
+            ...formData,
+            sku: normalizedSku.length > 0 ? normalizedSku : null,
+            // On create: masquer prix d'achat et le caler sur prix de vente
+            costPrice: editingProduct ? formData.costPrice : formData.basePrice,
+        };
+
         // Client-side validation
         // if (!formData.categoryId) {
         //     toast.error(t('products.errors.category_required') || 'Please select a category');
@@ -265,13 +273,13 @@ export function ProductsPage() {
         // }
 
         if (editingProduct) {
-            updateProductMutation.mutate({ id: editingProduct.id, data: formData });
+            updateProductMutation.mutate({ id: editingProduct.id, data: payload });
         } else {
             if (!currentStore?.id) {
                 toast.error(t('products.errors.no_store_selected') || 'Please select a store');
                 return;
             }
-            createProductMutation.mutate({ ...formData, storeId: currentStore.id });
+            createProductMutation.mutate({ ...payload, storeId: currentStore.id });
         }
     };
 
@@ -482,7 +490,7 @@ export function ProductsPage() {
                                                 {product.name}
                                             </h3>
                                             <p className="text-xs text-gray-500 dark:text-gray-400">
-                                                SKU: {product.sku}
+                                                SKU: {product.sku || '-'}
                                             </p>
                                         </div>
                                     </div>
@@ -609,7 +617,7 @@ export function ProductsPage() {
                                                 </div>
                                                 <div className="ml-4">
                                                     <div className="text-sm font-medium text-gray-900 dark:text-gray-100">{product.name}</div>
-                                                    <div className="text-sm text-gray-500 dark:text-gray-400">{product.sku}</div>
+                                                    <div className="text-sm text-gray-500 dark:text-gray-400">{product.sku || '-'}</div>
                                                 </div>
                                             </div>
                                         </td>
@@ -681,10 +689,11 @@ export function ProductsPage() {
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('products.fields.sku')}</label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                    {t('products.fields.sku')} <span className="text-gray-400 font-normal text-xs">(Optional)</span>
+                                </label>
                                 <input
                                     type="text"
-                                    required
                                     className="mt-1 block w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500"
                                     value={formData.sku}
                                     onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
@@ -694,22 +703,30 @@ export function ProductsPage() {
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('products.fields.base_price')}</label>
                                     <input
-                                        type="number"
+                                        type="text"
                                         required
                                         className="mt-1 block w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500"
                                         value={formData.basePrice}
-                                        onChange={(e) => setFormData({ ...formData, basePrice: parseFloat(e.target.value) })}
+                                        onChange={(e) => {
+                                            const nextBasePrice = e.target.value === '' ? 0 : Number(e.target.value);
+                                            // Lors de l'ajout: garder costPrice = basePrice en arrière-plan
+                                            setFormData(prev => (editingProduct ? { ...prev, basePrice: nextBasePrice } : { ...prev, basePrice: nextBasePrice, costPrice: nextBasePrice }));
+                                        }}
                                     />
                                 </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('products.fields.cost_price')}</label>
-                                    <input
-                                        type="number"
-                                        className="mt-1 block w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500"
-                                        value={formData.costPrice}
-                                        onChange={(e) => setFormData({ ...formData, costPrice: parseFloat(e.target.value) })}
-                                    />
-                                </div>
+                                {/* {editingProduct ? (
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('products.fields.cost_price')}</label>
+                                        <input
+                                            type="number"
+                                            className="mt-1 block w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500"
+                                            value={formData.costPrice}
+                                            onChange={(e) => setFormData({ ...formData, costPrice: e.target.value === '' ? 0 : Number(e.target.value) })}
+                                        />
+                                    </div>
+                                ) : (
+                                    <input type="hidden" value={formData.costPrice} readOnly />
+                                )} */}
                             </div>
                             {!editingProduct && (
                                 <div>

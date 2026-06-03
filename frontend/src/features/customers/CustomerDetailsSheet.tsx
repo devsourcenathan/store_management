@@ -7,6 +7,7 @@ import { format } from "date-fns";
 import { ShoppingBag, Calendar, CreditCard, Printer } from "lucide-react";
 import { printer } from "@/services/printing";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/Sheet";
+import { useOrganization } from "@/contexts/OrganizationContext";
 
 interface CustomerDetailsSheetProps {
     customerId: string | null;
@@ -17,6 +18,7 @@ interface CustomerDetailsSheetProps {
 export function CustomerDetailsSheet({ customerId, isOpen, onClose }: CustomerDetailsSheetProps) {
     const { currentStore } = useStore();
     const { t } = useTranslation();
+    const { organization } = useOrganization();
 
     const { data: customer } = useQuery({
         queryKey: ['customer', customerId],
@@ -100,7 +102,7 @@ export function CustomerDetailsSheet({ customerId, isOpen, onClose }: CustomerDe
                                                         {format(new Date(sale.createdAt), 'PPP')}
                                                     </p>
                                                     <button
-                                                        onClick={() => printer.printInvoice(sale, currentStore || undefined, t)}
+                                                        onClick={() => printer.printInvoice(sale, currentStore?.name, t, { organizationName: organization?.name, logoUrl: organization?.logoUrl, footer: organization?.footer })}
                                                         className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                                                         title="Print Invoice"
                                                     >

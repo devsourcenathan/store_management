@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/services/api';
-import { Plus, Pencil, Trash2, MapPin, Phone } from 'lucide-react';
+import { Pencil, Trash2, MapPin, Phone } from 'lucide-react';
 import { StoreFormSheet } from './StoreFormSheet';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
@@ -39,13 +39,6 @@ export function StoreList() {
                     <h3 className="text-base sm:text-lg font-medium text-gray-900 dark:text-gray-100">{t('settings.stores.title')}</h3>
                     <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">{t('settings.stores.subtitle')}</p>
                 </div>
-                <button
-                    onClick={() => { setEditingStore(null); setIsSheetOpen(true); }}
-                    className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-                >
-                    <Plus className="w-4 h-4" />
-                    {t('settings.stores.add_store')}
-                </button>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
