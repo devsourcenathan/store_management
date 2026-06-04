@@ -22,6 +22,8 @@ import type { Response } from 'express';
 import { createReadStream } from 'fs';
 import { ConfigService } from '@nestjs/config';
 import { LocalStorageService } from './local-storage.service';
+import { Public } from '@/common/decorators/public.decorator';
+import { PrismaService } from '@/common/prisma/prisma.service';
 
 @Controller('media')
 @UseGuards(JwtAuthGuard, StoreAuthGuard)
@@ -30,12 +32,13 @@ export class MediaController {
         private mediaService: MediaService,
         private configService: ConfigService,
         private localStorageService: LocalStorageService,
+        private prisma: PrismaService,
     ) { }
 
+    @Public()
     @Get('files/:id')
     async getLocalFile(
         @Param('id') id: string,
-        @CurrentOrganization() organizationId: string,
         @Res() res: Response,
     ) {
         const storageMode = (this.configService.get<string>('MEDIA_STORAGE') || 's3').toLowerCase();
@@ -43,12 +46,16 @@ export class MediaController {
             return res.status(404).send('Not found');
         }
 
-        const media = await this.mediaService.findOne(id, organizationId);
+        const media = await this.prisma.media.findUnique({ where: { id } });
+        if (!media) {
+            return res.status(404).send('Not found');
+        }
+
         const filepath = this.localStorageService.getFilePath(media.organizationId, media.entityType, media.filename);
 
         res.setHeader('Content-Type', media.mimeType || 'application/octet-stream');
         res.setHeader('Content-Length', String(media.size || 0));
-        res.setHeader('Cache-Control', 'private, max-age=3600');
+        res.setHeader('Cache-Control', 'public, max-age=31536000');
 
         return createReadStream(filepath).pipe(res);
     }
