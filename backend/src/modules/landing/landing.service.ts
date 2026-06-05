@@ -88,6 +88,6 @@ export class LandingService {
                 organizationId: org.id,
                 userId: user.id,
             };
-        });
+        }, { timeout: 60000 });
     }
 }

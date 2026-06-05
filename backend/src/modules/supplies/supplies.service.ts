@@ -127,7 +127,7 @@ export class SuppliesService {
             }
 
             return updatedSupply;
-        });
+        }, { timeout: 60000 });
 
         // 4. Trigger Stock alerts (outside transaction)
         // We fetching original supply items again? No, we need fresh list.

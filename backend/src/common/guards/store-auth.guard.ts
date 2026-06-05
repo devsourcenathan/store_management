@@ -2,12 +2,21 @@ import { Injectable, CanActivate, ExecutionContext, ForbiddenException, BadReque
 import { Reflector } from '@nestjs/core';
 import { UserRole } from '@prisma/client';
 import { I18nContext } from 'nestjs-i18n';
+import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
 
 @Injectable()
 export class StoreAuthGuard implements CanActivate {
     constructor(private reflector: Reflector) { }
 
     canActivate(context: ExecutionContext): boolean {
+        const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
+            context.getHandler(),
+            context.getClass(),
+        ]);
+        if (isPublic) {
+            return true;
+        }
+
         const request = context.switchToHttp().getRequest();
         const user = request.user;
         const i18n = I18nContext.current();

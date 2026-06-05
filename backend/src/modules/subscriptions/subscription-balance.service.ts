@@ -68,7 +68,7 @@ export class SubscriptionBalanceService {
                 account: updatedAccount,
                 newBalance,
             };
-        });
+        }, { timeout: 60000 });
     }
 
     /**

@@ -81,7 +81,7 @@ export class TransfersService {
             });
 
             return { outMovement, inMovement, transferReference };
-        });
+        }, { timeout: 60000 });
 
         return result;
     }

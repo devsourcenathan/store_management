@@ -124,7 +124,7 @@ export class SubscriptionRenewalService {
                 subscription: updatedSubscription,
                 newEndDate,
             };
-        });
+        }, { timeout: 60000 });
     }
 
     /**

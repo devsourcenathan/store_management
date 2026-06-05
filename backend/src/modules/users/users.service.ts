@@ -134,7 +134,7 @@ export class UsersService {
                         stores: { include: { store: true } }
                     }
                 });
-            });
+            }, { timeout: 60000 });
         }
 
         return this.prisma.user.update({

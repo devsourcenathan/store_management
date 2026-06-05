@@ -174,7 +174,7 @@ export class SalesService {
                     payments: true,
                 },
             });
-        });
+        }, { timeout: 60000 });
 
         // 4. Trigger Stock Alerts (After transaction commit)
         for (const item of items) {
@@ -225,7 +225,7 @@ export class SalesService {
                     status: newStatus as any,
                 },
             });
-        });
+        }, { timeout: 60000 });
     }
 
     async update(saleId: string, data: any) {

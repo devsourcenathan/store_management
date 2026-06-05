@@ -44,7 +44,7 @@ export class StoresService {
             });
 
             return store;
-        });
+        }, { timeout: 60000 });
     }
 
     async update(id: string, data: any) {

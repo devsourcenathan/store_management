@@ -64,7 +64,7 @@ export class ServicesService {
             // Accounts are usually created when needed or we can create one for the main store if known.
 
             return service;
-        });
+        }, { timeout: 60000 });
     }
 
     async update(id: string, data: any) {
@@ -209,7 +209,7 @@ export class ServicesService {
             }
 
             return updatedOffer;
-        });
+        }, { timeout: 60000 });
     }
 
     // Options

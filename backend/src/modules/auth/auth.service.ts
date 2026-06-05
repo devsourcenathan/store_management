@@ -137,7 +137,7 @@ export class AuthService {
             });
 
             return { user, organization };
-        });
+        }, { timeout: 60000 });
 
         return this.login(result.user);
     }

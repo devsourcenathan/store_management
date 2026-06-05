@@ -52,7 +52,7 @@ export class CreditService {
             }
 
             return contract;
-        });
+        }, { timeout: 60000 });
     }
 
     async addPayment(contractId: string, data: { amount: number; method: PaymentMethod }, userId: string) {
@@ -91,7 +91,7 @@ export class CreditService {
             }
 
             return updatedContract;
-        });
+        }, { timeout: 60000 });
     }
 
     async findOne(id: string) {

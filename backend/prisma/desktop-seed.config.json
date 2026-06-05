@@ -17,27 +17,34 @@
   "users": [
     {
       "email": "owner@demo.com",
-      "password": "password123",
+      "password": "Sekuu@13",
       "firstName": "John",
       "lastName": "Owner",
       "role": "OWNER",
-      "storeIndexes": [0, 1]
+      "storeIndexes": [
+        0,
+        1
+      ]
     },
     {
       "email": "manager@demo.com",
-      "password": "password123",
+      "password": "Sekuu@13",
       "firstName": "Jane",
       "lastName": "Manager",
       "role": "MANAGER",
-      "storeIndexes": [0]
+      "storeIndexes": [
+        0
+      ]
     },
     {
       "email": "staff@demo.com",
-      "password": "password123",
+      "password": "Sekuu@13",
       "firstName": "Bob",
       "lastName": "Staff",
       "role": "STAFF",
-      "storeIndexes": [0]
+      "storeIndexes": [
+        0
+      ]
     }
   ],
   "seedPermissions": true

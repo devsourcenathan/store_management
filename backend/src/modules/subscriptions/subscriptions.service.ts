@@ -85,7 +85,7 @@ export class SubscriptionsService {
                     balance: { increment: data.amount }
                 },
             });
-        });
+        }, { timeout: 60000 });
     }
 
     async findAll() {
@@ -266,7 +266,7 @@ export class SubscriptionsService {
 
 
             return sub;
-        });
+        }, { timeout: 60000 });
     }
 
     async getHistory(accountId: string) {

@@ -114,7 +114,7 @@ export class MaintenancesService {
                     parts: { include: { product: true } },
                 },
             });
-        });
+        }, { timeout: 60000 });
     }
 
     async update(id: string, data: any, organizationId: string) {
@@ -175,7 +175,7 @@ export class MaintenancesService {
                     parts: { include: { product: true } },
                 },
             });
-        });
+        }, { timeout: 60000 });
     }
 
     async complete(id: string, userId: string, organizationId: string) {
@@ -223,7 +223,7 @@ export class MaintenancesService {
                     parts: { include: { product: true } },
                 },
             });
-        });
+        }, { timeout: 60000 });
     }
 
     async cancel(id: string, organizationId: string) {
