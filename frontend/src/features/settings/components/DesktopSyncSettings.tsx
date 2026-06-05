@@ -13,7 +13,8 @@ export function DesktopSyncSettings() {
 
     // Form fields
     const [remoteUrl, setRemoteUrl] = useState('');
-    const [syncToken, setSyncToken] = useState('');
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
     const [autoSync, setAutoSync] = useState(true);
 
     useEffect(() => {
@@ -26,7 +27,7 @@ export function DesktopSyncSettings() {
             const res = await api.get('/desktop-config');
             setConfig(res.data);
             setRemoteUrl(res.data?.remoteUrl || '');
-            setSyncToken(res.data?.syncToken || '');
+            setEmail(res.data?.syncEmail || '');
             setAutoSync(res.data?.autoSync !== false);
         } catch (error) {
             toast.error('Failed to load sync configuration');
@@ -38,15 +39,45 @@ export function DesktopSyncSettings() {
     const handleSave = async () => {
         try {
             setSaving(true);
+            
+            // 1. Authenticate with remote API
+            if (!remoteUrl || !email || !password) {
+                toast.error('Please provide URL, email and password');
+                return;
+            }
+
+            // Remove trailing slash if present
+            const baseUrl = remoteUrl.replace(/\/+$/, '');
+            
+            const authRes = await fetch(`${baseUrl}/auth/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
+
+            if (!authRes.ok) {
+                throw new Error('Authentication failed. Check your credentials.');
+            }
+
+            const authData = await authRes.json();
+            const syncToken = authData.access_token;
+
+            if (!syncToken) {
+                throw new Error('No access token received from remote server.');
+            }
+
+            // 2. Save configuration locally
             await api.post('/desktop-config', {
-                remoteUrl,
+                remoteUrl: baseUrl,
+                syncEmail: email,
+                syncPassword: password,
                 syncToken,
                 autoSync,
             });
-            toast.success('Configuration saved');
+            toast.success('Configuration saved and connected');
             await loadConfig();
-        } catch (error) {
-            toast.error('Failed to save configuration');
+        } catch (error: any) {
+            toast.error(error.message || 'Failed to connect and save configuration');
         } finally {
             setSaving(false);
         }
@@ -78,16 +109,28 @@ export function DesktopSyncSettings() {
 
                 <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                        Access Token (JWT)
+                        Email
+                    </label>
+                    <Input
+                        type="email"
+                        placeholder="admin@example.com"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                    />
+                </div>
+
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        Password
                     </label>
                     <Input
                         type="password"
-                        placeholder="eyJhb..."
-                        value={syncToken}
-                        onChange={(e) => setSyncToken(e.target.value)}
+                        placeholder="••••••••"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
                     />
                     <p className="text-xs text-gray-500 mt-1">
-                        You can get this token by logging into the cloud app and inspecting your session.
+                        Your credentials will be used to generate a secure access token.
                     </p>
                 </div>
 
@@ -117,7 +160,7 @@ export function DesktopSyncSettings() {
 
                 <div className="pt-4 flex gap-3">
                     <Button onClick={handleSave} disabled={saving}>
-                        Save Configuration
+                        {saving ? 'Connecting...' : 'Connect & Save'}
                     </Button>
                 </div>
             </div>

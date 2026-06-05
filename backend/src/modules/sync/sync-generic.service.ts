@@ -138,29 +138,7 @@ export class SyncGenericService {
         const [
             organization,
             users,
-            products,
-            categories,
-            customers,
-            suppliers,
-            services,
-            sales,
-            stockMovements
-        ] = await Promise.all([
-            this.prisma.organization.findUnique({ where: { id: organizationId } }),
-            this.prisma.user.findMany({ where: { organizationId } }),
-            this.prisma.product.findMany({ where: { organizationId }, include: { images: true } }),
-            this.prisma.category.findMany({ where: { organizationId } }),
-            this.prisma.customer.findMany({ where: { organizationId } }),
-            this.prisma.supplier.findMany({ where: { organizationId } }),
-            this.prisma.service.findMany({ where: { organizationId } }),
-            this.prisma.sale.findMany({ where: { storeId: { in: storeIds } }, include: { items: true, payments: true } }),
-            this.prisma.stockMovement.findMany({ where: { storeId: { in: storeIds } } }),
-        ]);
-
-        return {
-            organization,
-            stores,
-            users,
+            userStores,
             products,
             categories,
             customers,
@@ -168,6 +146,37 @@ export class SyncGenericService {
             services,
             sales,
             stockMovements,
+            media,
+            auditLogs
+        ] = await Promise.all([
+            this.prisma.organization.findUnique({ where: { id: organizationId } }),
+            this.prisma.user.findMany({ where: { organizationId } }),
+            this.prisma.userStore.findMany({ where: { user: { organizationId } } }),
+            this.prisma.product.findMany({ where: { organizationId }, include: { images: true } }),
+            this.prisma.category.findMany({ where: { organizationId } }),
+            this.prisma.customer.findMany({ where: { organizationId } }),
+            this.prisma.supplier.findMany({ where: { organizationId } }),
+            this.prisma.service.findMany({ where: { organizationId } }),
+            this.prisma.sale.findMany({ where: { storeId: { in: storeIds } }, include: { items: true, payments: true } }),
+            this.prisma.stockMovement.findMany({ where: { storeId: { in: storeIds } } }),
+            this.prisma.media.findMany({ where: { organizationId } }),
+            this.prisma.auditLog.findMany({ where: { organizationId }, take: 2000, orderBy: { createdAt: 'desc' } }),
+        ]);
+
+        return {
+            organization,
+            stores,
+            users,
+            userStores,
+            products,
+            categories,
+            customers,
+            suppliers,
+            services,
+            sales,
+            stockMovements,
+            media,
+            auditLogs,
             timestamp: new Date().toISOString(),
         };
     }

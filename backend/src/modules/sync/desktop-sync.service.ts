@@ -27,8 +27,8 @@ export class DesktopSyncService implements OnModuleInit {
         }
     }
 
-    async syncWithRemote() {
-        if (this.isSyncing) return;
+    async syncWithRemote(isRetry = false) {
+        if (this.isSyncing && !isRetry) return;
         
         const config = await this.prisma.desktopConfig.findFirst();
         if (!config || !config.remoteUrl || !config.syncToken || !config.autoSync) {
@@ -73,6 +73,12 @@ export class DesktopSyncService implements OnModuleInit {
                         this.logger.log(`Successfully pushed ${successIds.length} operations.`);
                     }
                 } catch (pushError: any) {
+                    if (pushError.response && (pushError.response.status === 401 || pushError.response.status === 403)) {
+                        if (!isRetry && await this.handleReauthentication(config)) {
+                            this.isSyncing = false;
+                            return this.syncWithRemote(true);
+                        }
+                    }
                     this.logger.error(`Push failed: ${pushError.message}`);
                 }
             }
@@ -109,6 +115,12 @@ export class DesktopSyncService implements OnModuleInit {
                 });
 
             } catch (pullError: any) {
+                if (pullError.response && (pullError.response.status === 401 || pullError.response.status === 403)) {
+                    if (!isRetry && await this.handleReauthentication(config)) {
+                        this.isSyncing = false;
+                        return this.syncWithRemote(true);
+                    }
+                }
                 this.logger.error(`Pull failed: ${pullError.message}`);
             }
 
@@ -137,6 +149,24 @@ export class DesktopSyncService implements OnModuleInit {
 
                 await upsertMany('user', data.users);
                 await upsertMany('store', data.stores);
+                
+                // UserStores have composite keys (userId, storeId), upsertMany might fail without id.
+                // Best to delete and recreate them to be safe.
+                if (data.userStores && data.userStores.length > 0) {
+                    await this.prisma.userStore.deleteMany({});
+                    await this.prisma.userStore.createMany({ data: data.userStores });
+                } else if (!data.userStores && data.users && data.stores) {
+                    // Fallback if the remote API hasn't been updated yet to include userStores
+                    const userStoresToCreate = [];
+                    for (const u of data.users) {
+                        for (const s of data.stores) {
+                            userStoresToCreate.push({ userId: u.id, storeId: s.id });
+                        }
+                    }
+                    await this.prisma.userStore.deleteMany({});
+                    await this.prisma.userStore.createMany({ data: userStoresToCreate });
+                }
+
                 await upsertMany('category', data.categories);
                 
                 // Products have images, handle relations carefully if needed. Upsert might fail on complex relations.
@@ -150,19 +180,69 @@ export class DesktopSyncService implements OnModuleInit {
                 await upsertMany('supplier', data.suppliers);
                 await upsertMany('service', data.services);
                 
+                const users = data.users || [];
+                const userIds = new Set(users.map((u: any) => u.id));
+                // Fallback user for corrupted data (e.g. sale created by a deleted or cross-org user)
+                const fallbackUserId = users.find((u: any) => u.role === 'OWNER')?.id || (users.length > 0 ? users[0].id : null);
+
                 for (const s of data.sales || []) {
                     const { items, payments, ...saleData } = s;
+                    
+                    // Fix missing creator foreign key constraint
+                    if (saleData.createdBy && !userIds.has(saleData.createdBy)) {
+                        this.logger.warn(`Sale ${s.id} references missing user ${saleData.createdBy}. Reassigning to ${fallbackUserId}.`);
+                        saleData.createdBy = fallbackUserId;
+                    }
+
+                    // Fix missing customer foreign key constraint
+                    if (saleData.customerId && !data.customers?.some((c: any) => c.id === saleData.customerId)) {
+                        saleData.customerId = null;
+                    }
+
+                    if (!saleData.createdBy) {
+                        this.logger.error(`Cannot insert sale ${s.id} without a creator.`);
+                        continue;
+                    }
+
                     await this.prisma.sale.upsert({ where: { id: s.id }, update: saleData, create: saleData });
                     await upsertMany('saleItem', items);
                     await upsertMany('payment', payments);
                 }
                 
                 await upsertMany('stockMovement', data.stockMovements);
+                await upsertMany('media', data.media);
+                await upsertMany('auditLog', data.auditLogs);
                 
                 this.logger.log('Initial snapshot applied successfully.');
             } catch (error: any) {
                 this.logger.error(`Failed to apply initial snapshot: ${error.message}`, error.stack);
             }
         });
+    }
+
+    private async handleReauthentication(config: any): Promise<boolean> {
+        if (!config.syncEmail || !config.syncPassword) {
+            this.logger.error('Cannot auto-reauthenticate: credentials not saved');
+            return false;
+        }
+        try {
+            const baseUrl = config.remoteUrl.replace(/\/$/, '');
+            this.logger.log('Attempting auto-reauthentication...');
+            const res = await axios.post(`${baseUrl}/auth/login`, {
+                email: config.syncEmail,
+                password: config.syncPassword
+            });
+            if (res.data?.access_token) {
+                await this.prisma.desktopConfig.update({
+                    where: { id: config.id },
+                    data: { syncToken: res.data.access_token }
+                });
+                this.logger.log('Auto-reauthentication successful.');
+                return true;
+            }
+        } catch (err: any) {
+            this.logger.error(`Auto-reauthentication failed: ${err.message}`);
+        }
+        return false;
     }
 }

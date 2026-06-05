@@ -1094,6 +1094,7 @@ model DesktopConfig {
   id           String   @id @default(uuid())
   remoteUrl    String?
   syncEmail    String?
+  syncPassword String?  // Added for auto-relogin
   syncToken    String?  @db.Text
   lastSyncAt   DateTime?
   autoSync     Boolean  @default(true)

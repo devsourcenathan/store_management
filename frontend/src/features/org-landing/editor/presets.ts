@@ -83,10 +83,10 @@ const heroPreset: Omit<Section, 'id'> = {
     backgroundColor: '#F3F4F6', // gray-100
   },
   blocks: [
-    { ...headingBlockPreset, content: { text: 'Hero Title: Welcome to Our Page' }, style: { fontSize: '48px', fontWeight: 'bold' } },
-    { ...paragraphBlockPreset, content: { text: 'A compelling description of your value proposition goes here.' }, style: { fontSize: '18px', color: '#4B5563', maxWidth: '600px', margin: '10px auto' } },
-    { ...buttonBlockPreset, content: { text: 'Call to Action', href: '#' }, style: { marginTop: '20px' } },
-  ].map(b => ({...b, id: ''})), // IDs will be generated
+    { ...headingBlockPreset, id: '', content: { text: 'Hero Title: Welcome to Our Page' }, style: { fontSize: '48px', fontWeight: 'bold' } },
+    { ...paragraphBlockPreset, id: '', content: { text: 'A compelling description of your value proposition goes here.' }, style: { fontSize: '18px', color: '#4B5563', maxWidth: '600px', margin: '10px auto' } },
+    { ...buttonBlockPreset, id: '', content: { text: 'Call to Action', href: '#' }, style: { marginTop: '20px' } },
+  ] as Block[], // IDs will be generated
 };
 
 const twoColumnPreset: Omit<Section, 'id'> = {

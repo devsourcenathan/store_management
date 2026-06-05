@@ -5,7 +5,7 @@
   "main": "main.js",
   "scripts": {
     "start": "electron .",
-    "prepare:bundle": "npm --prefix ../backend run desktop:build-seed-db && npm --prefix ../backend run build && npm --prefix ../frontend run build:desktop",
+    "prepare:bundle": "npm --prefix ../backend run build && npm --prefix ../frontend run build:desktop",
     "dist:zip": "npm run prepare:bundle && electron-builder --win zip --publish never"
   },
   "devDependencies": {

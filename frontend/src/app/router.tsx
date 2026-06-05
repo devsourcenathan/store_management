@@ -25,6 +25,7 @@ import SubscriptionPage from '@/features/billing/SubscriptionPage';
 import BillingCallbackPage from '@/features/billing/BillingCallbackPage';
 import { AuditLogsPage } from '@/features/audit/AuditLogsPage';
 import { UserAnalyticsPage } from '@/features/analytics/UserAnalyticsPage';
+import { SetupPage } from '@/features/setup/SetupPage';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
     const { user, isLoading } = useAuth();
@@ -62,6 +63,7 @@ export function AppRouter() {
 
             {/* <Route path="/" element={<LandingPage />} /> */}
             <Route path="/" element={<Navigate to="/login" replace />} />
+            <Route path="/setup" element={<SetupPage />} />
             <Route path="/register-org" element={<RegisterOrgPage />} />
             <Route path="/org/:subdomain" element={<OrgLandingPage />} />
             <Route path="/login" element={<LoginPage />} />

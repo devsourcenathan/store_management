@@ -116,78 +116,17 @@ function getAppDataDir() {
   return path.join(base, 'StockManagement');
 }
 
-const MIN_STOCK_DB_BYTES = 50 * 1024;
-
-function getSeedDatabaseTemplate() {
-  if (process.resourcesPath) {
-    const packaged = path.join(process.resourcesPath, 'backend', 'seed', 'desktop-stock.db');
-    if (fs.existsSync(packaged)) return packaged;
-  }
-  const dev = path.join(__dirname, '..', 'backend', 'generated', 'desktop-stock.db');
-  if (fs.existsSync(dev)) return dev;
-  return null;
-}
-
-/** Install or repair %APPDATA%/stock.db (must not be 0 bytes). */
+/** Ensures %APPDATA%/StockManagement/stock.db path is ready */
 function ensureStockDatabase(appDataDir) {
   fs.mkdirSync(appDataDir, { recursive: true });
   const dbPath = path.join(appDataDir, 'stock.db');
-  const template = getSeedDatabaseTemplate();
-
+  
   let size = 0;
   try {
     if (fs.existsSync(dbPath)) size = fs.statSync(dbPath).size;
   } catch { }
 
   log(`stock.db path=${dbPath} size=${size} bytes`);
-
-  if (size >= MIN_STOCK_DB_BYTES) {
-    return dbPath;
-  }
-
-  if (!template) {
-    log('ERROR: desktop-stock.db seed template not found in app resources');
-    try {
-      dialog.showErrorBox(
-        'StockManagement',
-        'Base de données seed introuvable dans l\'application.\n\nRebuild:\ncd desktop && npm run dist:zip'
-      );
-    } catch { }
-    return dbPath;
-  }
-
-  const templateSize = fs.statSync(template).size;
-  log(`seed template=${template} size=${templateSize} bytes`);
-  if (templateSize < MIN_STOCK_DB_BYTES) {
-    log('ERROR: seed template file is too small / corrupt');
-    return dbPath;
-  }
-
-  try {
-    if (fs.existsSync(dbPath)) {
-      if (size > 0) {
-        const backup = `${dbPath}.bak-${Date.now()}`;
-        fs.copyFileSync(dbPath, backup);
-        log(`Backed up invalid stock.db to ${backup}`);
-      } else {
-        fs.unlinkSync(dbPath);
-        log('Removed empty stock.db (0 bytes)');
-      }
-    }
-    fs.copyFileSync(template, dbPath);
-    const installed = fs.statSync(dbPath).size;
-    log(`Installed stock.db from seed (${installed} bytes)`);
-  } catch (e) {
-    log(`ERROR installing stock.db: ${e && e.message ? e.message : String(e)}`);
-    try {
-      dialog.showErrorBox(
-        'StockManagement',
-        `Impossible d'installer la base SQLite:\n${String(e && e.message ? e.message : e)}\n\n` +
-          'Ferme l\'app, supprime %APPDATA%\\StockManagement\\stock.db, relance.'
-      );
-    } catch { }
-  }
-
   return dbPath;
 }
 

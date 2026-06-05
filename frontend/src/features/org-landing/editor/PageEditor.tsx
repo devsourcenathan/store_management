@@ -38,7 +38,7 @@ export const PageEditor: React.FC<PageEditorProps> = ({ control, sections }) => 
 
   const deleteBlock = (sectionIndex: number, blockIndex: number) => {
     const section = getValues(`sections.${sectionIndex}`);
-    const updatedBlocks = section.blocks.filter((_, idx) => idx !== blockIndex);
+    const updatedBlocks = section.blocks.filter((_: any, idx: number) => idx !== blockIndex);
     update(sectionIndex, { ...section, blocks: updatedBlocks });
   };
 

@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AppRouter } from './router';
 import { AuthProvider } from '@/features/auth/AuthProvider';
 import { OrganizationProvider } from '@/contexts/OrganizationContext';
+import { DesktopSetupGuard } from './DesktopSetupGuard';
 import { SyncProvider } from '@/offline/SyncProvider';
 import { StoreProvider } from '@/features/stores/StoreProvider';
 import { PermissionProvider } from '@/contexts/PermissionContext';
@@ -23,19 +24,21 @@ function App() {
     return (
         <QueryClientProvider client={queryClient}>
             <BrowserRouter>
-                <AuthProvider>
-                    <OrganizationProvider>
-                        <StoreProvider>
-                            <PermissionProvider>
-                                <SyncProvider>
-                                    <AppRouter />
-                                    <Toaster richColors position="top-center" />
-                                    <UpdatePopup />
-                                </SyncProvider>
-                            </PermissionProvider>
-                        </StoreProvider>
-                    </OrganizationProvider>
-                </AuthProvider>
+                <DesktopSetupGuard>
+                    <AuthProvider>
+                        <OrganizationProvider>
+                            <StoreProvider>
+                                <PermissionProvider>
+                                    <SyncProvider>
+                                        <AppRouter />
+                                        <Toaster richColors position="top-center" />
+                                        <UpdatePopup />
+                                    </SyncProvider>
+                                </PermissionProvider>
+                            </StoreProvider>
+                        </OrganizationProvider>
+                    </AuthProvider>
+                </DesktopSetupGuard>
             </BrowserRouter>
         </QueryClientProvider>
     );

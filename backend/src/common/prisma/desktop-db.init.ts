@@ -1,23 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-
-function getSeedTemplatePath(): string | null {
-    if (process.env.DESKTOP_SEED_DB_TEMPLATE) {
-        const custom = path.resolve(process.env.DESKTOP_SEED_DB_TEMPLATE);
-        if (fs.existsSync(custom)) return custom;
-    }
-
-    const resourcesPath = process.env.resourcesPath;
-    if (resourcesPath) {
-        const packaged = path.join(resourcesPath, 'backend', 'seed', 'desktop-stock.db');
-        if (fs.existsSync(packaged)) return packaged;
-    }
-
-    const dev = path.resolve(__dirname, '../../../generated/desktop-stock.db');
-    if (fs.existsSync(dev)) return dev;
-
-    return null;
-}
+import { execSync } from 'child_process';
 
 function loadSqlitePrisma(dbPath: string) {
     const sqliteClientPath = path.resolve(__dirname, '../../../generated/sqlite-client');
@@ -29,12 +12,12 @@ function loadSqlitePrisma(dbPath: string) {
     });
 }
 
-async function isDatabaseSeeded(dbPath: string): Promise<boolean> {
+async function isDatabaseInitialized(dbPath: string): Promise<boolean> {
     let prisma: { user: { count: () => Promise<number> }; $disconnect: () => Promise<void> } | undefined;
     try {
         prisma = loadSqlitePrisma(dbPath);
-        const count = await prisma.user.count();
-        return count > 0;
+        await prisma.user.count(); // Will throw if the table doesn't exist
+        return true;
     } catch {
         return false;
     } finally {
@@ -48,23 +31,8 @@ async function isDatabaseSeeded(dbPath: string): Promise<boolean> {
     }
 }
 
-function installSeedDatabase(dbPath: string, template: string): void {
-    if (fs.existsSync(dbPath)) {
-        const backup = `${dbPath}.bak-${Date.now()}`;
-        try {
-            fs.copyFileSync(dbPath, backup);
-            console.log(`📁 Previous database backed up to ${backup}`);
-        } catch {
-            fs.unlinkSync(dbPath);
-        }
-    }
-    fs.copyFileSync(template, dbPath);
-    console.log(`✅ Desktop database initialized from seed (${dbPath})`);
-}
-
 /**
- * Ensures APP_DATA stock.db exists and contains seeded tables/users.
- * Replaces empty or legacy DB files that block login (missing users table).
+ * Ensures APP_DATA stock.db exists and has the correct schema.
  */
 export async function ensureDesktopDatabase(appDataDir: string): Promise<void> {
     const dbProvider = (process.env.DB_PROVIDER || '').toLowerCase();
@@ -74,22 +42,26 @@ export async function ensureDesktopDatabase(appDataDir: string): Promise<void> {
     fs.mkdirSync(resolved, { recursive: true });
 
     const dbPath = path.join(resolved, 'stock.db');
-    const template = getSeedTemplatePath();
-    if (!template) {
-        console.warn(
-            '⚠️ No desktop seed DB template found. Run: cd backend && npm run desktop:build-seed-db',
-        );
-        return;
-    }
+    const dbUrl = `file:${dbPath.replace(/\\/g, '/')}`;
 
-    if (!fs.existsSync(dbPath)) {
-        installSeedDatabase(dbPath, template);
-        return;
-    }
-
-    const seeded = await isDatabaseSeeded(dbPath);
-    if (!seeded) {
-        console.warn('⚠️ Desktop database missing schema or users — reinstalling from seed template');
-        installSeedDatabase(dbPath, template);
+    const initialized = await isDatabaseInitialized(dbPath);
+    if (!initialized) {
+        console.log('⚠️ Desktop database missing schema. Initializing via prisma db push...');
+        try {
+            const schemaPath = path.resolve(__dirname, '../../../generated/schema.sqlite.prisma');
+            if (fs.existsSync(schemaPath)) {
+                execSync(`npx prisma db push --schema="${schemaPath}" --accept-data-loss --skip-generate`, {
+                    env: { ...process.env, DATABASE_URL: dbUrl },
+                    stdio: 'inherit'
+                });
+                console.log(`✅ Desktop database schema initialized (${dbPath})`);
+            } else {
+                console.warn('⚠️ SQLite schema file not found, cannot run db push.');
+            }
+        } catch (err) {
+            console.error('Failed to initialize local SQLite DB schema:', err);
+        }
+    } else {
+        console.log(`✅ Desktop database already initialized (${dbPath})`);
     }
 }
