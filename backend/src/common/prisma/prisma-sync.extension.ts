@@ -56,22 +56,22 @@ export function withSyncExtension(client: any) {
             $allModels: {
                 async create({ model, args, query }: any) {
                     const result = await query(args);
-                    await recordSyncOperation(client, model, 'CREATE', result);
+                    scheduleRecordSyncOperation(client, model, 'CREATE', result);
                     return result;
                 },
                 async update({ model, args, query }: any) {
                     const result = await query(args);
-                    await recordSyncOperation(client, model, 'UPDATE', result);
+                    scheduleRecordSyncOperation(client, model, 'UPDATE', result);
                     return result;
                 },
                 async delete({ model, args, query }: any) {
                     const result = await query(args);
-                    await recordSyncOperation(client, model, 'DELETE', result);
+                    scheduleRecordSyncOperation(client, model, 'DELETE', result);
                     return result;
                 },
                 async upsert({ model, args, query }: any) {
                     const result = await query(args);
-                    await recordSyncOperation(client, model, 'UPDATE', result);
+                    scheduleRecordSyncOperation(client, model, 'UPDATE', result);
                     return result;
                 },
                 // We should also handle createMany, updateMany, deleteMany if possible,
@@ -94,15 +94,50 @@ export function withSyncExtension(client: any) {
     });
 }
 
-async function recordSyncOperation(client: any, entity: string, action: string, data: any) {
+async function resolveSyncClientId(client: any): Promise<string> {
+    const isDesktop = process.env.LOCAL_BUNDLE === 'true';
+    if (!isDesktop) {
+        return 'SERVER';
+    }
+
+    const config = await client.desktopConfig.findFirst();
+    return config?.clientId || 'DESKTOP_UNCONFIGURED';
+}
+
+/** Persist a sync operation (usable from backfill / deferred logging). */
+export async function persistSyncOperation(
+    client: any,
+    entity: string,
+    action: string,
+    data: any,
+    clientId?: string,
+) {
+    const sanitized = sanitizeSyncData(data);
+    const resolvedClientId = clientId ?? await resolveSyncClientId(client);
+
+    await client.syncOperation.create({
+        data: {
+            action,
+            entity,
+            entityId: data.id,
+            data: JSON.stringify(sanitized),
+            clientId: resolvedClientId,
+            synced: false,
+        },
+    });
+}
+
+/**
+ * Queue sync logging after the current Prisma interactive transaction commits.
+ * Writing sync_operations inside a transaction hook deadlocks SQLite (P1008).
+ */
+function scheduleRecordSyncOperation(client: any, entity: string, action: string, data: any) {
     if (SYNC_IGNORE_MODELS.includes(entity)) {
         return;
     }
 
     const context = syncContext.getStore();
     if (context?.isApplyingSync) {
-        // We are currently applying pulled changes from the remote server (or vice-versa),
-        // so we DO NOT log this operation to avoid bouncing it back.
         return;
     }
 
@@ -111,36 +146,9 @@ async function recordSyncOperation(client: any, entity: string, action: string, 
         return;
     }
 
-    try {
-        // We determine the clientId based on whether we are on the desktop or the server
-        const isDesktop = process.env.LOCAL_BUNDLE === 'true';
-        let clientId = 'SERVER';
-
-        if (isDesktop) {
-            // Get desktop client ID from DB
-            const config = await client.desktopConfig.findFirst();
-            if (config?.clientId) {
-                clientId = config.clientId;
-            } else {
-                clientId = 'DESKTOP_UNCONFIGURED';
-            }
-        }
-
-        // We bypass the extension itself to write the log using an unextended client call
-        // wait, client.syncOperation.create works even on an extended client because SyncOperation is ignored above.
-        const sanitized = sanitizeSyncData(data);
-        await client.syncOperation.create({
-            data: {
-                action,
-                entity,
-                entityId: data.id,
-                data: JSON.stringify(sanitized),
-                clientId,
-                synced: false,
-            }
+    setImmediate(() => {
+        void persistSyncOperation(client, entity, action, data).catch((error) => {
+            console.error(`[Sync] Failed to record sync operation for ${entity} ${action}:`, error);
         });
-        
-    } catch (error) {
-        console.error(`[Sync] Failed to record sync operation for ${entity} ${action}:`, error);
-    }
+    });
 }

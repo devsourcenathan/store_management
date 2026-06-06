@@ -1,5 +1,6 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma/prisma.service';
+import { persistSyncOperation } from '../../common/prisma/prisma-sync.extension';
 import { SyncGenericService } from './sync-generic.service';
 import axios from 'axios';
 
@@ -63,6 +64,7 @@ export class DesktopSyncService implements OnModuleInit {
         this.isSyncing = true;
         let lastSyncAt: Date | undefined;
         let pullApplyErrors = 0;
+        let pushPendingRemaining = 0;
         try {
             const baseUrl = config.remoteUrl.replace(/\/$/, '');
             const headers = { 
@@ -71,6 +73,9 @@ export class DesktopSyncService implements OnModuleInit {
             };
 
             // 1. PUSH local changes to remote
+            await this.pruneStalePendingOperations();
+            await this.backfillMissingLocalProducts(config, headers);
+
             const pendingOps = await this.prisma.syncOperation.findMany({
                 where: { synced: false },
                 orderBy: { createdAt: 'asc' }
@@ -99,7 +104,22 @@ export class DesktopSyncService implements OnModuleInit {
                         });
                         this.logger.log(`Successfully pushed ${successIds.length} operations.`);
                     }
+                    if (pushRes.data?.errors?.length > 0) {
+                        this.logger.error(
+                            `Push rejected ${pushRes.data.errors.length}/${pendingOps.length} operations`,
+                            pushRes.data.errors,
+                        );
+                    }
+                    const pushedCount = pushRes.data?.success?.length ?? 0;
+                    const errorCount = pushRes.data?.errors?.length ?? 0;
+                    pushPendingRemaining = pendingOps.length - pushedCount;
+                    if (pushedCount === 0 && pendingOps.length > 0 && errorCount === 0) {
+                        this.logger.error(
+                            `Push returned 0 applied operations for ${pendingOps.length} pending — cloud server may need an update`,
+                        );
+                    }
                 } catch (pushError: any) {
+                    pushPendingRemaining = pendingOps.length;
                     if (pushError.response && (pushError.response.status === 401 || pushError.response.status === 403)) {
                         if (!isRetry && await this.handleReauthentication(config)) {
                             this.isSyncing = false;
@@ -173,6 +193,14 @@ export class DesktopSyncService implements OnModuleInit {
                 this.logger.error(`Pull failed: ${pullError.message}`);
             }
 
+            if (pushPendingRemaining > 0) {
+                return {
+                    success: false,
+                    message: `${pushPendingRemaining} local change(s) could not be pushed to the cloud. Update the cloud server and retry.`,
+                    lastSyncAt,
+                };
+            }
+
             if (pullApplyErrors > 0) {
                 return {
                     success: false,
@@ -184,6 +212,89 @@ export class DesktopSyncService implements OnModuleInit {
             return { success: true, lastSyncAt };
         } finally {
             this.isSyncing = false;
+        }
+    }
+
+    /** Drop pending ops that can never succeed (deleted entities, test leftovers). */
+    private async pruneStalePendingOperations() {
+        const pending = await this.prisma.syncOperation.findMany({
+            where: { synced: false },
+            orderBy: { createdAt: 'asc' },
+        });
+
+        const staleIds: string[] = [];
+
+        for (const op of pending) {
+            const modelName = op.entity.charAt(0).toLowerCase() + op.entity.slice(1);
+            const model = (this.prisma as any)[modelName] as any;
+            if (!model) {
+                continue;
+            }
+
+            if (op.action === 'CREATE') {
+                const exists = await model.findUnique({ where: { id: op.entityId } });
+                if (!exists) {
+                    staleIds.push(op.id);
+                }
+            } else if (op.action === 'DELETE' || op.action === 'UPDATE') {
+                const exists = await model.findUnique({ where: { id: op.entityId } });
+                if (!exists) {
+                    staleIds.push(op.id);
+                }
+            }
+        }
+
+        if (staleIds.length > 0) {
+            await this.prisma.syncOperation.updateMany({
+                where: { id: { in: staleIds } },
+                data: { synced: true },
+            });
+            this.logger.log(`Pruned ${staleIds.length} stale pending sync operation(s)`);
+        }
+    }
+
+    /**
+     * Recover products created locally while sync logging failed (SQLite lock inside transactions).
+     */
+    private async backfillMissingLocalProducts(
+        config: { clientId: string; remoteUrl: string },
+        headers: Record<string, string>,
+    ) {
+        if (process.env.LOCAL_BUNDLE !== 'true') {
+            return;
+        }
+
+        const baseUrl = config.remoteUrl.replace(/\/$/, '');
+        try {
+            const res = await axios.get(`${baseUrl}/products`, { headers });
+            const remoteProducts: any[] = Array.isArray(res.data) ? res.data : res.data?.data ?? [];
+            const remoteIds = new Set(remoteProducts.map((p) => p.id));
+
+            const localProducts = await this.prisma.product.findMany();
+            let queued = 0;
+
+            for (const product of localProducts) {
+                if (remoteIds.has(product.id)) {
+                    continue;
+                }
+
+                const alreadyQueued = await this.prisma.syncOperation.findFirst({
+                    where: { entity: 'Product', entityId: product.id, synced: false },
+                });
+                if (alreadyQueued) {
+                    continue;
+                }
+
+                await persistSyncOperation(this.prisma, 'Product', 'CREATE', product, config.clientId);
+                queued++;
+                this.logger.log(`Backfill: queued CREATE Product "${product.name}" (${product.id})`);
+            }
+
+            if (queued > 0) {
+                this.logger.log(`Backfill: ${queued} local product(s) queued for cloud push`);
+            }
+        } catch (error: any) {
+            this.logger.warn(`Product backfill skipped: ${error.message}`);
         }
     }
 

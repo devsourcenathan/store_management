@@ -1,8 +1,22 @@
-import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode, useCallback, useRef } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { db } from './db';
 import { api, syncApi } from '@/services/api';
 import { toast } from 'sonner';
 import { isDesktopBundle } from '@/lib/apiBaseUrl';
+
+/** Refresh UI lists after cloud→desktop sync (React Query default staleTime is 5 min). */
+function invalidateSyncedQueries(queryClient: ReturnType<typeof useQueryClient>) {
+    queryClient.invalidateQueries({ queryKey: ['products'] });
+    queryClient.invalidateQueries({ queryKey: ['categories'] });
+    queryClient.invalidateQueries({ queryKey: ['customers'] });
+    queryClient.invalidateQueries({ queryKey: ['suppliers'] });
+    queryClient.invalidateQueries({ queryKey: ['sales'] });
+    queryClient.invalidateQueries({ queryKey: ['stock-movements'] });
+    queryClient.invalidateQueries({ queryKey: ['stock-levels'] });
+    queryClient.invalidateQueries({ queryKey: ['movements'] });
+    queryClient.invalidateQueries({ queryKey: ['stock-alerts'] });
+}
 
 interface SyncContextType {
     isOnline: boolean;
@@ -30,24 +44,40 @@ export function SyncProvider({ children }: { children: ReactNode }) {
 }
 
 function DesktopSyncProvider({ children }: { children: ReactNode }) {
+    const queryClient = useQueryClient();
     const [isSyncing, setIsSyncing] = useState(false);
     const [lastSyncAt, setLastSyncAt] = useState<Date | null>(null);
     const [pendingOperations, setPendingOperations] = useState(0);
     const [syncError, setSyncError] = useState<string | null>(null);
     const [isConfigured, setIsConfigured] = useState(false);
+    const prevLastSyncAtRef = useRef<number | null>(null);
 
     const refreshStatus = useCallback(async () => {
         try {
             const res = await api.get('/desktop-config/sync-status');
+            const newLastSyncAt = res.data.lastSyncAt ? new Date(res.data.lastSyncAt) : null;
+            const newLastSyncMs = newLastSyncAt?.getTime() ?? null;
+
+            if (
+                newLastSyncMs !== null &&
+                prevLastSyncAtRef.current !== null &&
+                newLastSyncMs !== prevLastSyncAtRef.current
+            ) {
+                invalidateSyncedQueries(queryClient);
+            }
+            if (newLastSyncMs !== null) {
+                prevLastSyncAtRef.current = newLastSyncMs;
+            }
+
             setIsSyncing(res.data.isSyncing);
-            setLastSyncAt(res.data.lastSyncAt ? new Date(res.data.lastSyncAt) : null);
+            setLastSyncAt(newLastSyncAt);
             setPendingOperations(res.data.pendingOperations ?? 0);
             setIsConfigured(res.data.isConfigured ?? false);
             setSyncError(null);
         } catch (error) {
             console.error('Failed to fetch sync status:', error);
         }
-    }, []);
+    }, [queryClient]);
 
     useEffect(() => {
         refreshStatus();
@@ -63,6 +93,7 @@ function DesktopSyncProvider({ children }: { children: ReactNode }) {
 
         try {
             await api.post('/desktop-config/sync');
+            invalidateSyncedQueries(queryClient);
             toast.success('Synchronization completed successfully');
         } catch (error: any) {
             const message = error.response?.data?.message || error.message || 'Synchronization failed';

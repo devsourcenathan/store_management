@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '@/common/prisma/prisma.service';
+import { containsFilter } from '@/common/prisma/search.util';
 import { MediaEntityType } from '@prisma/client';
 import { GetProductsDto } from './dto/get-products.dto';
 
@@ -24,8 +25,8 @@ export class ProductsService {
 
         if (search) {
             where.OR = [
-                { name: { contains: search, mode: 'insensitive' } },
-                { sku: { contains: search, mode: 'insensitive' } },
+                { name: containsFilter(search) },
+                { sku: containsFilter(search) },
             ];
         }
 

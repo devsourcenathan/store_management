@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { api } from '@/services/api';
+import { useSync } from '@/offline/SyncProvider';
 import { RefreshCw } from 'lucide-react';
 
 export function DesktopSyncSettings() {
@@ -11,7 +12,7 @@ export function DesktopSyncSettings() {
     const [config, setConfig] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
-    const [syncing, setSyncing] = useState(false);
+    const { sync, isSyncing: syncing } = useSync();
 
     // Form fields
     const [remoteUrl, setRemoteUrl] = useState('');
@@ -39,17 +40,8 @@ export function DesktopSyncSettings() {
     };
 
     const handleManualSync = async () => {
-        try {
-            setSyncing(true);
-            await api.post('/desktop-config/sync');
-            toast.success('Synchronization completed successfully');
-            await loadConfig();
-        } catch (error: any) {
-            const message = error.response?.data?.message || error.message || 'Synchronization failed';
-            toast.error(message);
-        } finally {
-            setSyncing(false);
-        }
+        await sync();
+        await loadConfig();
     };
 
     const handleSave = async () => {

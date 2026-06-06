@@ -14,7 +14,7 @@ export class SyncController {
         // are applied generically. (For better security, SyncGenericService could
         // verify organizationId matches, but for now we trust the authenticated client).
         const clientId = req.headers['x-client-id'] || 'UNKNOWN_CLIENT';
-        return this.syncService.applyOperations(body.operations, clientId);
+        return this.syncService.applyOperations(body.operations, clientId, { skipSameClient: false });
     }
 
     @Get('pull')

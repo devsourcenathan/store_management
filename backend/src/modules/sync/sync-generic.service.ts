@@ -11,8 +11,16 @@ export class SyncGenericService {
     /**
      * Applies a batch of operations pushed by the desktop to the remote server,
      * or pulled from the remote server to the desktop.
+     *
+     * @param skipSameClient When true (pull on desktop), skip ops that originated from this client.
+     *                       When false (push to cloud), always apply incoming ops.
      */
-    async applyOperations(operations: any[], localClientId: string) {
+    async applyOperations(
+        operations: any[],
+        localClientId: string,
+        options?: { skipSameClient?: boolean },
+    ) {
+        const skipSameClient = options?.skipSameClient ?? true;
         const results = {
             success: [],
             errors: [],
@@ -29,8 +37,8 @@ export class SyncGenericService {
         await syncContext.run({ isApplyingSync: true }, async () => {
             for (const op of sortedOps) {
                 try {
-                    // Ignore our own operations just in case
-                    if (op.clientId === localClientId && localClientId !== 'SERVER') {
+                    // On pull: ignore our own operations echoed back from the remote log.
+                    if (skipSameClient && op.clientId === localClientId && localClientId !== 'SERVER') {
                         continue;
                     }
 
