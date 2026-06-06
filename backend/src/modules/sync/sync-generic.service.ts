@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma/prisma.service';
-import { syncContext } from '../../common/prisma/prisma-sync.extension';
+import { syncContext, sanitizeSyncData } from '../../common/prisma/prisma-sync.extension';
 
 @Injectable()
 export class SyncGenericService {
@@ -69,9 +69,15 @@ export class SyncGenericService {
             }
         }
 
+        const recordData = sanitizeSyncData(parsedData) as Record<string, unknown>;
+        const recordId = recordData.id as string | undefined;
+        if (!recordId) {
+            throw new Error(`Operation ${op.id} is missing record id`);
+        }
+
         // Handle Last-Write-Wins
         if (action === 'CREATE' || action === 'UPDATE') {
-            const existingRecord = await model.findUnique({ where: { id: parsedData.id } });
+            const existingRecord = await model.findUnique({ where: { id: recordId } });
             
             if (existingRecord) {
                 // If the local record is newer, we ignore the incoming operation
@@ -80,32 +86,27 @@ export class SyncGenericService {
                 const incomingTime = timestamp;
 
                 if (localTime > incomingTime) {
-                    this.logger.debug(`[Sync] Conflict resolved: Local ${entity} ${parsedData.id} is newer. Dropping incoming ${action}.`);
+                    this.logger.debug(`[Sync] Conflict resolved: Local ${entity} ${recordId} is newer. Dropping incoming ${action}.`);
                     return; // Ignore
                 }
 
-                // If it's newer, we update
-                // We sanitize data just in case some relations are passed directly which Prisma update doesn't like unless formed correctly
-                const { ...updateData } = parsedData;
-                
                 await model.update({
-                    where: { id: parsedData.id },
-                    data: updateData,
+                    where: { id: recordId },
+                    data: recordData,
                 });
             } else {
                 // Doesn't exist locally, we create it
                 if (action === 'DELETE') return; // Cannot delete what doesn't exist
-                
-                const { ...createData } = parsedData;
+
                 await model.create({
-                    data: createData,
+                    data: recordData,
                 });
             }
         } else if (action === 'DELETE') {
-            const existingRecord = await model.findUnique({ where: { id: parsedData.id } });
+            const existingRecord = await model.findUnique({ where: { id: recordId } });
             if (existingRecord) {
                 // We could check timestamp, but a delete usually wins.
-                await model.delete({ where: { id: parsedData.id } });
+                await model.delete({ where: { id: recordId } });
             }
         }
     }

@@ -4,12 +4,14 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { api } from '@/services/api';
+import { RefreshCw } from 'lucide-react';
 
 export function DesktopSyncSettings() {
     const { t } = useTranslation();
     const [config, setConfig] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
+    const [syncing, setSyncing] = useState(false);
 
     // Form fields
     const [remoteUrl, setRemoteUrl] = useState('');
@@ -33,6 +35,20 @@ export function DesktopSyncSettings() {
             toast.error('Failed to load sync configuration');
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleManualSync = async () => {
+        try {
+            setSyncing(true);
+            await api.post('/desktop-config/sync');
+            toast.success('Synchronization completed successfully');
+            await loadConfig();
+        } catch (error: any) {
+            const message = error.response?.data?.message || error.message || 'Synchronization failed';
+            toast.error(message);
+        } finally {
+            setSyncing(false);
         }
     };
 
@@ -158,10 +174,20 @@ export function DesktopSyncSettings() {
                     </div>
                 )}
 
-                <div className="pt-4 flex gap-3">
-                    <Button onClick={handleSave} disabled={saving}>
+                <div className="pt-4 flex flex-wrap gap-3">
+                    <Button onClick={handleSave} disabled={saving || syncing}>
                         {saving ? 'Connecting...' : 'Connect & Save'}
                     </Button>
+                    {config?.remoteUrl && config?.syncToken && (
+                        <Button
+                            variant="outline"
+                            onClick={handleManualSync}
+                            disabled={syncing || saving}
+                        >
+                            <RefreshCw className={`h-4 w-4 mr-2 ${syncing ? 'animate-spin' : ''}`} />
+                            {syncing ? 'Synchronizing...' : t('offline.sync.syncNow')}
+                        </Button>
+                    )}
                 </div>
             </div>
         </div>

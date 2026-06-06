@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/features/auth/useAuth';
 import { useSync } from '@/offline/SyncProvider';
-import { isOfflineEnabled } from '@/lib/apiBaseUrl';
+import { isOfflineEnabled, isDesktopBundle } from '@/lib/apiBaseUrl';
 import { useOrganization } from '@/contexts/OrganizationContext';
 import { useTheme } from '@/components/ThemeProvider';
 import { usePermissions } from '@/contexts/PermissionContext';
@@ -12,6 +12,7 @@ import { ThemeToggle } from '@/components/ThemeToggle';
 import { LanguageSelector } from '@/components/LanguageSelector';
 import { MobileMenu } from '@/components/MobileMenu';
 import { OfflineIndicator } from '@/components/OfflineIndicator';
+import { CloudSyncButton } from '@/components/CloudSyncButton';
 import { PWAInstallPrompt } from '@/components/PWAInstallPrompt';
 import { useTranslation } from 'react-i18next';
 import {
@@ -358,6 +359,8 @@ export function DashboardLayout() {
                                     </>
                                 )}
                             </div>
+
+                            {isDesktopBundle() && <CloudSyncButton />}
 
                             {isOfflineEnabled() && (
                                 <div className="flex items-center space-x-1 sm:space-x-2">

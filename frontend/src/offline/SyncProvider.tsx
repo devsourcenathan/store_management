@@ -1,8 +1,8 @@
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { db } from './db';
-import { syncApi } from '@/services/api';
+import { api, syncApi } from '@/services/api';
 import { toast } from 'sonner';
-import { isOfflineEnabled } from '@/lib/apiBaseUrl';
+import { isDesktopBundle } from '@/lib/apiBaseUrl';
 
 interface SyncContextType {
     isOnline: boolean;
@@ -10,6 +10,7 @@ interface SyncContextType {
     lastSyncAt: Date | null;
     pendingOperations: number;
     syncError: string | null;
+    isConfigured: boolean;
     sync: () => Promise<void>;
 }
 
@@ -19,22 +20,66 @@ const MAX_RETRY_ATTEMPTS = 3;
 const RETRY_DELAY_MS = 2000;
 const AUTO_SYNC_INTERVAL_MS = 60000; // 1 minute
 
-const desktopSyncValue: SyncContextType = {
-    isOnline: true,
-    isSyncing: false,
-    lastSyncAt: null,
-    pendingOperations: 0,
-    syncError: null,
-    sync: async () => {},
-};
+const DESKTOP_STATUS_POLL_MS = 2000;
 
 export function SyncProvider({ children }: { children: ReactNode }) {
-    if (!isOfflineEnabled()) {
-        return (
-            <SyncContext.Provider value={desktopSyncValue}>{children}</SyncContext.Provider>
-        );
+    if (isDesktopBundle()) {
+        return <DesktopSyncProvider>{children}</DesktopSyncProvider>;
     }
     return <OfflineSyncProvider>{children}</OfflineSyncProvider>;
+}
+
+function DesktopSyncProvider({ children }: { children: ReactNode }) {
+    const [isSyncing, setIsSyncing] = useState(false);
+    const [lastSyncAt, setLastSyncAt] = useState<Date | null>(null);
+    const [pendingOperations, setPendingOperations] = useState(0);
+    const [syncError, setSyncError] = useState<string | null>(null);
+    const [isConfigured, setIsConfigured] = useState(false);
+
+    const refreshStatus = useCallback(async () => {
+        try {
+            const res = await api.get('/desktop-config/sync-status');
+            setIsSyncing(res.data.isSyncing);
+            setLastSyncAt(res.data.lastSyncAt ? new Date(res.data.lastSyncAt) : null);
+            setPendingOperations(res.data.pendingOperations ?? 0);
+            setIsConfigured(res.data.isConfigured ?? false);
+            setSyncError(null);
+        } catch (error) {
+            console.error('Failed to fetch sync status:', error);
+        }
+    }, []);
+
+    useEffect(() => {
+        refreshStatus();
+        const interval = setInterval(refreshStatus, DESKTOP_STATUS_POLL_MS);
+        return () => clearInterval(interval);
+    }, [refreshStatus]);
+
+    const sync = useCallback(async () => {
+        if (!isConfigured || isSyncing) return;
+
+        setIsSyncing(true);
+        setSyncError(null);
+
+        try {
+            await api.post('/desktop-config/sync');
+            toast.success('Synchronization completed successfully');
+        } catch (error: any) {
+            const message = error.response?.data?.message || error.message || 'Synchronization failed';
+            setSyncError(message);
+            toast.error(message);
+        } finally {
+            await refreshStatus();
+        }
+    }, [isConfigured, isSyncing, refreshStatus]);
+
+    return (
+        <SyncContext.Provider
+            value={{ isOnline: true, isSyncing, lastSyncAt, pendingOperations, syncError, isConfigured, sync }}
+        >
+            {children}
+        </SyncContext.Provider>
+    );
 }
 
 function OfflineSyncProvider({ children }: { children: ReactNode }) {
@@ -216,7 +261,7 @@ function OfflineSyncProvider({ children }: { children: ReactNode }) {
 
     return (
         <SyncContext.Provider
-            value={{ isOnline, isSyncing, lastSyncAt, pendingOperations, syncError, sync }}
+            value={{ isOnline, isSyncing, lastSyncAt, pendingOperations, syncError, isConfigured: true, sync }}
         >
             {children}
         </SyncContext.Provider>

@@ -13,6 +13,26 @@ export class DesktopSyncService implements OnModuleInit {
         private syncGeneric: SyncGenericService
     ) { }
 
+    getIsSyncing(): boolean {
+        return this.isSyncing;
+    }
+
+    async getSyncStatus() {
+        const config = await this.prisma.desktopConfig.findFirst();
+        const isConfigured = !!(config?.remoteUrl && config?.syncToken);
+        const pendingOperations = isConfigured
+            ? await this.prisma.syncOperation.count({ where: { synced: false } })
+            : 0;
+
+        return {
+            isConfigured,
+            isSyncing: this.isSyncing,
+            lastSyncAt: config?.lastSyncAt ?? null,
+            pendingOperations,
+            autoSync: config?.autoSync ?? false,
+        };
+    }
+
     onModuleInit() {
         if (process.env.LOCAL_BUNDLE === 'true') {
             // Run sync every minute
@@ -27,15 +47,22 @@ export class DesktopSyncService implements OnModuleInit {
         }
     }
 
-    async syncWithRemote(isRetry = false) {
-        if (this.isSyncing && !isRetry) return;
-        
+    async syncWithRemote(isRetry = false, force = false): Promise<{ success: boolean; message?: string; lastSyncAt?: Date }> {
+        if (this.isSyncing && !isRetry) {
+            return { success: false, message: 'Sync already in progress' };
+        }
+
         const config = await this.prisma.desktopConfig.findFirst();
-        if (!config || !config.remoteUrl || !config.syncToken || !config.autoSync) {
-            return;
+        if (!config || !config.remoteUrl || !config.syncToken) {
+            return { success: false, message: 'Sync not configured' };
+        }
+        if (!force && !config.autoSync) {
+            return { success: false, message: 'Auto sync is disabled' };
         }
 
         this.isSyncing = true;
+        let lastSyncAt: Date | undefined;
+        let pullApplyErrors = 0;
         try {
             const baseUrl = config.remoteUrl.replace(/\/$/, '');
             const headers = { 
@@ -76,16 +103,20 @@ export class DesktopSyncService implements OnModuleInit {
                     if (pushError.response && (pushError.response.status === 401 || pushError.response.status === 403)) {
                         if (!isRetry && await this.handleReauthentication(config)) {
                             this.isSyncing = false;
-                            return this.syncWithRemote(true);
+                            return this.syncWithRemote(true, force);
                         }
                     }
                     this.logger.error(`Push failed: ${pushError.message}`);
                 }
             }
 
-            // 2. PULL remote changes
-            const since = config.lastSyncAt ? config.lastSyncAt.toISOString() : new Date(0).toISOString();
-            
+            // 2. PULL remote changes (7d overlap to recover missed ops from prior failed applies)
+            const PULL_OVERLAP_MS = 7 * 24 * 60 * 60 * 1000;
+            const sinceDate = config.lastSyncAt
+                ? new Date(Math.max(0, config.lastSyncAt.getTime() - PULL_OVERLAP_MS))
+                : new Date(0);
+            const since = sinceDate.toISOString();
+
             try {
                 // If it's the very first time, we should call /initial to get the full DB dump instead.
                 // But /initial is huge and complex. Let's stick to /pull for now, assuming the server
@@ -96,34 +127,61 @@ export class DesktopSyncService implements OnModuleInit {
                 const pullRes = await axios.get(pullUrl, { headers });
                 
                 if (pullUrl.includes('/initial')) {
-                    // Handle initial full snapshot
                     const data = pullRes.data;
                     await this.applyInitialSnapshot(data);
+                    lastSyncAt = new Date();
+                    await this.prisma.desktopConfig.update({
+                        where: { id: config.id },
+                        data: { lastSyncAt },
+                    });
                 } else {
                     // Handle normal operations pull
                     const operations = pullRes.data.operations || [];
                     if (operations.length > 0) {
                         this.logger.log(`Applying ${operations.length} remote operations...`);
-                        await this.syncGeneric.applyOperations(operations, 'SERVER'); // Applied as SERVER
+                        const applyResult = await this.syncGeneric.applyOperations(operations, config.clientId);
+
+                        if (applyResult.errors.length > 0) {
+                            pullApplyErrors = applyResult.errors.length;
+                            this.logger.error(
+                                `Failed to apply ${applyResult.errors.length}/${operations.length} remote operations`,
+                                applyResult.errors,
+                            );
+                        } else {
+                            lastSyncAt = new Date();
+                            await this.prisma.desktopConfig.update({
+                                where: { id: config.id },
+                                data: { lastSyncAt },
+                            });
+                        }
+                    } else {
+                        lastSyncAt = new Date();
+                        await this.prisma.desktopConfig.update({
+                            where: { id: config.id },
+                            data: { lastSyncAt },
+                        });
                     }
                 }
-
-                // Update lastSyncAt
-                await this.prisma.desktopConfig.update({
-                    where: { id: config.id },
-                    data: { lastSyncAt: new Date() }
-                });
 
             } catch (pullError: any) {
                 if (pullError.response && (pullError.response.status === 401 || pullError.response.status === 403)) {
                     if (!isRetry && await this.handleReauthentication(config)) {
                         this.isSyncing = false;
-                        return this.syncWithRemote(true);
+                        return this.syncWithRemote(true, force);
                     }
                 }
                 this.logger.error(`Pull failed: ${pullError.message}`);
             }
 
+            if (pullApplyErrors > 0) {
+                return {
+                    success: false,
+                    message: `Failed to apply ${pullApplyErrors} remote change(s). Will retry on next sync.`,
+                    lastSyncAt,
+                };
+            }
+
+            return { success: true, lastSyncAt };
         } finally {
             this.isSyncing = false;
         }

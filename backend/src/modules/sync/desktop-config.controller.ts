@@ -20,6 +20,11 @@ export class DesktopConfigController {
         }
     }
 
+    @Get('sync-status')
+    async getSyncStatus() {
+        return this.desktopSync.getSyncStatus();
+    }
+
     @Get()
     async getConfig() {
         const config = await this.prisma.desktopConfig.findFirst();
@@ -50,6 +55,25 @@ export class DesktopConfigController {
         }
         return config;
     }
+    @Post('sync')
+    async triggerSync() {
+        const config = await this.prisma.desktopConfig.findFirst();
+        if (!config?.remoteUrl || !config?.syncToken) {
+            throw new HttpException('Sync not configured. Please connect to your cloud workspace first.', HttpStatus.BAD_REQUEST);
+        }
+
+        const result = await this.desktopSync.syncWithRemote(false, true);
+        if (!result.success) {
+            throw new HttpException(result.message || 'Sync failed', HttpStatus.CONFLICT);
+        }
+
+        const updatedConfig = await this.prisma.desktopConfig.findFirst();
+        return {
+            success: true,
+            lastSyncAt: result.lastSyncAt || updatedConfig?.lastSyncAt || null,
+        };
+    }
+
     @Post('setup')
     async setupDesktop(@Body() body: { remoteUrl: string; email: string; password: string }) {
         const { remoteUrl, email, password } = body;

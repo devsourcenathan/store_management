@@ -1,9 +1,47 @@
 import { Prisma } from '@prisma/client';
+import { Decimal } from '@prisma/client/runtime/library';
 import { AsyncLocalStorage } from 'async_hooks';
 
 // We use ALS to know if we are currently inside a "sync pull" operation
 // If so, we bypass logging to avoid infinite loops
 export const syncContext = new AsyncLocalStorage<{ isApplyingSync: boolean }>();
+
+/** Strip nested relations before persisting sync payloads (e.g. product.category). */
+export function sanitizeSyncData(data: Record<string, unknown>): Record<string, unknown> {
+    const result: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(data)) {
+        if (value === null || value === undefined) {
+            result[key] = value;
+            continue;
+        }
+        if (value instanceof Date) {
+            result[key] = value;
+            continue;
+        }
+        if (value instanceof Decimal) {
+            result[key] = value.toString();
+            continue;
+        }
+        // Prisma Decimal duck-type (e.g. after JSON round-trip in tests)
+        if (
+            typeof value === 'object' &&
+            value !== null &&
+            'toJSON' in value &&
+            typeof (value as { toJSON: unknown }).toJSON === 'function' &&
+            'd' in value &&
+            'e' in value &&
+            's' in value
+        ) {
+            result[key] = (value as { toJSON: () => string }).toJSON();
+            continue;
+        }
+        if (Array.isArray(value) || typeof value === 'object') {
+            continue;
+        }
+        result[key] = value;
+    }
+    return result;
+}
 
 const SYNC_IGNORE_MODELS = [
     'SyncOperation',
@@ -90,12 +128,13 @@ async function recordSyncOperation(client: any, entity: string, action: string, 
 
         // We bypass the extension itself to write the log using an unextended client call
         // wait, client.syncOperation.create works even on an extended client because SyncOperation is ignored above.
+        const sanitized = sanitizeSyncData(data);
         await client.syncOperation.create({
             data: {
                 action,
                 entity,
                 entityId: data.id,
-                data: JSON.stringify(data), // Store as stringified JSON or directly if Json type supports it
+                data: JSON.stringify(sanitized),
                 clientId,
                 synced: false,
             }
