@@ -19,7 +19,7 @@ import { StoreAuthGuard } from '@/common/guards/store-auth.guard';
 import { CurrentOrganization, CurrentUser } from '@/common/decorators/user.decorator';
 import { MediaEntityType } from '@prisma/client';
 import type { Response } from 'express';
-import { createReadStream } from 'fs';
+import { createReadStream, existsSync } from 'fs';
 import { ConfigService } from '@nestjs/config';
 import { LocalStorageService } from './local-storage.service';
 import { Public } from '@/common/decorators/public.decorator';
@@ -53,11 +53,21 @@ export class MediaController {
 
         const filepath = this.localStorageService.getFilePath(media.organizationId, media.entityType, media.filename);
 
+        if (!existsSync(filepath)) {
+            return res.status(404).send('File not found on disk');
+        }
+
         res.setHeader('Content-Type', media.mimeType || 'application/octet-stream');
         res.setHeader('Content-Length', String(media.size || 0));
         res.setHeader('Cache-Control', 'public, max-age=31536000');
 
-        return createReadStream(filepath).pipe(res);
+        const stream = createReadStream(filepath);
+        stream.on('error', (err) => {
+            if (!res.headersSent) {
+                res.status(500).send('Error reading file');
+            }
+        });
+        return stream.pipe(res);
     }
 
     @Post('upload')

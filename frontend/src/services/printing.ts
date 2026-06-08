@@ -112,7 +112,7 @@ export const printer = {
 
                     <div class="footer">
                         ${branding?.footer ? `<p>${branding.footer}</p>` : `<p>${tr('invoice.thank_you', 'Thank you for your business!')}</p>`}
-                        <p>${tr('invoice.powered_by', 'Powered by StockManagement')}</p>
+                       
                     </div>
                 </div>
 

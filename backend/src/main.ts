@@ -9,6 +9,14 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 import { ensureDesktopDatabase } from './common/prisma/desktop-db.init';
 
 async function bootstrap() {
+    process.on('uncaughtException', (err) => {
+        console.error('CRITICAL: Uncaught Exception:', err);
+    });
+
+    process.on('unhandledRejection', (reason, promise) => {
+        console.error('CRITICAL: Unhandled Rejection at:', promise, 'reason:', reason);
+    });
+
     const isDesktop = process.env.LOCAL_BUNDLE === 'true';
     if (isDesktop) {
         console.log('[desktop] bootstrap start');
