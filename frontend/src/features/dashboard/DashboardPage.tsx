@@ -6,6 +6,7 @@ import { useStore } from '../stores/StoreProvider';
 import { SalesChart } from './components/SalesChart';
 import { TopProducts } from './components/TopProducts';
 import { useTranslation } from 'react-i18next';
+import { StoreFormSheet } from '../settings/components/StoreFormSheet';
 
 export function DashboardPage() {
     const { currentStore } = useStore();
@@ -108,6 +109,8 @@ export function DashboardPage() {
     });
 
     const { stores, isLoading: isLoadingStores } = useStore();
+    const [isCreateStoreOpen, setIsCreateStoreOpen] = useState(false);
+
 
     if (!isLoadingStores && stores.length === 0) {
         return (
@@ -121,6 +124,21 @@ export function DashboardPage() {
                         {t('dashboard.welcome_subtitle')}
                     </p>
                 </div>
+
+                <button
+                    onClick={() => setIsCreateStoreOpen(true)}
+                    className="inline-flex items-center gap-2 px-6 py-3 btn-theme-primary rounded-lg transition-colors font-medium shadow-md hover:shadow-lg"
+                >
+                    <div className="w-5 h-5">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+                    </div>
+                    {t('dashboard.create_first_store')}
+                </button>
+
+                <StoreFormSheet
+                    isOpen={isCreateStoreOpen}
+                    onClose={() => setIsCreateStoreOpen(false)}
+                />
             </div>
         );
     }
