@@ -1,6 +1,8 @@
 import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import { PrismaClient as PostgresPrismaClient } from '@prisma/client';
 import * as path from 'path';
+import * as fs from 'fs';
+import * as dotenv from 'dotenv';
 import { withSyncExtension } from './prisma-sync.extension';
 
 const globalForPrisma = global as unknown as {
@@ -33,12 +35,18 @@ export class PrismaService extends PostgresPrismaClient implements OnModuleInit,
         
         if (!globalForPrisma.prisma) {
             const PrismaClientCtor = loadPrismaClientCtor();
-            
-            // Force connection limit to avoid Supabase PgBouncer limits, even if ENV var doesn't have it
+            // Ensure we load .env if process.env.DATABASE_URL is not set yet
+            if (!process.env.DATABASE_URL) {
+                const envPath = path.resolve(process.cwd(), '.env');
+                if (fs.existsSync(envPath)) {
+                    dotenv.config({ path: envPath });
+                }
+            }
+
             let dbUrl = process.env.DATABASE_URL;
-            if (dbUrl && dbUrl.includes('supabase.co') && !dbUrl.includes('connection_limit')) {
+            if (dbUrl && dbUrl.startsWith('postgres') && !dbUrl.includes('connection_limit')) {
                 dbUrl += (dbUrl.includes('?') ? '&' : '?') + 'connection_limit=5';
-                console.log('🔗 [Prisma] Added connection_limit=5 to Supabase URL');
+                console.log('🔗 [Prisma] Added connection_limit=5 to PostgreSQL URL');
             }
 
             globalForPrisma.prisma = new PrismaClientCtor(dbUrl ? {
