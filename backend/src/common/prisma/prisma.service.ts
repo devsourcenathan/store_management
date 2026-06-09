@@ -33,7 +33,22 @@ export class PrismaService extends PostgresPrismaClient implements OnModuleInit,
         
         if (!globalForPrisma.prisma) {
             const PrismaClientCtor = loadPrismaClientCtor();
-            globalForPrisma.prisma = new PrismaClientCtor();
+            
+            // Force connection limit to avoid Supabase PgBouncer limits, even if ENV var doesn't have it
+            let dbUrl = process.env.DATABASE_URL;
+            if (dbUrl && dbUrl.includes('supabase.co') && !dbUrl.includes('connection_limit')) {
+                dbUrl += (dbUrl.includes('?') ? '&' : '?') + 'connection_limit=5';
+                console.log('🔗 [Prisma] Added connection_limit=5 to Supabase URL');
+            }
+
+            globalForPrisma.prisma = new PrismaClientCtor(dbUrl ? {
+                datasources: {
+                    db: {
+                        url: dbUrl
+                    }
+                }
+            } : undefined);
+            
             globalForPrisma.prismaExtended = withSyncExtension(globalForPrisma.prisma);
         }
 
