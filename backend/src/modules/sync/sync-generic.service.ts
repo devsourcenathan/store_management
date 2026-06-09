@@ -83,7 +83,7 @@ export class SyncGenericService {
                         } else {
                             this.logger.error(`Failed to apply operation ${op.id} (${op.action} ${op.entity}): ${error.message}`, error.stack);
                             if (maxRetries === 1 || !error.message?.includes('Foreign key constraint')) {
-                                results.errors.push({ id: op.id, error: error.message });
+                                results.errors.push({ id: op.id, entity: op.entity, action: op.action, error: error.message });
                             }
                         }
                     }
@@ -93,6 +93,9 @@ export class SyncGenericService {
             }
         });
 
+        if (results.errors.length > 0) {
+            require('fs').writeFileSync('sync-errors.log', JSON.stringify(results.errors, null, 2));
+        }
         return results;
     }
 
