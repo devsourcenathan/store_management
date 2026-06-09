@@ -3,7 +3,10 @@ import { PrismaClient as PostgresPrismaClient } from '@prisma/client';
 import * as path from 'path';
 import { withSyncExtension } from './prisma-sync.extension';
 
-
+const globalForPrisma = global as unknown as {
+    prisma: any;
+    prismaExtended: any;
+};
 function loadPrismaClientCtor() {
     const dbProvider = (process.env.DB_PROVIDER || '').toLowerCase();
     if (dbProvider === 'sqlite') {
@@ -27,9 +30,15 @@ export class PrismaService extends PostgresPrismaClient implements OnModuleInit,
 
     constructor() {
         super();
-        const PrismaClientCtor = loadPrismaClientCtor();
-        this.client = new PrismaClientCtor();
-        this.extendedClient = withSyncExtension(this.client);
+        
+        if (!globalForPrisma.prisma) {
+            const PrismaClientCtor = loadPrismaClientCtor();
+            globalForPrisma.prisma = new PrismaClientCtor();
+            globalForPrisma.prismaExtended = withSyncExtension(globalForPrisma.prisma);
+        }
+
+        this.client = globalForPrisma.prisma;
+        this.extendedClient = globalForPrisma.prismaExtended;
 
         return new Proxy(this, {
             get: (target, prop, receiver) => {
