@@ -44,7 +44,17 @@ export class PrismaService extends PostgresPrismaClient implements OnModuleInit,
             }
 
             let dbUrl = process.env.DATABASE_URL;
-            if (dbUrl && dbUrl.startsWith('postgres') && !dbUrl.includes('connection_limit')) {
+            if (dbUrl && dbUrl.includes('supabase.co')) {
+                // Supabase specific: Force transaction pooler (port 6543) to avoid EMAXCONNSESSION
+                dbUrl = dbUrl.replace(':5432', ':6543');
+                if (!dbUrl.includes('pgbouncer=true')) {
+                    dbUrl += (dbUrl.includes('?') ? '&' : '?') + 'pgbouncer=true';
+                }
+                if (!dbUrl.includes('connection_limit')) {
+                    dbUrl += '&connection_limit=1'; // with pgbouncer, 1 is enough for prisma to multiplex
+                }
+                console.log('🔗 [Prisma] Rewrote Supabase URL to use Transaction Pooler (port 6543)');
+            } else if (dbUrl && dbUrl.startsWith('postgres') && !dbUrl.includes('connection_limit')) {
                 dbUrl += (dbUrl.includes('?') ? '&' : '?') + 'connection_limit=5';
                 console.log('🔗 [Prisma] Added connection_limit=5 to PostgreSQL URL');
             }
