@@ -4,6 +4,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Trash2, ExternalLink, Link as LinkIcon } from 'lucide-react';
 import { useMutation } from '@tanstack/react-query';
+import { resolveMediaUrl } from '@/lib/apiBaseUrl';
 import { toast } from 'sonner';
 import { mediaService, Media } from '@/services/mediaService';
 
@@ -64,7 +65,7 @@ export const MediaGrid: React.FC<MediaGridProps> = ({
                 >
                     <div className="aspect-square relative group">
                         <img
-                            src={item.url}
+                            src={resolveMediaUrl(item.url)}
                             alt={item.alt || item.originalName}
                             className="w-full h-full object-cover"
                         />

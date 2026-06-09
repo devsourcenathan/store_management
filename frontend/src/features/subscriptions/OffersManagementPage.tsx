@@ -5,6 +5,8 @@ import { api } from '@/services/api';
 import { Plus, Edit2, Trash2, Layers, Settings, ChevronDown, ChevronRight } from 'lucide-react';
 import { ServiceModal } from './ServiceModal';
 import { OfferSheet } from './OfferModal';
+import { MediaSelector } from '@/features/media/components/MediaSelector';
+import { resolveMediaUrl } from '@/lib/apiBaseUrl';
 import { Media } from '@/services/mediaService';
 import { usePagination } from '@/hooks/usePagination';
 import { Pagination } from "@/components/ui/Pagination";
@@ -173,7 +175,7 @@ function ServiceRow({ service, isExpanded, onToggleExpand, onEdit, onDelete, onA
                     {isExpanded ? <ChevronDown className="text-gray-400" /> : <ChevronRight className="text-gray-400" />}
                     <div className={`w-10 h-10 rounded-lg flex items-center justify-center overflow-hidden ${service.isActive ? 'bg-theme-primary/10 text-theme-primary' : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400'}`}>
                         {service.media && service.media.length > 0 ? (
-                            <img src={service.media[0].url} alt={service.name} className="w-full h-full object-cover" />
+                            <img src={resolveMediaUrl(service.media[0].url)} alt={service.name} className="w-full h-full object-cover" />
                         ) : (
                             <Layers className="w-5 h-5" />
                         )}
@@ -233,7 +235,7 @@ function ServiceRow({ service, isExpanded, onToggleExpand, onEdit, onDelete, onA
                                         <div className="flex items-center gap-3">
                                             <div className="w-10 h-10 rounded bg-gray-100 dark:bg-gray-700 flex-shrink-0 flex items-center justify-center overflow-hidden">
                                                 {offer.media && offer.media.length > 0 ? (
-                                                    <img src={offer.media[0].url} alt={offer.name} className="w-full h-full object-cover" />
+                                                    <img src={resolveMediaUrl(offer.media[0].url)} alt={offer.name} className="w-full h-full object-cover" />
                                                 ) : (
                                                     <div className="text-xs font-bold text-gray-400">OFFER</div>
                                                 )}

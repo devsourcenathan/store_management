@@ -5,6 +5,7 @@ import { MediaGrid } from './MediaGrid';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/Sheet';
 import { Image as ImageIcon, Upload, Grid } from 'lucide-react';
+import { resolveMediaUrl } from '@/lib/apiBaseUrl';
 import { mediaService, Media } from '@/services/mediaService';
 import { MediaUpload } from './MediaUpload';
 
@@ -82,7 +83,7 @@ export const MediaSelector: React.FC<MediaSelectorProps> = ({
                                         {selectedMedia.map((m) => (
                                             <div key={m.id} className="relative flex-shrink-0 w-20 h-20 group">
                                                 <img
-                                                    src={m.url}
+                                                    src={resolveMediaUrl(m.url)}
                                                     alt={m.alt || m.originalName}
                                                     className="w-full h-full object-cover rounded border border-border"
                                                 />

@@ -22,32 +22,74 @@ export class SyncGenericService {
     ) {
         const skipSameClient = options?.skipSameClient ?? true;
         const results = {
-            success: [],
-            errors: [],
+            success: [] as any[],
+            errors: [] as any[],
         };
 
-        // Sort operations by timestamp to maintain temporal order
+        const ENTITY_ORDER = [
+            'Organization', 'PlatformPlan', 'OrganizationSubscription', 'BillingInvoice',
+            'Store', 'User', 'UserStore', 'RolePermission', 'UserPermission', 'Permission',
+            'Media', 'Category', 'Product', 'ProductImage', 'DeletedProduct', 'PricingRule',
+            'StockMovement', 'StockAlert', 'Customer', 'Supplier',
+            'Service', 'SubscriptionOffer', 'SubscriptionOption',
+            'CustomerSubscription', 'SubscriptionAccount', 'SubscriptionBalanceEntry',
+            'SubscriptionRenewal', 'SubscriptionBalanceAlert',
+            'Sale', 'SaleItem', 'CreditContract', 'CreditPayment', 'Payment',
+            'Supply', 'SupplyItem', 'SupplierBalanceEntry',
+            'Device', 'Maintenance', 'MaintenancePart', 'MaintenanceInvoice',
+            'LandingContent', 'OrganizationLanding', 'AuditLog', 'SyncMetadata', 'SyncOperation', 'DesktopConfig'
+        ];
+
+        // Sort operations by timestamp, then by entity dependency, then by ID
         const sortedOps = [...operations].sort((a, b) => {
             const timeA = a.timestamp || new Date(a.createdAt).getTime();
             const timeB = b.timestamp || new Date(b.createdAt).getTime();
-            return timeA - timeB;
+            if (timeA !== timeB) return timeA - timeB;
+            
+            const indexA = ENTITY_ORDER.indexOf(a.entity);
+            const indexB = ENTITY_ORDER.indexOf(b.entity);
+            
+            if (indexA !== -1 && indexB !== -1) {
+                if (indexA !== indexB) return indexA - indexB;
+            } else if (indexA !== -1) {
+                return -1; // a is recognized, b is not. a comes first.
+            } else if (indexB !== -1) {
+                return 1; // b is recognized, a is not. b comes first.
+            }
+
+            return a.id.localeCompare(b.id);
         });
 
         // We run the application inside the syncContext so the Prisma Extension DOES NOT re-log these operations
         await syncContext.run({ isApplyingSync: true }, async () => {
-            for (const op of sortedOps) {
-                try {
-                    // On pull: ignore our own operations echoed back from the remote log.
-                    if (skipSameClient && op.clientId === localClientId && localClientId !== 'SERVER') {
-                        continue;
-                    }
+            let pendingOps = [...sortedOps];
+            let maxRetries = 3;
+            
+            while (pendingOps.length > 0 && maxRetries > 0) {
+                const retryOps = [];
+                for (const op of pendingOps) {
+                    try {
+                        // On pull: ignore our own operations echoed back from the remote log.
+                        if (skipSameClient && op.clientId === localClientId && localClientId !== 'SERVER') {
+                            continue;
+                        }
 
-                    await this.processSingleOperation(op);
-                    results.success.push({ id: op.id });
-                } catch (error) {
-                    this.logger.error(`Failed to apply operation ${op.id} (${op.action} ${op.entity}): ${error.message}`, error.stack);
-                    results.errors.push({ id: op.id, error: error.message });
+                        await this.processSingleOperation(op);
+                        if (maxRetries === 3) results.success.push({ id: op.id });
+                    } catch (error: any) {
+                        if (error.message?.includes('Foreign key constraint') && maxRetries > 1) {
+                            // Wait for other operations to create the missing foreign key
+                            retryOps.push(op);
+                        } else {
+                            this.logger.error(`Failed to apply operation ${op.id} (${op.action} ${op.entity}): ${error.message}`, error.stack);
+                            if (maxRetries === 1 || !error.message?.includes('Foreign key constraint')) {
+                                results.errors.push({ id: op.id, error: error.message });
+                            }
+                        }
+                    }
                 }
+                pendingOps = retryOps;
+                maxRetries--;
             }
         });
 

@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { api } from '@/services/api';
 import { Package, Image as ImageIcon, Edit, Trash2, Plus, TrendingUp, PackagePlus, Search, RefreshCw } from 'lucide-react';
+import { resolveMediaUrl } from '@/lib/apiBaseUrl';
 import { useTranslation } from 'react-i18next';
 import { MediaSelector } from '@/features/media/components/MediaSelector';
 import { toast } from 'sonner';
@@ -477,7 +478,7 @@ export function ProductsPage() {
                                         <div className="flex-shrink-0 h-12 w-12 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center text-gray-400 dark:text-gray-500 border border-gray-200 dark:border-gray-600 overflow-hidden">
                                             {product.media && product.media.length > 0 ? (
                                                 <img
-                                                    src={product.media[0].url}
+                                                    src={resolveMediaUrl(product.media[0].url)}
                                                     alt={product.media[0].alt || product.name}
                                                     className="w-full h-full object-cover"
                                                 />
@@ -607,7 +608,7 @@ export function ProductsPage() {
                                                 <div className="flex-shrink-0 h-10 w-10 bg-gray-100 dark:bg-gray-700 rounded flex items-center justify-center text-gray-400 dark:text-gray-500 overflow-hidden">
                                                     {product.media && product.media.length > 0 ? (
                                                         <img
-                                                            src={product.media[0].url}
+                                                            src={resolveMediaUrl(product.media[0].url)}
                                                             alt={product.media[0].alt || product.name}
                                                             className="w-full h-full object-cover"
                                                         />

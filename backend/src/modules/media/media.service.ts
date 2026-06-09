@@ -21,7 +21,7 @@ export class MediaService {
         entityType: MediaEntityType,
         entityId: string,
         userId: string,
-        metadata?: { alt?: string; tags?: string[]; isPublic?: boolean },
+        metadata?: { id?: string; alt?: string; tags?: string[]; isPublic?: boolean },
     ) {
         if (!file) {
             throw new BadRequestException('No file provided');
@@ -33,7 +33,7 @@ export class MediaService {
         }
 
         const storageMode = (this.configService.get<string>('MEDIA_STORAGE') || 's3').toLowerCase();
-        const id = uuidv4();
+        const id = metadata?.id || uuidv4();
         const safeOriginal = (file.originalname || 'file')
             .replaceAll('\\', '_')
             .replaceAll('/', '_')

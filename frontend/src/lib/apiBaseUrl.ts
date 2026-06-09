@@ -32,3 +32,29 @@ export function isDesktopBundle(): boolean {
 export function isOfflineEnabled(): boolean {
     return !isDesktopBundle();
 }
+
+/**
+ * Resolves a media URL for display.
+ * On desktop builds, remote S3 URLs are routed through the local backend proxy
+ * so that images are cached locally and available offline.
+ * On web builds, URLs are returned as-is.
+ */
+export function resolveMediaUrl(url: string | null | undefined): string {
+    if (!url) return '';
+    
+    // Already a local proxy URL — return as-is (relative path works fine)
+    if (url.startsWith('/api/media')) {
+        return url;
+    }
+    
+    // On desktop, convert remote http URLs to local proxy
+    if (isDesktopBundle() && url.startsWith('http')) {
+        // Extract the media ID from the URL path or query if possible.
+        // Our media records use /api/media/files/:id — we need the DB id.
+        // Since we can't extract the id from an S3 URL alone, we use a
+        // proxy-by-url endpoint instead.
+        return `/api/media/proxy?url=${encodeURIComponent(url)}`;
+    }
+    
+    return url;
+}

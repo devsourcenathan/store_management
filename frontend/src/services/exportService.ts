@@ -1,6 +1,7 @@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
+import { resolveMediaUrl } from '@/lib/apiBaseUrl';
 
 export interface ExportColumn {
     header: string;
@@ -36,6 +37,7 @@ export const exportService = {
             try {
                 // Note: For production, you'd need to handle image loading properly
                 // This is a simplified version
+                // const resolvedUrl = resolveMediaUrl(organization.logoUrl);
                 yPosition += 10;
             } catch (error) {
                 console.error('Error loading logo:', error);

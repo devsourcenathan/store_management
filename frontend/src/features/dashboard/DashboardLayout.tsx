@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/features/auth/useAuth';
 import { useSync } from '@/offline/SyncProvider';
-import { isOfflineEnabled, isDesktopBundle } from '@/lib/apiBaseUrl';
+import { isOfflineEnabled, isDesktopBundle, resolveMediaUrl } from '@/lib/apiBaseUrl';
 import { useOrganization } from '@/contexts/OrganizationContext';
 import { useTheme } from '@/components/ThemeProvider';
 import { usePermissions } from '@/contexts/PermissionContext';
@@ -234,7 +234,7 @@ export function DashboardLayout() {
                             <div className="flex items-center space-x-2">
                                 {organization?.logoUrl && (
                                     <img
-                                        src={organization.logoUrl}
+                                        src={resolveMediaUrl(organization.logoUrl)}
                                         alt={organization.name}
                                         className="h-8 w-8 object-contain"
                                     />

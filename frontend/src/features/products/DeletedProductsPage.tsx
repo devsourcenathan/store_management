@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 import { api } from '@/services/api';
 import { RotateCcw, Package, Calendar } from 'lucide-react';
+import { resolveMediaUrl } from '@/lib/apiBaseUrl';
 import { useStore } from '@/features/stores/StoreProvider';
 
 interface Product {
@@ -143,7 +144,7 @@ export function DeletedProductsPage() {
                                             <div className="flex items-center">
                                                 {product.media && product.media.length > 0 ? (
                                                     <img
-                                                        src={product.media[0].url}
+                                                        src={resolveMediaUrl(product.media[0].url)}
                                                         alt={product.name}
                                                         className="w-10 h-10 rounded object-cover mr-3"
                                                     />

@@ -121,6 +121,30 @@ function ensureStockDatabase(appDataDir) {
   fs.mkdirSync(appDataDir, { recursive: true });
   const dbPath = path.join(appDataDir, 'stock.db');
   
+  let isEmptyOrMissing = true;
+  if (fs.existsSync(dbPath)) {
+    try {
+      isEmptyOrMissing = fs.statSync(dbPath).size === 0;
+    } catch { }
+  }
+
+  if (isEmptyOrMissing) {
+    // try to find the seed db
+    const devSeed = path.join(__dirname, '..', 'backend', 'generated', 'desktop-stock.db');
+    // package.json copies it to backend/seed/desktop-stock.db
+    const prodSeed = process.resourcesPath ? path.join(process.resourcesPath, 'backend', 'seed', 'desktop-stock.db') : null;
+    
+    if (fs.existsSync(devSeed)) {
+      fs.copyFileSync(devSeed, dbPath);
+      log(`Copied seed DB from ${devSeed} to ${dbPath}`);
+    } else if (prodSeed && fs.existsSync(prodSeed)) {
+      fs.copyFileSync(prodSeed, dbPath);
+      log(`Copied seed DB from ${prodSeed} to ${dbPath}`);
+    } else {
+      log('Seed DB not found, stock.db will be created empty.');
+    }
+  }
+
   let size = 0;
   try {
     if (fs.existsSync(dbPath)) size = fs.statSync(dbPath).size;

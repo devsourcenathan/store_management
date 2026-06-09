@@ -13,8 +13,8 @@ export class DesktopConfigController {
     @Get('status')
     async getStatus() {
         try {
-            const count = await this.prisma.user.count();
-            return { isConfigured: count > 0 };
+            const config = await this.prisma.desktopConfig.findFirst();
+            return { isConfigured: !!(config?.remoteUrl && config?.syncToken) };
         } catch {
             return { isConfigured: false };
         }
@@ -34,7 +34,7 @@ export class DesktopConfigController {
     @Post()
     async updateConfig(@Body() body: any) {
         let config = await this.prisma.desktopConfig.findFirst();
-        
+
         const data = {
             remoteUrl: body.remoteUrl,
             syncEmail: body.syncEmail,

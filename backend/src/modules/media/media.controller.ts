@@ -54,7 +54,26 @@ export class MediaController {
         const filepath = this.localStorageService.getFilePath(media.organizationId, media.entityType, media.filename);
 
         if (!existsSync(filepath)) {
-            return res.status(404).send('File not found on disk');
+            // It's missing locally. Is it available remotely?
+            if (media.url && media.url.startsWith('http')) {
+                try {
+                    // Download from remote URL and save to local storage
+                    const axios = require('axios');
+                    const response = await axios.get(media.url, { responseType: 'arraybuffer' });
+                    await this.localStorageService.save(
+                        media.organizationId, 
+                        media.entityType, 
+                        media.filename, 
+                        Buffer.from(response.data)
+                    );
+                    // Continue to serve the newly downloaded file below
+                } catch (err) {
+                    console.error('Failed to proxy media from remote:', err.message);
+                    return res.status(404).send('File not found on disk or remote');
+                }
+            } else {
+                return res.status(404).send('File not found on disk');
+            }
         }
 
         res.setHeader('Content-Type', media.mimeType || 'application/octet-stream');
@@ -70,12 +89,71 @@ export class MediaController {
         return stream.pipe(res);
     }
 
+    /**
+     * Proxy endpoint: given a remote URL, find the media in DB, download & cache locally, then serve.
+     * Used by the desktop frontend to display S3 images through the local backend.
+     */
+    @Public()
+    @Get('proxy')
+    async proxyByUrl(
+        @Query('url') url: string,
+        @Res() res: Response,
+    ) {
+        if (!url) {
+            return res.status(400).send('Missing url parameter');
+        }
+
+        // Find media by its remote URL
+        const media = await this.prisma.media.findFirst({ where: { url } });
+        if (!media) {
+            // If we can't find it in DB, just pipe through the remote URL directly
+            try {
+                const axios = require('axios');
+                const response = await axios.get(url, { responseType: 'stream', timeout: 15000 });
+                res.setHeader('Content-Type', response.headers['content-type'] || 'application/octet-stream');
+                res.setHeader('Cache-Control', 'public, max-age=31536000');
+                return response.data.pipe(res);
+            } catch (err) {
+                return res.status(404).send('Remote file not accessible');
+            }
+        }
+
+        // Use the same logic as getLocalFile: serve from cache, or download first
+        const filepath = this.localStorageService.getFilePath(media.organizationId, media.entityType, media.filename);
+
+        if (!existsSync(filepath)) {
+            try {
+                const axios = require('axios');
+                const response = await axios.get(url, { responseType: 'arraybuffer', timeout: 30000 });
+                await this.localStorageService.save(
+                    media.organizationId,
+                    media.entityType,
+                    media.filename,
+                    Buffer.from(response.data),
+                );
+            } catch (err) {
+                return res.status(404).send('File not found on disk or remote');
+            }
+        }
+
+        res.setHeader('Content-Type', media.mimeType || 'application/octet-stream');
+        res.setHeader('Content-Length', String(media.size || 0));
+        res.setHeader('Cache-Control', 'public, max-age=31536000');
+
+        const stream2 = createReadStream(filepath);
+        stream2.on('error', () => {
+            if (!res.headersSent) res.status(500).send('Error reading file');
+        });
+        return stream2.pipe(res);
+    }
+
     @Post('upload')
     @UseInterceptors(FileInterceptor('file'))
     async upload(
         @UploadedFile() file: Express.Multer.File,
         @Body('entityType') entityType: MediaEntityType,
         @Body('entityId') entityId: string,
+        @Body('id') id?: string,
         @Body('alt') alt?: string,
         @Body('tags') tags?: string,
         @Body('isPublic') isPublic?: string,
@@ -89,6 +167,7 @@ export class MediaController {
             entityId,
             user?.id,
             {
+                id,
                 alt,
                 tags: tags ? tags.split(',').map(t => t.trim()) : [],
                 isPublic: isPublic === 'true',

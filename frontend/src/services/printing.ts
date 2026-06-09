@@ -1,3 +1,5 @@
+import { resolveMediaUrl } from '@/lib/apiBaseUrl';
+
 export const printer = {
     printInvoice: (
         sale: any,
@@ -16,6 +18,7 @@ export const printer = {
     ) => {
         const win = window.open('', '', 'width=800,height=600');
         if (!win) return;
+        console.log("BRANDING: ", branding)
 
         const date = new Date(sale.createdAt).toLocaleDateString();
         const time = new Date(sale.createdAt).toLocaleTimeString();
@@ -27,7 +30,7 @@ export const printer = {
         };
 
         const receiptNo = sale.id?.slice?.(0, 8)?.toUpperCase?.() || '';
-        const logoUrl = branding?.logoUrl;
+        const logoUrl = resolveMediaUrl(branding?.logoUrl);
         const orgName = branding?.organizationName || storeName;
 
         const html = `
@@ -111,8 +114,10 @@ export const printer = {
                     </div>
 
                     <div class="footer">
+                        ${(branding?.phone || branding?.email) ? `<p>${[branding?.phone, branding?.email].filter(Boolean).join(' • ')}</p>` : ''}
+                        ${branding?.website ? `<p>${branding.website}</p>` : ''} 
+                        ${branding?.address ? `<p>${branding.address}</p>` : ''}
                         ${branding?.footer ? `<p>${branding.footer}</p>` : `<p>${tr('invoice.thank_you', 'Thank you for your business!')}</p>`}
-                       
                     </div>
                 </div>
 

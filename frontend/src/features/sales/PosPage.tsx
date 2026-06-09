@@ -5,7 +5,7 @@ import { Media } from '@/services/mediaService';
 import { useStore } from '../stores/StoreProvider';
 import { useSync } from '@/offline/SyncProvider';
 import { saveOffline } from '@/offline/offlineOperations';
-import { isOfflineEnabled } from '@/lib/apiBaseUrl';
+import { getApiBaseUrl, isOfflineEnabled, resolveMediaUrl } from '@/lib/apiBaseUrl';
 import { db } from '@/offline/db';
 import { v4 as uuidv4 } from 'uuid';
 import { Search, ShoppingCart, Trash2, Plus, Minus, CreditCard, Banknote, Smartphone, LayoutGrid, List, User, Printer, ShoppingBag } from 'lucide-react';
@@ -465,7 +465,7 @@ export function PosPage() {
                                             <div className="w-10 h-10 bg-gray-100 dark:bg-gray-700 rounded-md flex items-center justify-center text-gray-400 dark:text-gray-500 font-bold overflow-hidden">
                                                 {product.media && product.media.length > 0 ? (
                                                     <img
-                                                        src={product.media[0].url}
+                                                        src={resolveMediaUrl(product.media[0].url)}
                                                         alt={product.media[0].alt || product.name}
                                                         className="w-full h-full object-cover"
                                                     />
@@ -505,7 +505,7 @@ export function PosPage() {
                                         <div className="aspect-square bg-gray-100 dark:bg-gray-700 rounded-lg mb-3 flex items-center justify-center text-gray-300 dark:text-gray-500 overflow-hidden relative">
                                             {product.media && product.media.length > 0 ? (
                                                 <img
-                                                    src={product.media[0].url}
+                                                    src={resolveMediaUrl(product.media[0].url)}
                                                     alt={product.media[0].alt || product.name}
                                                     className="w-full h-full object-cover"
                                                 />

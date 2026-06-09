@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { MediaUpload } from '@/features/media/components/MediaUpload';
 import { useOrganization } from '@/contexts/OrganizationContext';
+import { resolveMediaUrl } from '@/lib/apiBaseUrl';
 import { Upload } from 'lucide-react';
 
 export function OrganizationSettings() {
@@ -225,7 +226,7 @@ export function OrganizationSettings() {
                         {formData.logoUrl ? (
                             <div className="flex items-center gap-4">
                                 <div className="p-4 border rounded border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700">
-                                    <img src={formData.logoUrl} alt="Logo" className="h-20 w-20 object-contain" />
+                                    <img src={resolveMediaUrl(formData.logoUrl)} alt="Logo" className="h-20 w-20 object-contain" />
                                 </div>
                                 <div className="flex flex-col gap-2">
                                     <Button

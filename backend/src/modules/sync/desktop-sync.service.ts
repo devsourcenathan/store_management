@@ -2,7 +2,10 @@ import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { persistSyncOperation } from '../../common/prisma/prisma-sync.extension';
 import { SyncGenericService } from './sync-generic.service';
+import { LocalStorageService } from '../media/local-storage.service';
 import axios from 'axios';
+import * as FormData from 'form-data';
+import * as fs from 'fs';
 
 @Injectable()
 export class DesktopSyncService implements OnModuleInit {
@@ -11,7 +14,8 @@ export class DesktopSyncService implements OnModuleInit {
 
     constructor(
         private prisma: PrismaService,
-        private syncGeneric: SyncGenericService
+        private syncGeneric: SyncGenericService,
+        private localStorage: LocalStorageService
     ) { }
 
     getIsSyncing(): boolean {
@@ -71,6 +75,9 @@ export class DesktopSyncService implements OnModuleInit {
                 Authorization: `Bearer ${config.syncToken}`,
                 'x-client-id': config.clientId
             };
+
+            // 0. Upload local-only media files to the cloud BEFORE pushing sync ops
+            await this.uploadLocalMediaToCloud(config, headers);
 
             // 1. PUSH local changes to remote
             await this.pruneStalePendingOperations();
@@ -154,6 +161,8 @@ export class DesktopSyncService implements OnModuleInit {
                         where: { id: config.id },
                         data: { lastSyncAt },
                     });
+                    // Pre-download all remote media files for offline use
+                    this.downloadRemoteMediaToLocal().catch(e => this.logger.error('Background media download failed', e.message));
                 } else {
                     // Handle normal operations pull
                     const operations = pullRes.data.operations || [];
@@ -167,13 +176,17 @@ export class DesktopSyncService implements OnModuleInit {
                                 `Failed to apply ${applyResult.errors.length}/${operations.length} remote operations`,
                                 applyResult.errors,
                             );
-                        } else {
-                            lastSyncAt = new Date();
-                            await this.prisma.desktopConfig.update({
-                                where: { id: config.id },
-                                data: { lastSyncAt },
-                            });
                         }
+
+                        // Always update lastSyncAt so we don't get stuck in an infinite loop
+                        // pulling the same poisoned/irrelevant operations.
+                        lastSyncAt = new Date(pullRes.data.timestamp || new Date());
+                        await this.prisma.desktopConfig.update({
+                            where: { id: config.id },
+                            data: { lastSyncAt },
+                        });
+                        // Pre-download any new remote media files for offline use
+                        this.downloadRemoteMediaToLocal().catch(e => this.logger.error('Background media download failed', e.message));
                     } else {
                         lastSyncAt = new Date();
                         await this.prisma.desktopConfig.update({
@@ -413,5 +426,146 @@ export class DesktopSyncService implements OnModuleInit {
             this.logger.error(`Auto-reauthentication failed: ${err.message}`);
         }
         return false;
+    }
+
+    /**
+     * Upload local-only media files to the cloud before pushing sync operations.
+     * This ensures that when a Media CREATE/UPDATE sync op is pushed, the cloud
+     * already has the physical file and the URL in the op data points to S3.
+     */
+    private async uploadLocalMediaToCloud(config: any, headers: any) {
+        try {
+            // Find all media records with local-only URLs (i.e., /api/media/files/...)
+            const localMedia = await this.prisma.media.findMany({
+                where: {
+                    url: { startsWith: '/api/media' },
+                },
+            });
+
+            if (localMedia.length === 0) return;
+
+            this.logger.log(`[MediaSync] Found ${localMedia.length} local media file(s) to upload to cloud...`);
+            const baseUrl = config.remoteUrl.replace(/\/$/, '');
+
+            for (const media of localMedia) {
+                try {
+                    const filepath = this.localStorage.getFilePath(
+                        media.organizationId,
+                        media.entityType,
+                        media.filename,
+                    );
+
+                    if (!fs.existsSync(filepath)) {
+                        this.logger.warn(`[MediaSync] Local file not found for media ${media.id}: ${filepath}`);
+                        continue;
+                    }
+
+                    const fileBuffer = fs.readFileSync(filepath);
+                    const formData = new FormData();
+                    formData.append('file', fileBuffer, {
+                        filename: media.originalName || media.filename,
+                        contentType: media.mimeType || 'application/octet-stream',
+                    });
+                    formData.append('entityType', media.entityType);
+                    formData.append('entityId', media.entityId);
+                    formData.append('id', media.id);
+
+                    const uploadRes = await axios.post(
+                        `${baseUrl}/media/upload`,
+                        formData,
+                        {
+                            headers: {
+                                ...headers,
+                                ...formData.getHeaders(),
+                            },
+                            maxContentLength: Infinity,
+                            maxBodyLength: Infinity,
+                        },
+                    );
+
+                    // The cloud returns a Media record with the S3 url
+                    const remoteUrl = uploadRes.data?.url;
+                    if (remoteUrl) {
+                        // Update the local DB with the S3 URL so future sync ops carry it
+                        const { syncContext } = require('../../common/prisma/prisma-sync.extension');
+                        await syncContext.run({ isApplyingSync: true }, async () => {
+                            await this.prisma.media.update({
+                                where: { id: media.id },
+                                data: { url: remoteUrl },
+                            });
+                        });
+                        
+                        // Also update any pending sync operations that reference this media
+                        // so they carry the S3 URL instead of the local one
+                        const pendingMediaOps = await this.prisma.syncOperation.findMany({
+                            where: { entityId: media.id, entity: 'Media', synced: false },
+                        });
+                        for (const op of pendingMediaOps) {
+                            let opData = typeof op.data === 'string' ? JSON.parse(op.data) : op.data;
+                            if (opData && typeof opData === 'object') {
+                                (opData as any).url = remoteUrl;
+                                await this.prisma.syncOperation.update({
+                                    where: { id: op.id },
+                                    data: { data: opData },
+                                });
+                            }
+                        }
+
+                        this.logger.log(`[MediaSync] Uploaded media ${media.id} to cloud: ${remoteUrl}`);
+                    }
+                } catch (err: any) {
+                    this.logger.error(`[MediaSync] Failed to upload media ${media.id}: ${err.message}`);
+                }
+            }
+        } catch (err: any) {
+            this.logger.error(`[MediaSync] uploadLocalMediaToCloud error: ${err.message}`);
+        }
+    }
+
+    /**
+     * Download remote media files (S3 URLs) to local storage for offline access.
+     * Runs in the background after a pull to pre-cache all images.
+     */
+    private async downloadRemoteMediaToLocal() {
+        try {
+            const allMedia = await this.prisma.media.findMany();
+            let downloaded = 0;
+
+            for (const media of allMedia) {
+                // Skip media that already has a local URL or no remote URL
+                if (!media.url || !media.url.startsWith('http')) continue;
+
+                try {
+                    const filepath = this.localStorage.getFilePath(
+                        media.organizationId,
+                        media.entityType,
+                        media.filename,
+                    );
+
+                    // Skip if already cached locally
+                    if (fs.existsSync(filepath)) continue;
+
+                    const response = await axios.get(media.url, {
+                        responseType: 'arraybuffer',
+                        timeout: 30000,
+                    });
+                    await this.localStorage.save(
+                        media.organizationId,
+                        media.entityType,
+                        media.filename,
+                        Buffer.from(response.data),
+                    );
+                    downloaded++;
+                } catch (err: any) {
+                    this.logger.warn(`[MediaSync] Failed to download media ${media.id}: ${err.message}`);
+                }
+            }
+
+            if (downloaded > 0) {
+                this.logger.log(`[MediaSync] Downloaded ${downloaded} remote media file(s) to local cache.`);
+            }
+        } catch (err: any) {
+            this.logger.error(`[MediaSync] downloadRemoteMediaToLocal error: ${err.message}`);
+        }
     }
 }
