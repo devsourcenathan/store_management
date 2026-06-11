@@ -350,6 +350,9 @@ export class DesktopSyncService implements OnModuleInit {
                 }
 
                 await upsertMany('category', data.categories);
+                await upsertMany('permission', data.permissions);
+                await upsertMany('rolePermission', data.rolePermissions);
+                await upsertMany('userPermission', data.userPermissions);
                 
                 // Products have images, handle relations carefully if needed. Upsert might fail on complex relations.
                 // For simplicity, we just use the raw table if possible or strip relations
@@ -395,6 +398,59 @@ export class DesktopSyncService implements OnModuleInit {
                 await upsertMany('media', data.media);
                 await upsertMany('auditLog', data.auditLogs);
                 
+                // Supplies
+                for (const s of data.supplies || []) {
+                    const { items, ...supplyData } = s;
+                    await this.prisma.supply.upsert({ where: { id: s.id }, update: supplyData, create: supplyData });
+                    await upsertMany('supplyItem', items);
+                }
+                await upsertMany('supplierBalanceEntry', data.supplierBalanceEntries);
+
+                // SAV / Maintenance
+                await upsertMany('device', data.devices);
+                for (const m of data.maintenances || []) {
+                    const { parts, invoice, ...maintenanceData } = m;
+                    await this.prisma.maintenance.upsert({ where: { id: m.id }, update: maintenanceData, create: maintenanceData });
+                    await upsertMany('maintenancePart', parts);
+                    if (invoice) {
+                        await this.prisma.maintenanceInvoice.upsert({ where: { id: invoice.id }, update: invoice, create: invoice });
+                    }
+                }
+
+                // Credits
+                for (const c of data.creditContracts || []) {
+                    const { payments, ...contractData } = c;
+                    await this.prisma.creditContract.upsert({ where: { id: c.id }, update: contractData, create: contractData });
+                    await upsertMany('creditPayment', payments);
+                }
+
+                // Subscriptions
+                for (const o of data.subscriptionOffers || []) {
+                    const { options, ...offerData } = o;
+                    await this.prisma.subscriptionOffer.upsert({ where: { id: o.id }, update: offerData, create: offerData });
+                    await upsertMany('subscriptionOption', options);
+                }
+                for (const s of data.customerSubscriptions || []) {
+                    const { options, renewals, ...subData } = s;
+                    await this.prisma.customerSubscription.upsert({ 
+                        where: { id: s.id }, 
+                        update: { ...subData, options: { set: options?.map((o: any) => ({ id: o.id })) || [] } }, 
+                        create: { ...subData, options: { connect: options?.map((o: any) => ({ id: o.id })) || [] } } 
+                    });
+                    await upsertMany('subscriptionRenewal', renewals);
+                }
+                for (const a of data.subscriptionAccounts || []) {
+                    const { balanceEntries, alerts, ...accountData } = a;
+                    await this.prisma.subscriptionAccount.upsert({ where: { id: a.id }, update: accountData, create: accountData });
+                    await upsertMany('subscriptionBalanceEntry', balanceEntries);
+                    await upsertMany('subscriptionBalanceAlert', alerts);
+                }
+
+                // Products specific
+                await upsertMany('pricingRule', data.pricingRules);
+                await upsertMany('stockAlert', data.stockAlerts);
+                await upsertMany('deletedProduct', data.deletedProducts);
+
                 this.logger.log('Initial snapshot applied successfully.');
             } catch (error: any) {
                 this.logger.error(`Failed to apply initial snapshot: ${error.message}`, error.stack);

@@ -60,7 +60,7 @@ npm version <major|minor|patch>
 # Exemple : npm version minor  →  0.1.0 → 0.2.0
 # Exemple : npm version major  →  0.1.0 → 1.0.0
 ```
-
+` git tag v1.0.6`
 > `npm version` met à jour `package.json` et crée automatiquement un commit + tag Git.
 
 ### 2. Pousser le tag
