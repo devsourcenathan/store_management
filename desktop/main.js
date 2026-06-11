@@ -2,6 +2,9 @@ const { app, BrowserWindow, dialog, utilityProcess } = require('electron');
 const { spawn } = require('child_process');
 const path = require('path');
 const fs = require('fs');
+const { autoUpdater } = require('electron-updater');
+const electronLog = require('electron-log');
+
 
 let backendProcess = null;
 let splashWindow = null;
@@ -108,6 +111,103 @@ function readLogTail(filePath, maxLines = 40) {
   } catch {
     return '';
   }
+}
+
+/* ─────────────── Auto-Updater ─────────────── */
+
+function setupAutoUpdater() {
+  // Skip auto-update in dev mode (not packaged)
+  if (!app.isPackaged) {
+    log('Auto-updater: skipped (dev mode)');
+    return;
+  }
+
+  // Route electron-updater logs through electron-log
+  autoUpdater.logger = electronLog;
+  autoUpdater.logger.transports.file.level = 'info';
+
+  // Do not auto-download; we control the flow
+  autoUpdater.autoDownload = false;
+  autoUpdater.autoInstallOnAppQuit = true;
+
+  autoUpdater.on('checking-for-update', () => {
+    log('Auto-updater: checking for update…');
+  });
+
+  autoUpdater.on('update-available', (info) => {
+    log(`Auto-updater: update available v${info.version}`);
+    if (!mainWindow || mainWindow.isDestroyed()) return;
+    dialog.showMessageBox(mainWindow, {
+      type: 'info',
+      title: 'Mise à jour disponible',
+      message: `Une nouvelle version (v${info.version}) est disponible.\nVoulez-vous la télécharger maintenant ?`,
+      buttons: ['Télécharger', 'Plus tard'],
+      defaultId: 0,
+      cancelId: 1,
+    }).then(({ response }) => {
+      if (response === 0) {
+        log('Auto-updater: user accepted download');
+        autoUpdater.downloadUpdate();
+      } else {
+        log('Auto-updater: user deferred download');
+      }
+    });
+  });
+
+  autoUpdater.on('update-not-available', () => {
+    log('Auto-updater: app is up to date.');
+  });
+
+  autoUpdater.on('download-progress', (progress) => {
+    const pct = Math.round(progress.percent);
+    log(`Auto-updater: download ${pct}%`);
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.setProgressBar(progress.percent / 100);
+    }
+  });
+
+  autoUpdater.on('update-downloaded', (info) => {
+    log(`Auto-updater: update downloaded v${info.version}`);
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.setProgressBar(-1); // Remove progress bar
+    }
+    const win = (mainWindow && !mainWindow.isDestroyed()) ? mainWindow : null;
+    dialog.showMessageBox(win, {
+      type: 'info',
+      title: 'Mise à jour prête',
+      message: `La version ${info.version} a été téléchargée.\nL'application va redémarrer pour appliquer la mise à jour.`,
+      buttons: ['Redémarrer maintenant', 'Plus tard'],
+      defaultId: 0,
+      cancelId: 1,
+    }).then(({ response }) => {
+      if (response === 0) {
+        log('Auto-updater: user chose to restart now');
+        autoUpdater.quitAndInstall(false, true);
+      } else {
+        log('Auto-updater: user deferred restart (will install on next quit)');
+      }
+    });
+  });
+
+  autoUpdater.on('error', (err) => {
+    log(`Auto-updater error: ${err && err.stack ? err.stack : String(err)}`);
+  });
+
+  // Initial check (with a small delay to let the app settle)
+  setTimeout(() => {
+    log('Auto-updater: initial check');
+    autoUpdater.checkForUpdates().catch((err) => {
+      log(`Auto-updater: initial check failed: ${err}`);
+    });
+  }, 10000); // 10 seconds after launch
+
+  // Periodic check every 4 hours
+  setInterval(() => {
+    log('Auto-updater: periodic check');
+    autoUpdater.checkForUpdates().catch((err) => {
+      log(`Auto-updater: periodic check failed: ${err}`);
+    });
+  }, 4 * 60 * 60 * 1000);
 }
 
 function getAppDataDir() {
@@ -486,4 +586,7 @@ app.whenReady().then(async () => {
   }
 
   await createMainWindow(port);
+
+  // Start auto-updater after main window is ready
+  setupAutoUpdater();
 });
