@@ -1,6 +1,6 @@
 name: Build & Publish Desktop
 
-# Triggered manually by creating a tag like v1.0.0, v1.2.3, etc.
+# Triggered manually by creating a tag
 on:
   push:
     tags:
