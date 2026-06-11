@@ -1,12 +1,16 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { syncContext, sanitizeSyncData } from '../../common/prisma/prisma-sync.extension';
+import { DangerZoneService } from '../admin/danger-zone.service';
 
 @Injectable()
 export class SyncGenericService {
     private readonly logger = new Logger(SyncGenericService.name);
 
-    constructor(private prisma: PrismaService) { }
+    constructor(
+        private prisma: PrismaService,
+        private dangerZoneService: DangerZoneService
+    ) { }
 
     /**
      * Applies a batch of operations pushed by the desktop to the remote server,
@@ -105,21 +109,28 @@ export class SyncGenericService {
         const data = op.data;
         const timestamp = op.createdAt ? new Date(op.createdAt).getTime() : op.timestamp;
         
+        let parsedData = data;
+        if (typeof data === 'string') {
+            try {
+                parsedData = JSON.parse(data);
+            } catch (e) {}
+        }
+
+        if (entity === 'SystemAction' && action === 'RESET_MODULE') {
+            const { target, organizationId } = parsedData as any;
+            if (target && organizationId) {
+                // Pass a specific clientId to prevent loop (we don't want the sync apply to generate another sync op)
+                await this.dangerZoneService.resetModule(organizationId, target, 'SERVER_SYNC_APPLY');
+            }
+            return;
+        }
+
         // Lowercase the first letter to match Prisma's model property names
         const modelName = entity.charAt(0).toLowerCase() + entity.slice(1);
         const model = (this.prisma as any)[modelName] as any;
 
         if (!model) {
             throw new Error(`Model ${entity} not found in Prisma Client`);
-        }
-
-        let parsedData = data;
-        if (typeof data === 'string') {
-            try {
-                parsedData = JSON.parse(data);
-            } catch (e) {
-                // If it fails to parse, assume it's an object if Prisma returned it as such
-            }
         }
 
         const recordData = sanitizeSyncData(parsedData) as Record<string, unknown>;

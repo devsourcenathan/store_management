@@ -1,4 +1,4 @@
-﻿{
+{
     "common": {
         "loading": "Loading...",
         "save": "Save",
@@ -356,7 +356,8 @@
             "stores": "Stores",
             "team": "Team",
             "notifications": "Notifications",
-            "permissions": "Permissions"
+            "permissions": "Permissions",
+            "danger_zone": "Danger Zone"
         },
         "org": {
             "title": "Organization Details",
@@ -487,6 +488,60 @@
             "separateReports": {
                 "label": "Separate Reports by Store",
                 "description": "Receive a separate email for each store"
+            }
+        },
+        "danger_zone": {
+            "title": "Danger Zone",
+            "access_denied": "Access Denied",
+            "owner_only": "Only organization owners can access the Danger Zone.",
+            "warning_text": "The actions below are **irreversible**. Any data deleted here will also be deleted on all connected devices during their next sync. Be extremely careful.",
+            "reset_btn": "Reset",
+            "options": {
+                "sales": {
+                    "title": "Sales and Credits",
+                    "desc": "Deletes all sales, payments, and credit contracts linked to this organization."
+                },
+                "inventory": {
+                    "title": "Catalog and Stock",
+                    "desc": "Deletes all products, categories, and stock history."
+                },
+                "customers": {
+                    "title": "Customers and Repairs",
+                    "desc": "Deletes all customers, devices, and repair history."
+                },
+                "suppliers": {
+                    "title": "Purchases and Suppliers",
+                    "desc": "Deletes all suppliers, purchase orders, and balances."
+                },
+                "all": {
+                    "title": "Reset Everything",
+                    "desc": "Hard Reset. Deletes all business data of the organization. Only keeps user access, stores, and system configuration."
+                },
+                "local_db": {
+                    "title": "Hard Reset Local Database",
+                    "desc": "Completely wipes the local database file (stock.db). Will force you to log back in and re-download all data from the server."
+                }
+            },
+            "errors": {
+                "type_confirm": "You must type CONFIRM in uppercase.",
+                "password_required": "Password is required.",
+                "action_failed": "Reset failed.",
+                "invalid_password": "Invalid password.",
+                "user_not_found": "User not found."
+            },
+            "success": {
+                "local_db": "The local database will be deleted.",
+                "action": "Action executed successfully."
+            },
+            "modal": {
+                "title": "Confirm Deletion",
+                "about_to": "You are about to proceed with:",
+                "warning": "This action is final and cannot be undone.",
+                "type_confirm": "Type CONFIRM to continue",
+                "confirm_word": "CONFIRM",
+                "password_label": "Password (owner)",
+                "password_placeholder": "Your current password",
+                "destroy_btn": "Destroy"
             }
         }
     },

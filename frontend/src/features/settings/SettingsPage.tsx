@@ -8,11 +8,12 @@ import { NotificationSettings } from './components/NotificationSettings';
 import { PermissionsPage } from './PermissionsPage';
 import { OrgLandingEditor } from '@/features/org-landing/OrgLandingEditor';
 import { DesktopSyncSettings } from './components/DesktopSyncSettings';
+import { DangerZonePage } from './DangerZonePage';
 import { isDesktopBundle } from '@/lib/apiBaseUrl';
-import { Building, Store as StoreIcon, Users, Globe, Bell, Shield, Cloud } from 'lucide-react';
+import { Building, Store as StoreIcon, Users, Globe, Bell, Shield, Cloud, AlertTriangle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
-type Tab = 'organization' | 'stores' | 'team' | 'notifications' | 'permissions' | 'cloud_sync';
+type Tab = 'organization' | 'stores' | 'team' | 'notifications' | 'permissions' | 'cloud_sync' | 'danger_zone';
 
 export function SettingsPage() {
     const { t } = useTranslation();
@@ -33,6 +34,12 @@ export function SettingsPage() {
             label: t('settings.tabs.permissions'),
             icon: Shield,
             component: PermissionsPage
+        } as any);
+        tabs.push({
+            id: 'danger_zone',
+            label: t('settings.tabs.danger_zone'),
+            icon: AlertTriangle,
+            component: DangerZonePage
         } as any);
     }
 

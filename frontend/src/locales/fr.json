@@ -1,4 +1,4 @@
-﻿{
+{
     "common": {
         "loading": "Chargement...",
         "save": "Enregistrer",
@@ -357,7 +357,8 @@
             "stores": "Magasins",
             "team": "Équipe",
             "notifications": "Notifications",
-            "permissions": "Permissions"
+            "permissions": "Permissions",
+            "danger_zone": "Danger Zone"
         },
         "org": {
             "title": "Détails de l'Organisation",
@@ -488,6 +489,60 @@
             "separateReports": {
                 "label": "Rapports Séparés par Magasin",
                 "description": "Recevoir un email distinct pour chaque magasin"
+            }
+        },
+        "danger_zone": {
+            "title": "Danger Zone",
+            "access_denied": "Accès Refusé",
+            "owner_only": "Seuls les propriétaires peuvent accéder à la Danger Zone.",
+            "warning_text": "Les actions ci-dessous sont **irréversibles**. Toute donnée supprimée ici sera également supprimée sur tous les appareils connectés lors de leur prochaine synchronisation. Soyez extrêmement prudent.",
+            "reset_btn": "Réinitialiser",
+            "options": {
+                "sales": {
+                    "title": "Ventes et Crédits",
+                    "desc": "Supprime toutes les ventes, paiements, contrats de crédits liés à cette organisation."
+                },
+                "inventory": {
+                    "title": "Catalogue et Stocks",
+                    "desc": "Supprime tous les produits, catégories et historique de stock."
+                },
+                "customers": {
+                    "title": "Clients et SAV",
+                    "desc": "Supprime tous les clients, appareils, et historique des réparations."
+                },
+                "suppliers": {
+                    "title": "Achats et Fournisseurs",
+                    "desc": "Supprime tous les fournisseurs, bons d'achats et soldes."
+                },
+                "all": {
+                    "title": "Tout réinitialiser",
+                    "desc": "Hard Reset. Supprime toutes les données métier de l'organisation. Ne conserve que les accès utilisateurs, les magasins et la configuration système."
+                },
+                "local_db": {
+                    "title": "Hard Reset Base de données Locale",
+                    "desc": "Efface complètement le fichier de base de données local (stock.db). Vous forcera à vous reconnecter et re-télécharger toutes les données depuis le serveur."
+                }
+            },
+            "errors": {
+                "type_confirm": "Vous devez taper CONFIRMER en majuscules.",
+                "password_required": "Le mot de passe est requis.",
+                "action_failed": "Échec de la réinitialisation.",
+                "invalid_password": "Mot de passe incorrect.",
+                "user_not_found": "Utilisateur introuvable."
+            },
+            "success": {
+                "local_db": "La base de données locale va être supprimée.",
+                "action": "Action exécutée avec succès."
+            },
+            "modal": {
+                "title": "Confirmer la suppression",
+                "about_to": "Vous êtes sur le point de procéder à :",
+                "warning": "Cette action est définitive et ne peut pas être annulée.",
+                "type_confirm": "Tapez CONFIRMER pour continuer",
+                "confirm_word": "CONFIRMER",
+                "password_label": "Mot de passe (propriétaire)",
+                "password_placeholder": "Votre mot de passe actuel",
+                "destroy_btn": "Détruire"
             }
         }
     },

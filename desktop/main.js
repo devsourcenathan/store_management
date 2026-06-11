@@ -439,6 +439,10 @@ function startBackendProcess(entry, backendRoot, env, backendLogPath, logsDir) {
     child.on('exit', (code) => {
       log(`Backend exited (code=${code})`);
       backendProcess = null;
+      if (code === 0) {
+        log('Backend exited normally, quitting app.');
+        app.quit();
+      }
     });
     return child;
   }
@@ -461,6 +465,10 @@ function startBackendProcess(entry, backendRoot, env, backendLogPath, logsDir) {
   child.on('exit', (code) => {
     log(`Backend exited (code=${code})`);
     backendProcess = null;
+    if (code === 0) {
+      log('Backend exited normally, quitting app.');
+      app.quit();
+    }
   });
   return child;
 }

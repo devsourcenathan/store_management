@@ -120,4 +120,33 @@ export class DesktopConfigController {
             throw new HttpException(message, error.response?.status || HttpStatus.BAD_REQUEST);
         }
     }
+
+    @Post('hard-reset')
+    async hardResetLocalDb() {
+        if (process.env.LOCAL_BUNDLE !== 'true') {
+            throw new HttpException('Available only on Desktop version', HttpStatus.FORBIDDEN);
+        }
+
+        try {
+            // Planifier l'arrêt et la suppression de la BD dans 1 seconde pour laisser le temps de répondre
+            setTimeout(async () => {
+                try {
+                    await this.prisma.$disconnect();
+                    const fs = require('fs');
+                    const path = require('path');
+                    const dbPath = path.join(process.env.APP_DATA_DIR || '', 'stock.db');
+                    if (fs.existsSync(dbPath)) {
+                        fs.unlinkSync(dbPath);
+                    }
+                    process.exit(0); // Quitte le processus Node, ce qui coupera la connexion avec le Frontend
+                } catch (e) {
+                    console.error('Failed to hard reset local DB', e);
+                }
+            }, 1000);
+
+            return { success: true, message: 'La base de données locale va être supprimée. L\'application va redémarrer.' };
+        } catch (error: any) {
+            throw new HttpException(`Hard reset failed: ${error.message}`, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 }

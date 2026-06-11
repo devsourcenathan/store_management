@@ -7,9 +7,10 @@ import { DesktopConfigController } from './desktop-config.controller';
 
 import { PrismaModule } from '../../common/prisma/prisma.module';
 import { MediaModule } from '../media/media.module';
+import { AdminModule } from '../admin/admin.module';
 
 @Module({
-    imports: [PrismaModule, MediaModule],
+    imports: [PrismaModule, MediaModule, AdminModule],
     controllers: [SyncController, DesktopConfigController],
     providers: [SyncGenericService, DesktopSyncService],
 })

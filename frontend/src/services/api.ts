@@ -804,3 +804,19 @@ export const userAnalyticsApi = {
         return response.data;
     }
 };
+
+// ============================================
+// DANGER ZONE API
+// ============================================
+
+export const dangerZoneApi = {
+    resetModule: async (data: { target: string, password: string }) => {
+        const response = await api.post('/admin/danger-zone/reset', data);
+        return response.data;
+    },
+
+    hardResetLocalDb: async () => {
+        const response = await api.post('/desktop-config/hard-reset');
+        return response.data;
+    }
+};
