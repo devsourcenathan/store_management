@@ -1,8 +1,10 @@
 {
   "name": "stock-management-desktop",
-  "version": "1.0.0",
+  "version": "1.0.4",
   "private": true,
   "main": "main.js",
+  "author": "Tchinda Nathan",
+  "description": "Stock Management Desktop",
   "scripts": {
     "start": "electron .",
     "prepare:bundle": "npm --prefix ../backend run desktop:build-seed-db && npm --prefix ../backend run build && npm --prefix ../frontend run build:desktop",
