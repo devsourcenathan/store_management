@@ -12,6 +12,7 @@ import { SalesPage } from '@/features/sales/SalesPage';
 import { PosPage } from '@/features/sales/PosPage';
 import { CustomersPage } from '@/features/customers/CustomersPage';
 import { CategoriesPage } from '@/features/products/CategoriesPage';
+import { CustomerDisplayPage } from '@/features/sales/CustomerDisplayPage';
 import { DeletedProductsPage } from '@/features/products/DeletedProductsPage';
 import { SubscriptionsPage } from '@/features/subscriptions/SubscriptionsPage';
 import { BalanceManagementPage } from '@/features/subscriptions/BalanceManagementPage';
@@ -70,6 +71,15 @@ export function AppRouter() {
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
             <Route path="/reset-password" element={<ResetPasswordPage />} />
+
+            <Route 
+                path="/customer-display" 
+                element={
+                    <ProtectedRoute>
+                        <CustomerDisplayPage />
+                    </ProtectedRoute>
+                } 
+            />
 
             <Route
                 element={

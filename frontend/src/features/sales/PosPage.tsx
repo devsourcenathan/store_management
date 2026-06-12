@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/services/api';
 import { Media } from '@/services/mediaService';
@@ -263,6 +263,35 @@ export function PosPage() {
     const itemsTotal = cart.reduce((acc, item) => acc + (item.quantity * item.unitPrice) - item.discount, 0);
     const cartTotal = Math.max(0, itemsTotal - globalDiscount);
     const totalItems = cart.reduce((acc, item) => acc + item.quantity, 0);
+
+    // Sync state with Customer Display
+    useEffect(() => {
+        const channel = new BroadcastChannel('pos_channel');
+        channel.postMessage({
+            type: 'SYNC_CART',
+            payload: {
+                cart,
+                total: cartTotal,
+                status: showSuccessModal ? 'PAID' : 'PENDING'
+            }
+        });
+        
+        // Listen for requests to sync
+        channel.onmessage = (event) => {
+            if (event.data?.type === 'REQUEST_SYNC') {
+                channel.postMessage({
+                    type: 'SYNC_CART',
+                    payload: {
+                        cart,
+                        total: cartTotal,
+                        status: showSuccessModal ? 'PAID' : 'PENDING'
+                    }
+                });
+            }
+        };
+
+        return () => channel.close();
+    }, [cart, cartTotal, showSuccessModal]);
 
     const handleCheckout = () => {
         console.log('🚀 handleCheckout called!');
