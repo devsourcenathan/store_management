@@ -1,4 +1,4 @@
-const { app, BrowserWindow, dialog, utilityProcess, ipcMain } = require('electron');
+const { app, BrowserWindow, dialog, utilityProcess, ipcMain, screen } = require('electron');
 const { spawn } = require('child_process');
 const path = require('path');
 const fs = require('fs');
@@ -9,6 +9,7 @@ const electronLog = require('electron-log');
 let backendProcess = null;
 let splashWindow = null;
 let mainWindow = null;
+let customerWindow = null;
 let logFile = null;
 let pendingEarlyLogs = [];
 
@@ -402,6 +403,31 @@ async function createMainWindow(port) {
   });
 
   await mainWindow.loadURL(`http://127.0.0.1:${port}/`);
+
+  // Setup Customer Display if a second monitor is available
+  const displays = screen.getAllDisplays();
+  if (displays.length > 1) {
+    const secondDisplay = displays.find(d => d.bounds.x !== 0 || d.bounds.y !== 0) || displays[1];
+    
+    customerWindow = new BrowserWindow({
+      x: secondDisplay.bounds.x,
+      y: secondDisplay.bounds.y,
+      width: secondDisplay.bounds.width,
+      height: secondDisplay.bounds.height,
+      fullscreen: true,
+      autoHideMenuBar: true,
+      webPreferences: {
+        contextIsolation: true,
+        nodeIntegration: false,
+      },
+    });
+
+    customerWindow.on('closed', () => {
+      customerWindow = null;
+    });
+
+    await customerWindow.loadURL(`http://127.0.0.1:${port}/customer-display`);
+  }
 }
 
 function buildBackendEnv({ port, appDataDir, frontendDistDir }) {
