@@ -128,10 +128,6 @@ function setupAutoUpdater() {
         return { available: false };
       }
       
-      // Force download if manually requested and available
-      log('Auto-updater: forcing download from manual check');
-      autoUpdater.downloadUpdate();
-      
       return { available: true, version: result.updateInfo.version };
     } catch (err) {
       log(`Auto-updater: manual check failed: ${err}`);
