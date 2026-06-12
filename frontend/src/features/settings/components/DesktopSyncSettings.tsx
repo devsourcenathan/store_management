@@ -19,9 +19,20 @@ export function DesktopSyncSettings() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [autoSync, setAutoSync] = useState(true);
+    const [downloadProgress, setDownloadProgress] = useState<number | null>(null);
 
     useEffect(() => {
         loadConfig();
+        
+        if ((window as any).electronAPI?.onDownloadProgress) {
+            (window as any).electronAPI.onDownloadProgress((pct: number) => {
+                setDownloadProgress(pct);
+                if (pct === 100) {
+                    toast.success('Update downloaded! Please check the system prompt to restart.', { id: 'update-check' });
+                    setTimeout(() => setDownloadProgress(null), 5000);
+                }
+            });
+        }
     }, []);
 
     const loadConfig = async () => {
@@ -180,7 +191,19 @@ export function DesktopSyncSettings() {
                             {syncing ? 'Synchronizing...' : t('offline.sync.syncNow')}
                         </Button>
                     )}
-                    {(window as any).electronAPI && (
+                    
+                    {downloadProgress !== null && (
+                        <div className="w-full mt-4 bg-gray-100 dark:bg-gray-700 rounded-full h-4 overflow-hidden">
+                            <div 
+                                className="bg-blue-600 h-4 transition-all duration-300 ease-out flex items-center justify-center text-[10px] font-bold text-white" 
+                                style={{ width: `${downloadProgress}%` }}
+                            >
+                                {downloadProgress}%
+                            </div>
+                        </div>
+                    )}
+                    
+                    {(window as any).electronAPI && downloadProgress === null && (
                         <Button
                             variant="outline"
                             onClick={async () => {
@@ -188,7 +211,7 @@ export function DesktopSyncSettings() {
                                     toast.loading('Checking for updates...', { id: 'update-check' });
                                     const res = await (window as any).electronAPI.checkForUpdates();
                                     if (res?.available) {
-                                        toast.success(`Update available: v${res.version}. Check your prompts to download it.`, { id: 'update-check' });
+                                        toast.success(`Update v${res.version} found! Downloading in the background...`, { id: 'update-check' });
                                     } else if (res?.error) {
                                         toast.error(`Update check failed: ${res.error}`, { id: 'update-check' });
                                     } else {

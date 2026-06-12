@@ -127,6 +127,11 @@ function setupAutoUpdater() {
       if (!result || !result.updateInfo || result.updateInfo.version === app.getVersion()) {
         return { available: false };
       }
+      
+      // Force download if manually requested and available
+      log('Auto-updater: forcing download from manual check');
+      autoUpdater.downloadUpdate();
+      
       return { available: true, version: result.updateInfo.version };
     } catch (err) {
       log(`Auto-updater: manual check failed: ${err}`);
@@ -181,6 +186,7 @@ function setupAutoUpdater() {
     log(`Auto-updater: download ${pct}%`);
     if (mainWindow && !mainWindow.isDestroyed()) {
       mainWindow.setProgressBar(progress.percent / 100);
+      mainWindow.webContents.send('update-download-progress', pct);
     }
   });
 
