@@ -116,7 +116,25 @@ function readLogTail(filePath, maxLines = 40) {
 /* ─────────────── Auto-Updater ─────────────── */
 
 function setupAutoUpdater() {
-  // Skip auto-update in dev mode (not packaged)
+  ipcMain.handle('check-for-updates', async () => {
+    log('Auto-updater: manual check triggered');
+    try {
+      if (!app.isPackaged) {
+        log('Auto-updater: manual check skipped (dev mode)');
+        return { available: false, error: 'Cannot check for updates in development mode (app not packaged)' };
+      }
+      const result = await autoUpdater.checkForUpdates();
+      if (!result || !result.updateInfo || result.updateInfo.version === app.getVersion()) {
+        return { available: false };
+      }
+      return { available: true, version: result.updateInfo.version };
+    } catch (err) {
+      log(`Auto-updater: manual check failed: ${err}`);
+      return { available: false, error: String(err) };
+    }
+  });
+
+  // Skip automatic auto-update in dev mode (not packaged)
   if (!app.isPackaged) {
     log('Auto-updater: skipped (dev mode)');
     return;
@@ -208,6 +226,7 @@ function setupAutoUpdater() {
       log(`Auto-updater: periodic check failed: ${err}`);
     });
   }, 4 * 60 * 60 * 1000);
+
 }
 
 function getAppDataDir() {
@@ -357,6 +376,7 @@ async function createMainWindow(port) {
     show: false,
     webPreferences: {
       contextIsolation: true,
+      preload: path.join(__dirname, 'preload.js'),
     },
   });
 

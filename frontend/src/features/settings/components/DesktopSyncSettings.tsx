@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { api } from '@/services/api';
 import { useSync } from '@/offline/SyncProvider';
-import { RefreshCw } from 'lucide-react';
+import { RefreshCw, DownloadCloud } from 'lucide-react';
 
 export function DesktopSyncSettings() {
     const { t } = useTranslation();
@@ -178,6 +178,29 @@ export function DesktopSyncSettings() {
                         >
                             <RefreshCw className={`h-4 w-4 mr-2 ${syncing ? 'animate-spin' : ''}`} />
                             {syncing ? 'Synchronizing...' : t('offline.sync.syncNow')}
+                        </Button>
+                    )}
+                    {(window as any).electronAPI && (
+                        <Button
+                            variant="outline"
+                            onClick={async () => {
+                                try {
+                                    toast.loading('Checking for updates...', { id: 'update-check' });
+                                    const res = await (window as any).electronAPI.checkForUpdates();
+                                    if (res?.available) {
+                                        toast.success(`Update available: v${res.version}. Check your prompts to download it.`, { id: 'update-check' });
+                                    } else if (res?.error) {
+                                        toast.error(`Update check failed: ${res.error}`, { id: 'update-check' });
+                                    } else {
+                                        toast.info('You are already on the latest version.', { id: 'update-check' });
+                                    }
+                                } catch (e: any) {
+                                    toast.error('Failed to check for updates', { id: 'update-check' });
+                                }
+                            }}
+                        >
+                            <DownloadCloud className="h-4 w-4 mr-2" />
+                            Check for Updates
                         </Button>
                     )}
                 </div>
