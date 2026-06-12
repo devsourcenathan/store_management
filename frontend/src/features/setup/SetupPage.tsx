@@ -50,11 +50,11 @@ export function SetupPage() {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
-            <Card className="w-full max-w-md shadow-lg border-0">
-                <CardHeader className="space-y-1 bg-primary/5 pb-8 pt-8 rounded-t-xl text-center">
-                    <CardTitle className="text-2xl font-bold tracking-tight text-primary">Configuration Initiale</CardTitle>
-                    <CardDescription className="text-gray-500">
+        <div className="min-h-screen flex items-center justify-center bg-background p-4 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-50 to-background dark:from-blue-950/20 dark:to-background">
+            <Card className="w-full max-w-md shadow-xl border-border/50">
+                <CardHeader className="space-y-1 bg-card pb-8 pt-8 rounded-t-xl text-center border-b border-border/50">
+                    <CardTitle className="text-2xl font-bold tracking-tight text-foreground">Configuration Initiale</CardTitle>
+                    <CardDescription className="text-muted-foreground mt-2">
                         Connectez-vous à votre compte pour synchroniser vos données.
                     </CardDescription>
                 </CardHeader>
@@ -66,8 +66,8 @@ export function SetupPage() {
                                 <Loader2 className="w-16 h-16 text-primary animate-spin" />
                             </div>
                             <div className="text-center space-y-2">
-                                <h3 className="font-semibold text-lg">Synchronisation en cours</h3>
-                                <p className="text-sm text-gray-500 max-w-[250px]">
+                                <h3 className="font-semibold text-lg text-foreground">Synchronisation en cours</h3>
+                                <p className="text-sm text-muted-foreground max-w-[250px]">
                                     Veuillez patienter pendant que nous récupérons et installons vos données sur cet ordinateur...
                                 </p>
                             </div>
@@ -103,7 +103,7 @@ export function SetupPage() {
                                 <button
                                     type="button"
                                     onClick={() => setShowAdvanced(!showAdvanced)}
-                                    className="flex items-center text-sm text-gray-500 hover:text-primary transition-colors"
+                                    className="flex items-center text-sm text-muted-foreground hover:text-primary transition-colors font-medium"
                                 >
                                     <Settings2 className="w-4 h-4 mr-2" />
                                     {showAdvanced ? 'Masquer les options avancées' : 'Afficher les options avancées'}
@@ -111,8 +111,8 @@ export function SetupPage() {
                             </div>
 
                             {showAdvanced && (
-                                <div className="space-y-2 pt-2 pb-2 bg-gray-50 p-4 rounded-md border">
-                                    <Label htmlFor="remoteUrl" className="text-gray-700">URL du serveur distant</Label>
+                                <div className="space-y-3 pt-4 pb-4 px-4 bg-muted/50 rounded-lg border border-border/50">
+                                    <Label htmlFor="remoteUrl" className="text-foreground font-medium">URL du serveur distant</Label>
                                     <Input
                                         id="remoteUrl"
                                         name="remoteUrl"
@@ -120,9 +120,9 @@ export function SetupPage() {
                                         required
                                         value={formData.remoteUrl}
                                         onChange={handleChange}
-                                        className="bg-white"
+                                        className="bg-background border-border/50 focus-visible:ring-primary/50"
                                     />
-                                    <p className="text-xs text-gray-500 mt-1">
+                                    <p className="text-xs text-muted-foreground">
                                         Modifiez ceci uniquement si vous utilisez un serveur personnalisé.
                                     </p>
                                 </div>

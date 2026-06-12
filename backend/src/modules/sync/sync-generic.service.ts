@@ -134,44 +134,61 @@ export class SyncGenericService {
         }
 
         const recordData = sanitizeSyncData(parsedData) as Record<string, unknown>;
+        
+        // Ensure required JSON fields for SQLite compatibility
+        if (entity === 'Media' && recordData.tags === undefined) {
+            recordData.tags = [];
+        }
+        if (entity === 'PricingRule' && recordData.rules === undefined) {
+            recordData.rules = {};
+        }
+
         const recordId = recordData.id as string | undefined;
         if (!recordId) {
             throw new Error(`Operation ${op.id} is missing record id`);
         }
 
-        // Handle Last-Write-Wins
-        if (action === 'CREATE' || action === 'UPDATE') {
-            const existingRecord = await model.findUnique({ where: { id: recordId } });
-            
-            if (existingRecord) {
-                // If the local record is newer, we ignore the incoming operation
-                // We use updatedAt if it exists, otherwise we fallback to the operation's timestamp vs record's createdAt
-                const localTime = existingRecord.updatedAt ? new Date(existingRecord.updatedAt).getTime() : new Date(existingRecord.createdAt || 0).getTime();
-                const incomingTime = timestamp;
+        try {
+            // Handle Last-Write-Wins
+            if (action === 'CREATE' || action === 'UPDATE') {
+                const existingRecord = await model.findUnique({ where: { id: recordId } });
+                
+                if (existingRecord) {
+                    // If the local record is newer, we ignore the incoming operation
+                    // We use updatedAt if it exists, otherwise we fallback to the operation's timestamp vs record's createdAt
+                    const localTime = existingRecord.updatedAt ? new Date(existingRecord.updatedAt).getTime() : new Date(existingRecord.createdAt || 0).getTime();
+                    const incomingTime = timestamp;
 
-                if (localTime > incomingTime) {
-                    this.logger.debug(`[Sync] Conflict resolved: Local ${entity} ${recordId} is newer. Dropping incoming ${action}.`);
-                    return; // Ignore
+                    if (localTime > incomingTime) {
+                        this.logger.debug(`[Sync] Conflict resolved: Local ${entity} ${recordId} is newer. Dropping incoming ${action}.`);
+                        return; // Ignore
+                    }
+
+                    await model.update({
+                        where: { id: recordId },
+                        data: recordData,
+                    });
+                } else {
+                    // Doesn't exist locally, we create it
+                    if (action === 'DELETE') return; // Cannot delete what doesn't exist
+
+                    await model.create({
+                        data: recordData,
+                    });
                 }
-
-                await model.update({
-                    where: { id: recordId },
-                    data: recordData,
-                });
-            } else {
-                // Doesn't exist locally, we create it
-                if (action === 'DELETE') return; // Cannot delete what doesn't exist
-
-                await model.create({
-                    data: recordData,
-                });
+            } else if (action === 'DELETE') {
+                const existingRecord = await model.findUnique({ where: { id: recordId } });
+                if (existingRecord) {
+                    // We could check timestamp, but a delete usually wins.
+                    await model.delete({ where: { id: recordId } });
+                }
             }
-        } else if (action === 'DELETE') {
-            const existingRecord = await model.findUnique({ where: { id: recordId } });
-            if (existingRecord) {
-                // We could check timestamp, but a delete usually wins.
-                await model.delete({ where: { id: recordId } });
+        } catch (error: any) {
+            if (error.message && error.message.includes('Foreign key constraint violated')) {
+                this.logger.warn(`[Sync] Dropped operation for ${entity} ${recordId}: Dependency missing (likely deleted previously).`);
+                return;
             }
+            throw error;
         }
     }
 

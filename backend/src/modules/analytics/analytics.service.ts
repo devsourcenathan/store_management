@@ -189,8 +189,8 @@ export class AnalyticsService {
         const topProducts = await this.prisma.$queryRaw`
             SELECT 
                 p.name, 
-                SUM(si.quantity) as "totalQuantity",
-                SUM(si.total) as "totalRevenue"
+                CAST(SUM(si.quantity) AS REAL) as "totalQuantity",
+                CAST(SUM(si.total) AS REAL) as "totalRevenue"
             FROM sale_items si
             JOIN sales s ON si."saleId" = s.id
             JOIN products p ON si."productId" = p.id

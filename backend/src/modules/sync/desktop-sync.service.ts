@@ -203,9 +203,9 @@ export class DesktopSyncService implements OnModuleInit {
                         return this.syncWithRemote(true, force);
                     }
                 }
-                this.logger.error(`Pull failed: ${pullError.message}`);
+                this.logger.error(`Pull failed: ${pullError.stack || pullError.message}`);
+                return { success: false, message: `Erreur critique lors de la synchronisation: ${pullError.message}` };
             }
-
             if (pushPendingRemaining > 0) {
                 return {
                     success: false,
@@ -318,6 +318,15 @@ export class DesktopSyncService implements OnModuleInit {
         
         await syncContext.run({ isApplyingSync: true }, async () => {
             try {
+                // Clear seed data to prevent unique constraint violations (e.g. email, sku)
+                await this.prisma.userStore.deleteMany({});
+                await this.prisma.userPermission.deleteMany({});
+                await this.prisma.rolePermission.deleteMany({});
+                await this.prisma.user.deleteMany({});
+                await this.prisma.product.deleteMany({});
+                await this.prisma.store.deleteMany({});
+                await this.prisma.organization.deleteMany({});
+
                 if (data.organization) await this.prisma.organization.upsert({ where: { id: data.organization.id }, update: data.organization, create: data.organization });
                 
                 // Helper function for batch upsert
@@ -526,12 +535,17 @@ export class DesktopSyncService implements OnModuleInit {
                     formData.append('entityId', media.entityId);
                     formData.append('id', media.id);
 
+                    // Clean up existing content-type to avoid conflicts with multipart/form-data
+                    const safeHeaders = { ...headers };
+                    delete safeHeaders['Content-Type'];
+                    delete safeHeaders['content-type'];
+
                     const uploadRes = await axios.post(
                         `${baseUrl}/media/upload`,
                         formData,
                         {
                             headers: {
-                                ...headers,
+                                ...safeHeaders,
                                 ...formData.getHeaders(),
                             },
                             maxContentLength: Infinity,
@@ -542,27 +556,43 @@ export class DesktopSyncService implements OnModuleInit {
                     // The cloud returns a Media record with the S3 url
                     const remoteUrl = uploadRes.data?.url;
                     if (remoteUrl) {
-                        // Update the local DB with the S3 URL so future sync ops carry it
+                        // Replace local URL with remote URL in known tables
                         const { syncContext } = require('../../common/prisma/prisma-sync.extension');
                         await syncContext.run({ isApplyingSync: true }, async () => {
                             await this.prisma.media.update({
                                 where: { id: media.id },
                                 data: { url: remoteUrl },
                             });
+                            await this.prisma.media.updateMany({
+                                where: { thumbnailUrl: media.url },
+                                data: { thumbnailUrl: remoteUrl },
+                            });
+                            await this.prisma.organization.updateMany({
+                                where: { logoUrl: media.url },
+                                data: { logoUrl: remoteUrl },
+                            });
+                            await this.prisma.store.updateMany({
+                                where: { logoUrl: media.url },
+                                data: { logoUrl: remoteUrl },
+                            });
+                            await this.prisma.productImage.updateMany({
+                                where: { url: media.url },
+                                data: { url: remoteUrl },
+                            });
                         });
                         
-                        // Also update any pending sync operations that reference this media
-                        // so they carry the S3 URL instead of the local one
-                        const pendingMediaOps = await this.prisma.syncOperation.findMany({
-                            where: { entityId: media.id, entity: 'Media', synced: false },
+                        // Replace the local URL in ALL pending sync operations' data payload
+                        // This ensures that when the operation is pushed, it carries the remote URL
+                        const pendingOps = await this.prisma.syncOperation.findMany({
+                            where: { synced: false },
                         });
-                        for (const op of pendingMediaOps) {
-                            let opData = typeof op.data === 'string' ? JSON.parse(op.data) : op.data;
-                            if (opData && typeof opData === 'object') {
-                                (opData as any).url = remoteUrl;
+                        for (const op of pendingOps) {
+                            let opDataStr = typeof op.data === 'string' ? op.data : JSON.stringify(op.data);
+                            if (opDataStr.includes(media.url)) {
+                                opDataStr = opDataStr.split(media.url).join(remoteUrl);
                                 await this.prisma.syncOperation.update({
                                     where: { id: op.id },
-                                    data: { data: opData },
+                                    data: { data: JSON.parse(opDataStr) },
                                 });
                             }
                         }

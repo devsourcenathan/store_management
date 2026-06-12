@@ -120,10 +120,10 @@ function main() {
     DATABASE_URL: databaseUrl,
   });
 
-  run('npx ts-node prisma/seed-desktop.ts', {
-    DATABASE_URL: databaseUrl,
-    DESKTOP_SEED_CONFIG: configPath,
-  });
+  // run('npx ts-node prisma/seed-desktop.ts', {
+  //   DATABASE_URL: databaseUrl,
+  //   DESKTOP_SEED_CONFIG: configPath,
+  // });
 
   if (!fs.existsSync(dbPath)) {
     console.error('Seed DB was not created:', dbPath);
