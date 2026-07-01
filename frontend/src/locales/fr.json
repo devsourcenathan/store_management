@@ -1,4 +1,4 @@
-﻿{
+{
     "common": {
         "loading": "Chargement...",
         "save": "Enregistrer",
@@ -54,6 +54,8 @@
         "pos": "Point de Vente",
         "sales": "Ventes",
         "sales_history": "Historique Ventes",
+        "cash_adjustments": "Écarts de Caisse",
+        "misc_transactions": "Mouvements divers",
         "customers": "Clients",
         "suppliers": "Fournisseurs",
         "supply_orders": "Commandes",
@@ -113,6 +115,14 @@
             "this_quarter": "Ce Trimestre",
             "this_year": "Cette Année",
             "custom": "Personnalisé"
+        },
+        "stats": {
+            "net_profit": "Bénéfice Net",
+            "misc_revenue": "Entrées Diverses",
+            "misc_expenses": "Dépenses Diverses",
+            "cash_diffs": "Écarts de Caisse",
+            "maintenance_revenue": "Revenus Maintenance",
+            "pending_maintenances": "Maintenances en cours"
         }
     },
     "pos": {
@@ -866,5 +876,51 @@
         "mobile": "Mobile Money",
         "credit": "Crédit",
         "bank_transfer": "Virement Bancaire"
+    },
+    "cash_adjustments": {
+        "title": "Ajustements de caisse",
+        "description": "Historique des écarts de caisse (surplus et manquants)",
+        "new_count": "Nouveau comptage",
+        "date": "Date",
+        "user": "Utilisateur",
+        "expected": "Attendu",
+        "counted": "Compté",
+        "difference": "Écart",
+        "reason": "Raison",
+        "no_data": "Aucun ajustement enregistré.",
+        "success": "Ajustement de caisse enregistré avec succès",
+        "error": "Erreur lors de l'enregistrement de l'ajustement",
+        "form_title": "Nouveau comptage de caisse",
+        "form_desc": "Saisissez le montant réel présent dans la caisse pour enregistrer un éventuel écart.",
+        "expected_amount": "Montant attendu",
+        "counted_amount": "Montant compté en caisse",
+        "reason_label": "Raison de l'écart",
+        "reason_placeholder": "Expliquez la raison de cet écart...",
+        "save": "Enregistrer l'ajustement",
+        "saving": "Enregistrement..."
+    },
+    "misc_transactions": {
+        "title": "Mouvements divers",
+        "description": "Suivi des entrées et sorties d'argent hors ventes standard (dépenses, petite caisse).",
+        "new_transaction": "Nouvelle transaction",
+        "date": "Date",
+        "type": "Type",
+        "amount": "Montant",
+        "desc": "Description",
+        "created_by": "Créé par",
+        "no_data": "Aucune transaction trouvée.",
+        "success": "Transaction enregistrée avec succès",
+        "error": "Erreur lors de l'enregistrement de la transaction",
+        "in": "ENTRÉE",
+        "out": "SORTIE",
+        "form_title": "Nouvelle transaction diverse",
+        "form_desc": "Saisissez les informations de la rentrée ou sortie d'argent.",
+        "type_label": "Type de transaction",
+        "type_out": "Sortie d'argent (Dépense)",
+        "type_in": "Entrée d'argent (Recette)",
+        "date_label": "Date et Heure (Optionnel)",
+        "desc_placeholder": "Achat fournitures, paiement électricité...",
+        "save": "Enregistrer la transaction",
+        "saving": "Enregistrement..."
     }
 }

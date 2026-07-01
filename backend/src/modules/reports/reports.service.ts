@@ -13,6 +13,40 @@ export class ReportsService {
         return value.toNumber();
     }
 
+    private async getMiscAndCashStats(organizationId: string, startDate: Date, endDate: Date, storeId?: string) {
+        const [miscIn, miscOut, cashAdj] = await Promise.all([
+            this.prisma.miscTransaction.aggregate({
+                where: {
+                    store: { organizationId, ...(storeId && { id: storeId }) },
+                    type: 'IN',
+                    createdAt: { gte: startDate, lte: endDate }
+                },
+                _sum: { amount: true }
+            }),
+            this.prisma.miscTransaction.aggregate({
+                where: {
+                    store: { organizationId, ...(storeId && { id: storeId }) },
+                    type: 'OUT',
+                    createdAt: { gte: startDate, lte: endDate }
+                },
+                _sum: { amount: true }
+            }),
+            this.prisma.cashAdjustment.aggregate({
+                where: {
+                    store: { organizationId, ...(storeId && { id: storeId }) },
+                    createdAt: { gte: startDate, lte: endDate }
+                },
+                _sum: { difference: true }
+            })
+        ]);
+
+        return {
+            miscRevenue: Number(miscIn._sum.amount || 0),
+            miscExpenses: Number(miscOut._sum.amount || 0),
+            cashDifference: Number(cashAdj._sum.difference || 0)
+        };
+    }
+
     async generateDailyReport(organizationId: string, date: Date = new Date(), storeId?: string) {
         const yesterday = subDays(date, 1);
         const startDate = startOfDay(yesterday);
@@ -173,15 +207,20 @@ export class ReportsService {
         const maintenanceProfit = maintenanceRevenue - maintenanceCost;
         const maintenanceCount = maintenances.length;
 
+        const { miscRevenue, miscExpenses, cashDifference } = await this.getMiscAndCashStats(organizationId, startDate, endDate, storeId);
+
         // Total Revenue & Profit
-        const totalRevenue = revenue + maintenanceRevenue;
-        const totalProfit = profit + maintenanceProfit;
+        const totalRevenue = revenue + maintenanceRevenue + miscRevenue;
+        const totalProfit = profit + maintenanceProfit + miscRevenue - miscExpenses + cashDifference;
 
         return {
             date: yesterday.toISOString().split('T')[0],
             revenue: totalRevenue, // Combined
             salesRevenue: revenue,
             maintenanceRevenue,
+            miscRevenue,
+            miscExpenses,
+            cashDifference,
             profit: totalProfit,
             salesProfit: profit,
             maintenanceProfit,
@@ -306,12 +345,17 @@ export class ReportsService {
         const maintenanceProfit = maintenanceRevenue - maintenanceCost;
         const maintenanceCount = maintenances.length;
 
+        const { miscRevenue, miscExpenses, cashDifference } = await this.getMiscAndCashStats(organizationId, startDate, endDate, storeId);
+
         return {
             week: `${startDate.toISOString().split('T')[0]} - ${endDate.toISOString().split('T')[0]}`,
-            revenue: revenue + maintenanceRevenue,
+            revenue: revenue + maintenanceRevenue + miscRevenue,
             salesRevenue: revenue,
             maintenanceRevenue,
-            profit: profit + maintenanceProfit,
+            miscRevenue,
+            miscExpenses,
+            cashDifference,
+            profit: profit + maintenanceProfit + miscRevenue - miscExpenses + cashDifference,
             salesCount: sales.length,
             maintenanceCount,
             topProducts,
@@ -406,12 +450,17 @@ export class ReportsService {
         const maintenanceProfit = maintenanceRevenue - maintenanceCost;
         const maintenanceCount = maintenances.length;
 
+        const { miscRevenue, miscExpenses, cashDifference } = await this.getMiscAndCashStats(organizationId, startDate, endDate, storeId);
+
         return {
             month: date.toLocaleString('default', { month: 'long', year: 'numeric' }),
-            revenue: revenue + maintenanceRevenue,
+            revenue: revenue + maintenanceRevenue + miscRevenue,
             salesRevenue: revenue,
             maintenanceRevenue,
-            profit: profit + maintenanceProfit,
+            miscRevenue,
+            miscExpenses,
+            cashDifference,
+            profit: profit + maintenanceProfit + miscRevenue - miscExpenses + cashDifference,
             salesCount: sales.length,
             maintenanceCount,
             categoryPerformance: Array.from(categoryRevenue.values())
@@ -484,13 +533,18 @@ export class ReportsService {
         const maintenanceProfit = maintenanceRevenue - maintenanceCost;
         const maintenanceCount = maintenances.length;
 
+        const { miscRevenue, miscExpenses, cashDifference } = await this.getMiscAndCashStats(organizationId, startDate, endDate, storeId);
+
         return {
             quarter,
             year: date.getFullYear(),
-            revenue: revenue + maintenanceRevenue,
+            revenue: revenue + maintenanceRevenue + miscRevenue,
             salesRevenue: revenue,
             maintenanceRevenue,
-            profit: profit + maintenanceProfit,
+            miscRevenue,
+            miscExpenses,
+            cashDifference,
+            profit: profit + maintenanceProfit + miscRevenue - miscExpenses + cashDifference,
             salesCount: sales.length,
             maintenanceCount,
         };
@@ -559,12 +613,17 @@ export class ReportsService {
         const maintenanceProfit = maintenanceRevenue - maintenanceCost;
         const maintenanceCount = maintenances.length;
 
+        const { miscRevenue, miscExpenses, cashDifference } = await this.getMiscAndCashStats(organizationId, startDate, endDate, storeId);
+
         return {
             year: date.getFullYear(),
-            revenue: revenue + maintenanceRevenue,
+            revenue: revenue + maintenanceRevenue + miscRevenue,
             salesRevenue: revenue,
             maintenanceRevenue,
-            profit: profit + maintenanceProfit,
+            miscRevenue,
+            miscExpenses,
+            cashDifference,
+            profit: profit + maintenanceProfit + miscRevenue - miscExpenses + cashDifference,
             salesCount: sales.length,
             maintenanceCount,
         };

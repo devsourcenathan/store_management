@@ -30,7 +30,11 @@ export class AnalyticsService {
             };
         }
 
-        const [totalProducts, lowStockItems, salesRevenue, pendingOrders, pendingMaintenances, maintenanceRevenue] = await Promise.all([
+        const [
+            totalProducts, lowStockItems, salesRevenue, pendingOrders, 
+            pendingMaintenances, maintenanceRevenue,
+            miscIn, miscOut, cashDiffs
+        ] = await Promise.all([
             // Total Products (Active)
             this.prisma.product.count({
                 where: { isActive: true }
@@ -78,19 +82,57 @@ export class AnalyticsService {
                     status: 'DONE',
                     ...dateFilter
                 },
-                _sum: {
-                    totalCost: true
-                }
+            }),
+
+            // Misc IN (Revenue)
+            this.prisma.miscTransaction.aggregate({
+                where: {
+                    storeId,
+                    type: 'IN',
+                    ...dateFilter
+                },
+                _sum: { amount: true }
+            }),
+
+            // Misc OUT (Expenses)
+            this.prisma.miscTransaction.aggregate({
+                where: {
+                    storeId,
+                    type: 'OUT',
+                    ...dateFilter
+                },
+                _sum: { amount: true }
+            }),
+
+            // Cash Adjustments (Differences)
+            this.prisma.cashAdjustment.aggregate({
+                where: {
+                    storeId,
+                    ...dateFilter
+                },
+                _sum: { difference: true }
             })
         ]);
+
+        const todaysSalesVal = salesRevenue._sum.totalAmount ? Number(salesRevenue._sum.totalAmount) : 0;
+        const maintenanceRevVal = maintenanceRevenue._sum.totalCost ? Number(maintenanceRevenue._sum.totalCost) : 0;
+        const miscRevenue = miscIn._sum.amount ? Number(miscIn._sum.amount) : 0;
+        const miscExpenses = miscOut._sum.amount ? Number(miscOut._sum.amount) : 0;
+        const netCashDifference = cashDiffs._sum.difference ? Number(cashDiffs._sum.difference) : 0;
+        
+        const netProfit = todaysSalesVal + maintenanceRevVal + miscRevenue - miscExpenses + netCashDifference;
 
         return {
             totalProducts,
             lowStockItems,
-            todaysSales: salesRevenue._sum.totalAmount || 0,
+            todaysSales: todaysSalesVal,
             pendingOrders,
             pendingMaintenances,
-            maintenanceRevenue: maintenanceRevenue._sum.totalCost || 0
+            maintenanceRevenue: maintenanceRevVal,
+            miscRevenue,
+            miscExpenses,
+            netCashDifference,
+            netProfit
         };
     }
 
@@ -242,7 +284,11 @@ export class AnalyticsService {
 
         const storeIds = stores.map(s => s.id);
 
-        const [totalSalesRevenue, totalSalesCount, totalProducts, totalCustomers, salesWithItems, maintenanceRevenue, totalMaintenances] = await Promise.all([
+        const [
+            totalSalesRevenue, totalSalesCount, totalProducts, totalCustomers, 
+            salesWithItems, maintenanceRevenue, totalMaintenances,
+            miscIn, miscOut, cashDiffs
+        ] = await Promise.all([
             // Total Sales Revenue (prix de vente total)
             this.prisma.sale.aggregate({
                 where: {
@@ -312,6 +358,35 @@ export class AnalyticsService {
                     storeId: { in: storeIds },
                     ...dateFilter
                 }
+            }),
+
+            // Misc IN (Revenue)
+            this.prisma.miscTransaction.aggregate({
+                where: {
+                    storeId: { in: storeIds },
+                    type: 'IN',
+                    ...dateFilter
+                },
+                _sum: { amount: true }
+            }),
+
+            // Misc OUT (Expenses)
+            this.prisma.miscTransaction.aggregate({
+                where: {
+                    storeId: { in: storeIds },
+                    type: 'OUT',
+                    ...dateFilter
+                },
+                _sum: { amount: true }
+            }),
+
+            // Cash Adjustments (Differences)
+            this.prisma.cashAdjustment.aggregate({
+                where: {
+                    storeId: { in: storeIds },
+                    ...dateFilter
+                },
+                _sum: { difference: true }
             })
         ]);
 
@@ -333,20 +408,21 @@ export class AnalyticsService {
         // Note: Maintenance profit is not fully calculated here (labor cost is profit, parts have cost), 
         // but for now we might simplisticly assume maintenance revenue contributes to "Revenue".
         // If we want total revenue of the organization:
-        const combinedRevenue = actualSalesRevenue + actualMaintenanceRevenue;
+        const miscRevenue = Number(miscIn._sum.amount || 0);
+        const miscExpenses = Number(miscOut._sum.amount || 0);
+        const netCashDifference = Number(cashDiffs._sum.difference || 0);
 
-        // Total Profit currently only considers Sales profit. 
-        // To be accurate with maintenance, we would need maintenance costs (parts cost).
-        // For now, let's keep totalProfit as Sales Profit, or we can try to approximate.
-        // Let's iterate maintenances if we want accurate profit, but for now just adding revenue field is safer.
-
-        const totalProfit = actualSalesRevenue - totalCostOfGoodsSold;
+        const combinedRevenue = actualSalesRevenue + actualMaintenanceRevenue + miscRevenue;
+        const totalProfit = actualSalesRevenue - totalCostOfGoodsSold + miscRevenue - miscExpenses + netCashDifference;
 
         return {
             totalSalesRevenue: actualSalesRevenue,
             totalMaintenanceRevenue: actualMaintenanceRevenue,
             totalRevenue: combinedRevenue,
             totalProfit: totalProfit,
+            miscRevenue,
+            miscExpenses,
+            netCashDifference,
             totalSales: totalSalesCount,
             totalMaintenances,
             totalProducts,
@@ -389,7 +465,7 @@ export class AnalyticsService {
         });
 
         const statsPromises = stores.map(async (store) => {
-            const [revenue, salesCount, productCount, maintenanceRevenue, activeMaintenances] = await Promise.all([
+            const [revenue, salesCount, productCount, maintenanceRevenue, activeMaintenances, miscIn, miscOut, cashDiff] = await Promise.all([
                 this.prisma.sale.aggregate({
                     where: {
                         storeId: store.id,
@@ -428,15 +504,34 @@ export class AnalyticsService {
                         storeId: store.id,
                         status: { in: ['PENDING', 'IN_PROGRESS'] }
                     }
+                }),
+                this.prisma.miscTransaction.aggregate({
+                    where: { storeId: store.id, type: 'IN', ...dateFilter },
+                    _sum: { amount: true }
+                }),
+                this.prisma.miscTransaction.aggregate({
+                    where: { storeId: store.id, type: 'OUT', ...dateFilter },
+                    _sum: { amount: true }
+                }),
+                this.prisma.cashAdjustment.aggregate({
+                    where: { storeId: store.id, ...dateFilter },
+                    _sum: { difference: true }
                 })
             ]);
+
+            const miscRevenue = Number(miscIn._sum.amount || 0);
+            const miscExpenses = Number(miscOut._sum.amount || 0);
+            const cashDifference = Number(cashDiff._sum.difference || 0);
 
             return {
                 storeId: store.id,
                 storeName: store.name,
                 storeAddress: store.address,
-                revenue: revenue._sum.totalAmount || 0,
-                maintenanceRevenue: maintenanceRevenue._sum.totalCost || 0,
+                revenue: Number(revenue._sum.totalAmount || 0) + miscRevenue,
+                maintenanceRevenue: Number(maintenanceRevenue._sum.totalCost || 0),
+                miscRevenue,
+                miscExpenses,
+                cashDifference,
                 salesCount,
                 productCount,
                 activeMaintenances

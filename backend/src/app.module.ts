@@ -35,6 +35,8 @@ import { DevicesModule } from './modules/devices/devices.module';
 import { MaintenancesModule } from './modules/maintenances/maintenances.module';
 import { PermissionsModule } from './permissions/permissions.module';
 import { CreditModule } from './modules/credit/credit.module';
+import { CashAdjustmentsModule } from './modules/cash-adjustments/cash-adjustments.module';
+import { MiscTransactionsModule } from './modules/misc-transactions/misc-transactions.module';
 
 @Module({
     imports: [
@@ -81,6 +83,8 @@ import { CreditModule } from './modules/credit/credit.module';
         MaintenancesModule,
         PermissionsModule,
         CreditModule,
+        CashAdjustmentsModule,
+        MiscTransactionsModule,
     ],
     controllers: [HealthController],
     providers: [

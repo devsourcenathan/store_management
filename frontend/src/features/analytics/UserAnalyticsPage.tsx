@@ -450,6 +450,12 @@ export function UserAnalyticsPage() {
                                         {t('user_analytics.rankings.sales')}
                                     </th>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                        {t('dashboard.stats.misc_expenses', 'Dépenses')}
+                                    </th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                        {t('dashboard.stats.cash_diffs', 'Écarts')}
+                                    </th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                                         {t('user_analytics.rankings.maintenances')}
                                     </th>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
@@ -481,6 +487,12 @@ export function UserAnalyticsPage() {
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                             {ranking.salesCount || 0}
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-red-500">
+                                            {ranking.miscExpenses ? `-${ranking.miscExpenses.toLocaleString()} F` : '0 F'}
+                                        </td>
+                                        <td className={`px-6 py-4 whitespace-nowrap text-sm ${ranking.cashDifference < 0 ? 'text-red-500' : 'text-green-500'}`}>
+                                            {ranking.cashDifference ? `${ranking.cashDifference.toLocaleString()} F` : '0 F'}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                             {ranking.maintenancesCount || 0}

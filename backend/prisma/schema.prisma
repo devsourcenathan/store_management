@@ -62,6 +62,8 @@ model Store {
   userStores      UserStore[]
   stockAlerts     StockAlert[]
   deletedProducts DeletedProduct[]
+  cashAdjustments CashAdjustment[]
+  miscTransactions MiscTransaction[]
 
   @@map("stores")
 }
@@ -96,6 +98,8 @@ model User {
   syncMetadata    SyncMetadata[]
   userPermissions UserPermission[]
   salesCreated    Sale[]           @relation("SaleCreator")
+  cashAdjustmentsCreated CashAdjustment[] @relation("CashAdjustmentCreator")
+  miscTransactionsCreated MiscTransaction[] @relation("MiscTransactionCreator")
 
   @@map("users")
 }
@@ -1067,4 +1071,55 @@ model UserPermission {
 
   @@unique([userId, permissionId])
   @@map("user_permissions")
+}
+
+// ============================================
+// CASH MANAGEMENT
+// ============================================
+
+model CashAdjustment {
+  id            String   @id @default(uuid())
+  storeId       String
+  expected      Decimal  @db.Decimal(10, 2)
+  counted       Decimal  @db.Decimal(10, 2)
+  difference    Decimal  @db.Decimal(10, 2)
+  reason        String?
+  createdBy     String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  store         Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  creator       User     @relation("CashAdjustmentCreator", fields: [createdBy], references: [id])
+
+  @@index([storeId, createdAt])
+  @@index([createdBy])
+  @@map("cash_adjustments")
+}
+
+// ============================================
+// MISC TRANSACTIONS
+// ============================================
+
+enum MiscTransactionType {
+  IN
+  OUT
+}
+
+model MiscTransaction {
+  id          String              @id @default(uuid())
+  storeId     String
+  date        DateTime            @default(now())
+  type        MiscTransactionType
+  amount      Decimal             @db.Decimal(10, 2)
+  description String
+  createdBy   String
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+
+  store       Store               @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  creator     User                @relation("MiscTransactionCreator", fields: [createdBy], references: [id])
+
+  @@index([storeId, date])
+  @@index([createdBy])
+  @@map("misc_transactions")
 }
