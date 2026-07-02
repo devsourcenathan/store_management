@@ -56,8 +56,20 @@ export class CashAdjustmentsService {
       orderBy: { createdAt: 'desc' },
     });
 
-    const startDate = lastAdjustment ? lastAdjustment.createdAt : new Date(0);
-    const startingBalance = lastAdjustment ? Number(lastAdjustment.counted) : 0;
+    const now = new Date();
+    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    
+    let startDate = startOfToday;
+    let startingBalance = 0;
+
+    if (lastAdjustment) {
+      startingBalance = Number(lastAdjustment.counted);
+      if (lastAdjustment.createdAt > startOfToday) {
+        startDate = lastAdjustment.createdAt;
+      } else {
+        startDate = startOfToday;
+      }
+    }
 
     const cashPayments = await this.prisma.payment.aggregate({
       _sum: { amount: true },
