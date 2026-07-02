@@ -82,6 +82,9 @@ export class AnalyticsService {
                     status: 'DONE',
                     ...dateFilter
                 },
+                _sum: {
+                    totalCost: true
+                }
             }),
 
             // Misc IN (Revenue)
