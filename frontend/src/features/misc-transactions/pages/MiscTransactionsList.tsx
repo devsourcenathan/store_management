@@ -6,7 +6,6 @@ import { useStore } from '@/features/stores/StoreProvider';
 import { MiscTransaction, CreateMiscTransactionDto } from '../types';
 import { MiscTransactionForm } from '../components/MiscTransactionForm';
 import { Button } from '@/components/ui/button';
-import { useThemedButtonStyle, getThemedButtonClasses } from '@/hooks/useThemedButton';
 import { Plus } from 'lucide-react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/Sheet';
 import { format } from 'date-fns';
@@ -16,7 +15,6 @@ export function MiscTransactionsList() {
     const { t } = useTranslation();
     const { currentStore } = useStore();
     const queryClient = useQueryClient();
-    const themedButtonStyle = useThemedButtonStyle('primary');
     const [isFormOpen, setIsFormOpen] = useState(false);
 
     const { data: transactions, isLoading } = useQuery<MiscTransaction[]>({
@@ -58,10 +56,9 @@ export function MiscTransactionsList() {
                 </div>
                 <button 
                     onClick={() => setIsFormOpen(true)}
-                    className={getThemedButtonClasses('primary', 'md')}
-                    style={themedButtonStyle}
+                    className="w-full sm:w-auto px-4 py-2 btn-theme-primary rounded-lg transition-colors flex items-center justify-center whitespace-nowrap shadow-sm hover:shadow"
                 >
-                    <Plus className="w-5 h-5 mr-2" />
+                    <Plus className="w-4 h-4 mr-2" />
                     {t('misc_transactions.new_transaction')}
                 </button>
             </div>

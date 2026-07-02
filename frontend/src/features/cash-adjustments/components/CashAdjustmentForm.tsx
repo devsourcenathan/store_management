@@ -5,12 +5,10 @@ import * as z from 'zod';
 import { useTranslation } from 'react-i18next';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useThemedButtonStyle, getThemedButtonClasses } from '@/hooks/useThemedButton';
 import { CreateCashAdjustmentDto } from '../types';
 
 export function CashAdjustmentForm({ initialExpected = 0, onSubmit, isLoading }: { initialExpected?: number; onSubmit: (data: CreateCashAdjustmentDto) => void; isLoading?: boolean; }) {
     const { t } = useTranslation();
-    const themedButtonStyle = useThemedButtonStyle('primary');
     
     const cashAdjustmentSchema = z.object({
         expected: z.number().min(0),
@@ -119,8 +117,7 @@ export function CashAdjustmentForm({ initialExpected = 0, onSubmit, isLoading }:
                 <button 
                     type="submit" 
                     disabled={isLoading}
-                    className={getThemedButtonClasses('primary', 'md')}
-                    style={themedButtonStyle}
+                    className="px-4 py-2 btn-theme-primary rounded-md disabled:opacity-50 transition-colors shadow-sm"
                 >
                     {isLoading ? t('cash_adjustments.saving') : t('cash_adjustments.save')}
                 </button>
