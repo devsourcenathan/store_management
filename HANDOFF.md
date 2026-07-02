@@ -1,6 +1,6 @@
 # Stock Management PWA - Project Handoff
 
-## 📋 Project Summary
+## 📋 Summary
 
 This is a **production-ready PWA** for stock management with offline-first capabilities, multi-tenancy, and comprehensive business logic.
 
