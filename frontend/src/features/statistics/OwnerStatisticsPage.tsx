@@ -157,6 +157,8 @@ export function OwnerStatisticsPage() {
         { header: t('statistics.total_revenue'), key: 'revenue' },
         { header: t('statistics.maintenance_revenue', 'Revenus Maintenance'), key: 'maintenanceRevenue' },
         { header: t('statistics.total_sales'), key: 'salesCount' },
+        { header: t('dashboard.stats.misc_expenses', 'Dépenses Diverses'), key: 'miscExpenses' },
+        { header: t('dashboard.stats.cash_diffs', 'Écarts de Caisse'), key: 'cashDifference' },
         { header: t('statistics.active_maintenances', 'Maintenances Actives'), key: 'activeMaintenances' },
         { header: t('statistics.total_products'), key: 'productCount' },
     ];
@@ -285,6 +287,27 @@ export function OwnerStatisticsPage() {
                     isLoading={isLoadingAggregated}
                 />
                 <StatCard
+                    title={t('dashboard.stats.misc_revenue', 'Entrées Diverses')}
+                    value={`${aggregatedStats?.miscRevenue?.toLocaleString() || 0} F`}
+                    icon={<DollarSign className="w-6 h-6" />}
+                    color="blue"
+                    isLoading={isLoadingAggregated}
+                />
+                <StatCard
+                    title={t('dashboard.stats.misc_expenses', 'Dépenses Diverses')}
+                    value={`${aggregatedStats?.miscExpenses?.toLocaleString() || 0} F`}
+                    icon={<DollarSign className="w-6 h-6" />}
+                    color="red"
+                    isLoading={isLoadingAggregated}
+                />
+                <StatCard
+                    title={t('dashboard.stats.cash_diffs', 'Écarts de Caisse')}
+                    value={`${aggregatedStats?.netCashDifference?.toLocaleString() || 0} F`}
+                    icon={<DollarSign className="w-6 h-6" />}
+                    color={aggregatedStats?.netCashDifference >= 0 ? "emerald" : "red"}
+                    isLoading={isLoadingAggregated}
+                />
+                <StatCard
                     title={t('statistics.total_maintenances', 'Total Maintenances')}
                     value={aggregatedStats?.totalMaintenances || 0}
                     icon={<Wrench className="w-6 h-6" />}
@@ -363,12 +386,18 @@ export function OwnerStatisticsPage() {
                                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                                     {t('statistics.maintenance_revenue', 'Rev. Maint.')}
                                 </th>
-                                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                    {t('statistics.total_sales')}
-                                </th>
-                                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                    {t('statistics.active_maintenances', 'Maint. Act.')}
-                                </th>
+                                    <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                        {t('statistics.total_sales')}
+                                    </th>
+                                    <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                        {t('dashboard.stats.misc_expenses', 'Dépenses Diverses')}
+                                    </th>
+                                    <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                        {t('dashboard.stats.cash_diffs', 'Écarts de Caisse')}
+                                    </th>
+                                    <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                        {t('statistics.active_maintenances', 'Maintenances Actives')}
+                                    </th>
                                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                                     {t('statistics.total_products')}
                                 </th>
@@ -398,12 +427,18 @@ export function OwnerStatisticsPage() {
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900 dark:text-gray-100">
                                             {store.maintenanceRevenue ? store.maintenanceRevenue.toLocaleString() + ' F' : '0 F'}
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900 dark:text-gray-100">
-                                            {store.salesCount}
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900 dark:text-gray-100">
-                                            {store.activeMaintenances || 0}
-                                        </td>
+                                            <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                                {store.salesCount}
+                                            </td>
+                                            <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-red-600 dark:text-red-400 font-medium">
+                                                {store.miscExpenses?.toLocaleString()} F
+                                            </td>
+                                            <td className={`px-4 sm:px-6 py-4 whitespace-nowrap text-sm font-medium ${store.cashDifference >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                                                {store.cashDifference > 0 ? '+' : ''}{store.cashDifference?.toLocaleString()} F
+                                            </td>
+                                            <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                                {store.activeMaintenances}
+                                            </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900 dark:text-gray-100">
                                             {store.productCount}
                                         </td>

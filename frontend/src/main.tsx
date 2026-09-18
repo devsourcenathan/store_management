@@ -7,6 +7,11 @@ import { ThemeProvider } from '@/components/ThemeProvider';
 import * as Sentry from "@sentry/react";
 import { clarity } from 'react-microsoft-clarity';
 
+window.addEventListener("vite:preloadError", (event) => {
+  event.preventDefault();
+  window.location.reload();
+});
+
 if (import.meta.env.VITE_CLARITY_PROJECT_ID) {
     clarity.init(import.meta.env.VITE_CLARITY_PROJECT_ID);
 }

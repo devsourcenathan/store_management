@@ -33,7 +33,7 @@ cp .env.example .env
 
 **Exemple `.env`:**
 ```env
-DATABASE_URL="postgresql://postgres:postgres@localhost:5432/stock_management?schema=public"
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/stock_management_prod?schema=public"
 JWT_SECRET=your-super-secret-jwt-key-change-this
 JWT_EXPIRATION=15m
 ```

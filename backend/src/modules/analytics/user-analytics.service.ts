@@ -62,15 +62,19 @@ export class UserAnalyticsService {
     async getUserSalesStats(params: UserAnalyticsParams) {
         const { organizationId, userId, storeId, startDate, endDate } = params;
 
-        // Build where clause
-        const where: any = {
+        const baseWhere: any = {
             createdAt: {
                 gte: startDate,
                 lte: endDate
             },
-            status: 'PAID',
-            ...(userId && { createdBy: userId }),
             ...(storeId && { storeId })
+        };
+
+        // Build where clause for sales
+        const where: any = {
+            ...baseWhere,
+            status: 'PAID',
+            ...(userId && { createdBy: userId })
         };
 
         // If no userId specified, get stats for all users
@@ -82,7 +86,7 @@ export class UserAnalyticsService {
             });
 
             const userStats = await Promise.all(users.map(async (user) => {
-                const [salesCount, salesAggregate, itemsCount] = await Promise.all([
+                const [salesCount, salesAggregate, itemsCount, miscInAggr, miscOutAggr, cashDiffAggr] = await Promise.all([
                     // Number of sales
                     this.prisma.sale.count({
                         where: { ...where, createdBy: user.id }
@@ -100,10 +104,32 @@ export class UserAnalyticsService {
                             sale: { ...where, createdBy: user.id }
                         },
                         _sum: { quantity: true }
+                    }),
+
+                    // Misc IN
+                    this.prisma.miscTransaction.aggregate({
+                        where: { ...baseWhere, type: 'IN', createdBy: user.id },
+                        _sum: { amount: true }
+                    }),
+
+                    // Misc OUT
+                    this.prisma.miscTransaction.aggregate({
+                        where: { ...baseWhere, type: 'OUT', createdBy: user.id },
+                        _sum: { amount: true }
+                    }),
+
+                    // Cash Adjustments Difference
+                    this.prisma.cashAdjustment.aggregate({
+                        where: { ...baseWhere, createdBy: user.id },
+                        _sum: { difference: true }
                     })
                 ]);
 
                 const totalAmount = Number(salesAggregate._sum.totalAmount || 0);
+                const miscRevenue = Number(miscInAggr._sum.amount || 0);
+                const miscExpenses = Number(miscOutAggr._sum.amount || 0);
+                const cashDifference = Number(cashDiffAggr._sum.difference || 0);
+
                 const averageBasket = salesCount > 0 ? totalAmount / salesCount : 0;
 
                 return {
@@ -115,6 +141,9 @@ export class UserAnalyticsService {
                     },
                     salesCount,
                     totalAmount,
+                    miscRevenue,
+                    miscExpenses,
+                    cashDifference,
                     itemsSold: itemsCount._sum.quantity || 0,
                     averageBasket
                 };
@@ -124,7 +153,7 @@ export class UserAnalyticsService {
         }
 
         // Single user stats
-        const [salesCount, salesAggregate, itemsCount] = await Promise.all([
+        const [salesCount, salesAggregate, itemsCount, miscInAggr, miscOutAggr, cashDiffAggr] = await Promise.all([
             this.prisma.sale.count({ where }),
             this.prisma.sale.aggregate({
                 where,
@@ -133,15 +162,34 @@ export class UserAnalyticsService {
             this.prisma.saleItem.aggregate({
                 where: { sale: where },
                 _sum: { quantity: true }
+            }),
+            this.prisma.miscTransaction.aggregate({
+                where: { ...baseWhere, type: 'IN', createdBy: userId },
+                _sum: { amount: true }
+            }),
+            this.prisma.miscTransaction.aggregate({
+                where: { ...baseWhere, type: 'OUT', createdBy: userId },
+                _sum: { amount: true }
+            }),
+            this.prisma.cashAdjustment.aggregate({
+                where: { ...baseWhere, createdBy: userId },
+                _sum: { difference: true }
             })
         ]);
 
         const totalAmount = Number(salesAggregate._sum.totalAmount || 0);
+        const miscRevenue = Number(miscInAggr._sum.amount || 0);
+        const miscExpenses = Number(miscOutAggr._sum.amount || 0);
+        const cashDifference = Number(cashDiffAggr._sum.difference || 0);
+
         const averageBasket = salesCount > 0 ? totalAmount / salesCount : 0;
 
         return {
             salesCount,
             totalAmount,
+            miscRevenue,
+            miscExpenses,
+            cashDifference,
             itemsSold: itemsCount._sum.quantity || 0,
             averageBasket
         };
@@ -364,11 +412,14 @@ export class UserAnalyticsService {
                     user: stat.user,
                     salesCount: stat.salesCount || 0,
                     salesRevenue: stat.totalAmount || 0,
+                    miscRevenue: stat.miscRevenue || 0,
+                    miscExpenses: stat.miscExpenses || 0,
+                    cashDifference: stat.cashDifference || 0,
                     maintenancesCount: 0,
                     maintenanceRevenue: 0,
                     subscriptionsCount: 0,
                     subscriptionRevenue: 0,
-                    totalRevenue: stat.totalAmount || 0
+                    totalRevenue: (stat.totalAmount || 0) + (stat.miscRevenue || 0) - (stat.miscExpenses || 0) + (stat.cashDifference || 0)
                 });
             });
 
@@ -385,6 +436,9 @@ export class UserAnalyticsService {
                         user: stat.user,
                         salesCount: 0,
                         salesRevenue: 0,
+                        miscRevenue: 0,
+                        miscExpenses: 0,
+                        cashDifference: 0,
                         maintenancesCount: stat.created || 0,
                         maintenanceRevenue: stat.revenue || 0,
                         subscriptionsCount: 0,
@@ -407,6 +461,9 @@ export class UserAnalyticsService {
                         user: stat.user,
                         salesCount: 0,
                         salesRevenue: 0,
+                        miscRevenue: 0,
+                        miscExpenses: 0,
+                        cashDifference: 0,
                         maintenancesCount: 0,
                         maintenanceRevenue: 0,
                         subscriptionsCount: stat.subscriptionsCreated || 0,

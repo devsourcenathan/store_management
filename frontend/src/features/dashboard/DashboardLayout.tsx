@@ -39,7 +39,9 @@ import {
     FileText,
     TrendingUp,
     PanelLeftClose,
-    PanelLeft
+    PanelLeft,
+    Scale,
+    ArrowRightLeft
 } from 'lucide-react';
 
 export function DashboardLayout() {
@@ -73,6 +75,8 @@ export function DashboardLayout() {
             items: [
                 { name: t('nav.sales_history'), href: '/sales', icon: ShoppingCart, resource: 'sales' },
                 { name: t('nav.pos'), href: '/pos', icon: Calculator, resource: 'pos' },
+                { name: t('nav.cash_adjustments'), href: '/cash-adjustments', icon: Scale, resource: 'sales' },
+                { name: t('nav.misc_transactions'), href: '/misc-transactions', icon: ArrowRightLeft, resource: 'sales' },
                 { name: t('nav.customers'), href: '/customers', icon: Users, resource: 'customers' },
                 { name: t('nav.suppliers'), href: '/suppliers', icon: Truck, resource: 'suppliers' },
                 { name: t('nav.supply_orders'), href: '/supplies', icon: Package, resource: 'supply_orders' },

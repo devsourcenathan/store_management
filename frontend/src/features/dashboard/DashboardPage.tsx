@@ -222,7 +222,14 @@ export function DashboardPage() {
             </div>
 
             {/* Stats Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+                <StatCard
+                    title={t('dashboard.stats.net_profit', 'Bénéfice Net')}
+                    value={stats?.netProfit ? `${stats.netProfit.toLocaleString()} F` : '0 F'}
+                    icon={<DollarIcon />}
+                    color="indigo"
+                    isLoading={isLoadingStats}
+                />
                 <StatCard
                     title={`${t('dashboard.today_revenue')} (${periodLabel})`}
                     value={stats?.todaysSales ? `${stats.todaysSales.toLocaleString()} F` : '0 F'}
@@ -238,10 +245,31 @@ export function DashboardPage() {
                     isLoading={isLoadingStats}
                 />
                 <StatCard
+                    title={t('dashboard.stats.misc_revenue', 'Entrées Diverses')}
+                    value={stats?.miscRevenue ? `${stats.miscRevenue.toLocaleString()} F` : '0 F'}
+                    icon={<DollarIcon />}
+                    color="blue"
+                    isLoading={isLoadingStats}
+                />
+                <StatCard
+                    title={t('dashboard.stats.misc_expenses', 'Dépenses Diverses')}
+                    value={stats?.miscExpenses ? `${stats.miscExpenses.toLocaleString()} F` : '0 F'}
+                    icon={<AlertIcon />}
+                    color="red"
+                    isLoading={isLoadingStats}
+                />
+                <StatCard
+                    title={t('dashboard.stats.cash_diffs', 'Écarts de Caisse')}
+                    value={stats?.netCashDifference ? `${stats.netCashDifference.toLocaleString()} F` : '0 F'}
+                    icon={<CalculatorIcon />}
+                    color={stats?.netCashDifference < 0 ? 'red' : 'green'}
+                    isLoading={isLoadingStats}
+                />
+                <StatCard
                     title={t('dashboard.total_products')}
                     value={stats?.totalProducts || 0}
                     icon={<BoxIcon />}
-                    color="indigo"
+                    color="purple"
                     isLoading={isLoadingStats}
                 />
                 <StatCard
@@ -311,6 +339,7 @@ function StatCard({ title, value, icon, color, isLoading }: any) {
         yellow: 'bg-yellow-50 text-yellow-600 dark:bg-yellow-900/40 dark:text-yellow-400',
         purple: 'bg-purple-50 text-purple-600 dark:bg-purple-900/40 dark:text-purple-400',
         green: 'bg-green-50 text-green-600 dark:bg-green-900/40 dark:text-green-400',
+        red: 'bg-red-50 text-red-600 dark:bg-red-900/40 dark:text-red-400',
     };
 
     return (

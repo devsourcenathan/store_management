@@ -11,7 +11,7 @@
 ```bash
 # Using psql
 psql -U postgres
-CREATE DATABASE stock_management;
+CREATE DATABASE stock_management_prod;
 \q
 ```
 
@@ -19,7 +19,7 @@ Or use Docker:
 ```bash
 docker run --name stock-postgres \
   -e POSTGRES_PASSWORD=postgres \
-  -e POSTGRES_DB=stock_management \
+  -e POSTGRES_DB=stock_management_prod \
   -p 5432:5432 \
   -d postgres:16-alpine
 ```
@@ -33,7 +33,7 @@ cp .env.example .env
 
 Edit `.env` and update:
 ```env
-DATABASE_URL="postgresql://postgres:postgres@localhost:5432/stock_management?schema=public"
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/stock_management_prod?schema=public"
 JWT_SECRET="your-super-secret-jwt-key-change-this"
 ```
 

@@ -1,4 +1,4 @@
-﻿{
+{
     "common": {
         "loading": "Loading...",
         "save": "Save",
@@ -54,6 +54,8 @@
         "pos": "Point of Sale",
         "sales": "Sales History",
         "sales_history": "Sales History",
+        "cash_adjustments": "Cash Adjustments",
+        "misc_transactions": "Misc Transactions",
         "customers": "Customers",
         "suppliers": "Suppliers",
         "supply_orders": "Orders",
@@ -113,6 +115,14 @@
             "this_quarter": "This Quarter",
             "this_year": "This Year",
             "custom": "Custom Range"
+        },
+        "stats": {
+            "net_profit": "Net Profit",
+            "misc_revenue": "Misc Revenue",
+            "misc_expenses": "Misc Expenses",
+            "cash_diffs": "Cash Differences",
+            "maintenance_revenue": "Maintenance Revenue",
+            "pending_maintenances": "Pending Maintenances"
         }
     },
     "pos": {
@@ -861,9 +871,55 @@
     },
     "payment_methods": {
         "cash": "Cash",
-        "card": "Card",
+        "card": "Credit Card",
         "mobile": "Mobile Money",
         "credit": "Credit",
         "bank_transfer": "Bank Transfer"
+    },
+    "cash_adjustments": {
+        "title": "Cash Adjustments",
+        "description": "History of cash discrepancies (surplus and shortages)",
+        "new_count": "New Count",
+        "date": "Date",
+        "user": "User",
+        "expected": "Expected",
+        "counted": "Counted",
+        "difference": "Difference",
+        "reason": "Reason",
+        "no_data": "No cash adjustments recorded.",
+        "success": "Cash adjustment saved successfully",
+        "error": "Error saving cash adjustment",
+        "form_title": "New Cash Count",
+        "form_desc": "Enter the actual amount in the register to record any discrepancy.",
+        "expected_amount": "Expected Amount",
+        "counted_amount": "Counted Amount",
+        "reason_label": "Reason for discrepancy",
+        "reason_placeholder": "Explain the reason for this difference...",
+        "save": "Save Adjustment",
+        "saving": "Saving..."
+    },
+    "misc_transactions": {
+        "title": "Misc Transactions",
+        "description": "Tracking of cash inflows/outflows outside standard sales (expenses, petty cash).",
+        "new_transaction": "New Transaction",
+        "date": "Date",
+        "type": "Type",
+        "amount": "Amount",
+        "desc": "Description",
+        "created_by": "Created By",
+        "no_data": "No transactions found.",
+        "success": "Transaction saved successfully",
+        "error": "Error saving transaction",
+        "in": "IN",
+        "out": "OUT",
+        "form_title": "New Misc Transaction",
+        "form_desc": "Enter the details of the cash inflow or outflow.",
+        "type_label": "Transaction Type",
+        "type_out": "Cash Outflow (Expense)",
+        "type_in": "Cash Inflow (Revenue)",
+        "date_label": "Date & Time (Optional)",
+        "desc_placeholder": "Office supplies, utility bill...",
+        "save": "Save Transaction",
+        "saving": "Saving..."
     }
 }
