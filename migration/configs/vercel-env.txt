@@ -1,0 +1,14 @@
+# ============================================
+# Variables d'environnement pour Vercel
+# ============================================
+# Configurer ces variables dans le dashboard Vercel
+# Settings > Environment Variables
+
+# API Backend URL
+VITE_API_URL=https://stockapi.sekuu.com/api
+
+# Sentry DSN
+VITE_SENTRY_DSN=https://8121455c923e6d952772266467899dd6@o4510816941113344.ingest.us.sentry.io/4510816944062464
+
+# Microsoft Clarity
+VITE_CLARITY_PROJECT_ID=vb5enlrofp
