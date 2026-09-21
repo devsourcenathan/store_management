@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '@/common/prisma/prisma.service';
 
 /**
@@ -13,8 +14,28 @@ export class StockCalculationService {
     constructor(private prisma: PrismaService) { }
 
     /**
+     * Signed-quantity SQL fragment shared by the aggregate queries below.
+     * ADJUST stores its direction in notes JSON; LIKE matching avoids
+     * JSON parse errors on legacy non-JSON notes (treated as IN, like before).
+     */
+    private static readonly SIGNED_QTY_SQL = `
+        CASE
+            WHEN "type" IN ('IN', 'RETURN', 'SUPPLY', 'TRANSFER_IN') THEN "quantity"
+            WHEN "type" IN ('OUT', 'SALE', 'TRANSFER_OUT', 'ADJUSTMENT') THEN -"quantity"
+            WHEN "type" = 'ADJUST'
+                AND ("notes" LIKE '%"direction":"OUT"%' OR "notes" LIKE '%"direction": "OUT"%')
+                THEN -"quantity"
+            WHEN "type" = 'ADJUST' THEN "quantity"
+            ELSE 0
+        END
+    `;
+
+    /**
      * Calculate current stock level for a product in a store
-     * 
+     *
+     * Perf Phase 2: aggregated in SQL (SUM + CASE) instead of loading
+     * every movement row into Node memory. O(1) transfer cost.
+     *
      * @param productId - Product UUID
      * @param storeId - Store UUID
      * @returns Current stock quantity
@@ -23,17 +44,16 @@ export class StockCalculationService {
         productId: string,
         storeId: string,
     ): Promise<number> {
-        const movements = await this.prisma.stockMovement.findMany({
-            where: {
-                productId,
-                storeId,
-            },
-            orderBy: {
-                createdAt: 'asc',
-            },
-        });
+        // Prisma.sql interpolates the CASE fragment as raw SQL,
+        // while productId/storeId stay bound parameters.
+        const signedQty = Prisma.sql([StockCalculationService.SIGNED_QTY_SQL]);
+        const rows = await this.prisma.$queryRaw<Array<{ stock: bigint }>>`
+            SELECT COALESCE(SUM(${signedQty}), 0) AS stock
+            FROM "stock_movements"
+            WHERE "productId" = ${productId} AND "storeId" = ${storeId}
+        `;
 
-        return this.calculateStockFromMovements(movements);
+        return Number(rows[0]?.stock ?? 0);
     }
 
     /**
@@ -82,52 +102,25 @@ export class StockCalculationService {
      * @param storeId - Store UUID
      * @returns Map of productId -> stock quantity
      */
+    /**
+     * Perf Phase 2: GROUP BY in SQL — one row per product instead of
+     * streaming the whole movement history into Node.
+     */
     async calculateAllStockInStore(
         storeId: string,
     ): Promise<Map<string, number>> {
-        const movements = await this.prisma.stockMovement.findMany({
-            where: { storeId },
-            orderBy: {
-                createdAt: 'asc',
-            },
-        });
+        const signedQty = Prisma.sql([StockCalculationService.SIGNED_QTY_SQL]);
+        const rows = await this.prisma.$queryRaw<Array<{ productId: string; stock: bigint }>>`
+            SELECT "productId" AS "productId", COALESCE(SUM(${signedQty}), 0) AS stock
+            FROM "stock_movements"
+            WHERE "storeId" = ${storeId}
+            GROUP BY "productId"
+        `;
 
         const stockByProduct = new Map<string, number>();
-
-        movements.forEach((movement) => {
-            const currentStock = stockByProduct.get(movement.productId) || 0;
-
-            switch (movement.type) {
-                case 'IN':
-                case 'RETURN':
-                case 'SUPPLY':
-                case 'TRANSFER_IN':
-                    stockByProduct.set(movement.productId, currentStock + movement.quantity);
-                    break;
-
-                case 'ADJUST':
-                    // ADJUST stores direction in notes as JSON
-                    try {
-                        const meta = JSON.parse(movement.notes || '{}');
-                        const direction = meta.direction || 'IN';
-                        const newStock = direction === 'IN'
-                            ? currentStock + movement.quantity
-                            : currentStock - movement.quantity;
-                        stockByProduct.set(movement.productId, newStock);
-                    } catch {
-                        // Fallback if notes is not JSON (old data)
-                        stockByProduct.set(movement.productId, currentStock + movement.quantity);
-                    }
-                    break;
-
-                case 'OUT':
-                case 'SALE':
-                case 'TRANSFER_OUT':
-                case 'ADJUSTMENT':
-                    stockByProduct.set(movement.productId, currentStock - movement.quantity);
-                    break;
-            }
-        });
+        for (const row of rows) {
+            stockByProduct.set(row.productId, Number(row.stock));
+        }
 
         return stockByProduct;
     }

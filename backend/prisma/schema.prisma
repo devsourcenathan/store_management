@@ -158,6 +158,9 @@ model Product {
   deletedInStores  DeletedProduct[]
 
   @@unique([organizationId, sku])
+  // Perf Phase 2: listing + search indexes
+  @@index([organizationId, isActive, name])
+  @@index([categoryId])
   @@map("products")
 }
 
@@ -287,6 +290,9 @@ model StockMovement {
   @@index([productId, storeId])
   @@index([createdAt])
   @@index([clientId])
+  // Perf Phase 2: store-wide scans + analytics filters
+  @@index([storeId, type, createdAt])
+  @@index([storeId, createdAt])
   @@map("stock_movements")
 }
 
@@ -355,6 +361,8 @@ model Sale {
   creator  User       @relation("SaleCreator", fields: [createdBy], references: [id])
 
   @@index([storeId, createdAt])
+  // Perf Phase 2: dashboard/reports filter on status + date
+  @@index([storeId, status, createdAt])
   @@index([customerId])
   @@index([clientId])
   @@index([createdBy])
@@ -380,6 +388,9 @@ model SaleItem {
   sale    Sale    @relation(fields: [saleId], references: [id], onDelete: Cascade)
   product Product @relation(fields: [productId], references: [id], onDelete: Restrict)
 
+  // Perf Phase 2: top-products aggregation joins
+  @@index([saleId])
+  @@index([productId])
   @@map("sale_items")
 }
 
@@ -395,6 +406,8 @@ model Payment {
 
   sale Sale @relation(fields: [saleId], references: [id], onDelete: Cascade)
 
+  // Perf Phase 2: cash-sales aggregation per sale
+  @@index([saleId])
   @@map("payments")
 }
 
@@ -1126,6 +1139,8 @@ model MiscTransaction {
   creator     User                @relation("MiscTransactionCreator", fields: [createdBy], references: [id])
 
   @@index([storeId, date])
+  // Perf Phase 2: dashboard aggregates filter on type + date
+  @@index([storeId, type, date])
   @@index([createdBy])
   @@map("misc_transactions")
 }

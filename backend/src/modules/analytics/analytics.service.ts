@@ -169,39 +169,26 @@ export class AnalyticsService {
     }
 
     async getSalesTrend(storeId: string, days: number = 7, startDate?: string, endDate?: string) {
-        let dateFilter: any = {};
-        let groupFormat = 'MMM dd'; // Default daily grouping
+        const groupFormat = 'MMM dd'; // Default daily grouping
 
-        if (startDate && endDate) {
-            dateFilter = {
-                createdAt: {
-                    gte: new Date(startDate),
-                    lte: new Date(endDate)
-                }
-            };
-        } else {
-            // Default to last N days
-            dateFilter = {
-                createdAt: {
-                    gte: subDays(new Date(), days)
-                }
-            };
-        }
+        const from = startDate && endDate ? new Date(startDate) : subDays(new Date(), days);
+        const to = startDate && endDate ? new Date(endDate) : new Date();
 
-        const sales = await this.prisma.sale.findMany({
-            where: {
-                storeId,
-                status: 'PAID',
-                ...dateFilter
-            },
-            select: {
-                createdAt: true,
-                totalAmount: true
-            },
-            orderBy: {
-                createdAt: 'asc'
-            }
-        });
+        // Perf Phase 2: group by day in SQL (DATE_TRUNC + SUM) instead of
+        // loading every sale row and grouping in Node. Uses the new
+        // (storeId, status, createdAt) index.
+        // NOTE: grouping uses DB timezone (UTC on Neon) vs server-local
+        // before — day boundaries may shift by hours for UTC+X zones.
+        const rows = await this.prisma.$queryRaw<Array<{ day: Date; amount: unknown }>>`
+            SELECT DATE_TRUNC('day', "createdAt") AS day, SUM("totalAmount") AS amount
+            FROM "sales"
+            WHERE "storeId" = ${storeId}
+              AND status = 'PAID'
+              AND "createdAt" >= ${from}
+              AND "createdAt" <= ${to}
+            GROUP BY 1
+            ORDER BY 1
+        `;
 
         // Grouping Logic
         const groupedData = new Map<string, number>();
@@ -209,10 +196,10 @@ export class AnalyticsService {
         // If specific range, we might want to pre-fill dates, but for now let's just group actuals to be safe or fill range if small
         // For simplicity in this fix, we will just return the actuals grouped by day
 
-        sales.forEach(sale => {
-            const dateStr = format(sale.createdAt, 'yyyy-MM-dd');
+        rows.forEach(row => {
+            const dateStr = format(new Date(row.day), 'yyyy-MM-dd');
             const current = groupedData.get(dateStr) || 0;
-            groupedData.set(dateStr, current + Number(sale.totalAmount));
+            groupedData.set(dateStr, current + Number(row.amount));
         });
 
         // If using default "last 7 days", ensure 0-filling

@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import { Suspense, lazy, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/services/api';
 import { useStore } from '../stores/StoreProvider';
-import { SalesChart } from './components/SalesChart';
+// Perf Phase 2: recharts is heavy — load the chart only when the dashboard
+// renders, keeping it out of the initial bundle.
+const SalesChart = lazy(() => import('./components/SalesChart').then(m => ({ default: m.SalesChart })));
 import { TopProducts } from './components/TopProducts';
 import { useTranslation } from 'react-i18next';
 import { StoreFormSheet } from '../settings/components/StoreFormSheet';
@@ -314,7 +316,9 @@ export function DashboardPage() {
                         <span className="text-sm font-medium text-theme-primary bg-theme-primary/10 px-3 py-1 rounded-full">{periodLabel}</span>
                     </div>
                     {/* Charts usually support dark mode via props or CSS variables, we might need to update SalesChart later */}
-                    <SalesChart data={salesTrend} isLoading={isLoadingTrend} />
+                    <Suspense fallback={<div className="animate-pulse h-64 bg-gray-50 dark:bg-gray-700/50 rounded-lg" />}>
+                        <SalesChart data={salesTrend} isLoading={isLoadingTrend} />
+                    </Suspense>
                 </div>
 
                 {/* Top Products */}

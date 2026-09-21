@@ -2,6 +2,7 @@ import { Injectable, NotFoundException, BadRequestException } from '@nestjs/comm
 import { PrismaService } from '@/common/prisma/prisma.service';
 import { S3Service } from './s3.service';
 import { MediaEntityType } from '@prisma/client';
+import sharp from 'sharp';
 
 @Injectable()
 export class MediaService {
@@ -27,9 +28,25 @@ export class MediaService {
             throw new BadRequestException('Only image files are allowed');
         }
 
+        // Perf Phase 2: downscale huge uploads (max width 1600px, format
+        // preserved) so S3/CDN payloads and POS rendering stay light.
+        // Falls back to the original buffer if sharp fails.
+        let uploadFile = file;
+        try {
+            const optimized = await sharp(file.buffer)
+                .rotate()
+                .resize({ width: 1600, withoutEnlargement: true })
+                .toBuffer();
+            if (optimized.length < file.buffer.length) {
+                uploadFile = { ...file, buffer: optimized, size: optimized.length };
+            }
+        } catch {
+            // Keep original file on optimization failure
+        }
+
         // Upload to S3
         const url = await this.s3Service.uploadFile(
-            file,
+            uploadFile,
             `${organizationId}/${entityType.toLowerCase()}`,
         );
 
@@ -39,7 +56,7 @@ export class MediaService {
                 filename: `${Date.now()}-${file.originalname}`,
                 originalName: file.originalname,
                 mimeType: file.mimetype,
-                size: file.size,
+                size: uploadFile.size,
                 url,
                 entityType,
                 entityId,

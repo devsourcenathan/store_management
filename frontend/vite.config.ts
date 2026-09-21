@@ -109,6 +109,27 @@ export default defineConfig({
             '@': path.resolve(__dirname, './src'),
         },
     },
+    build: {
+        // Perf Phase 2: stable vendor chunks = long-term caching on Vercel.
+        // Route chunks change often; vendor chunks only when deps change.
+        rollupOptions: {
+            output: {
+                manualChunks: {
+                    'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+                    'vendor-query': ['@tanstack/react-query', 'axios'],
+                    'vendor-ui': [
+                        '@radix-ui/react-dialog',
+                        '@radix-ui/react-dropdown-menu',
+                        '@radix-ui/react-label',
+                        '@radix-ui/react-popover',
+                        '@radix-ui/react-select',
+                        '@radix-ui/react-tabs',
+                        '@radix-ui/react-checkbox',
+                    ],
+                },
+            },
+        },
+    },
     server: {
         port: 5173,
         proxy: {

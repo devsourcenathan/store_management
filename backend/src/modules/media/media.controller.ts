@@ -24,7 +24,8 @@ export class MediaController {
     constructor(private mediaService: MediaService) { }
 
     @Post('upload')
-    @UseInterceptors(FileInterceptor('file'))
+    // Perf Phase 2: cap uploads at 10MB (default was unbounded memory storage)
+    @UseInterceptors(FileInterceptor('file', { limits: { fileSize: 10 * 1024 * 1024 } }))
     async upload(
         @UploadedFile() file: Express.Multer.File,
         @Body('entityType') entityType: MediaEntityType,
