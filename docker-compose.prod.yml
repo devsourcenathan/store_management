@@ -72,8 +72,10 @@ services:
       - stock-network
     ports:
       - "127.0.0.1:3000:3000"
+    # Perf Phase 2: prisma/migrations is gitignored, so `migrate deploy` is a
+    # no-op in prod — `db push` syncs the schema (tables + new indexes).
     command: >
-      sh -c "npx prisma migrate deploy && npm run start:prod"
+      sh -c "npx prisma migrate deploy && npx prisma db push && npm run start:prod"
 
   frontend:
     build:

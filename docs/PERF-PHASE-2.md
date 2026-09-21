@@ -1,6 +1,10 @@
 # Perf Phase 2 — mis en place (branche `perf/phase-2`, basée sur `perf/phase-1`)
 
-## Base de données (migration `20260918_perf_phase2_indexes`)
+## Base de données (`@@index` dans `schema.prisma`)
+Note : `backend/prisma/migrations/` est gitignoré, donc `migrate deploy`
+est un no-op en prod — c'est `prisma db push` (dans la commande de démarrage
+du container, cf. `docker-compose.prod.yml`) qui synchronise le schéma,
+index compris. Idempotent et sûr pour ces ajouts.
 Nouveaux index composites (noms convention Prisma) :
 - `products(organizationId, isActive, name)` + `products(categoryId)` — listings + recherche
 - `sales(storeId, status, createdAt)` — dashboard / trend / reports
