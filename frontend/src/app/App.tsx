@@ -19,8 +19,6 @@ const queryClient = new QueryClient({
 });
 
 function App() {
-    console.log("123456");
-
     return (
         <QueryClientProvider client={queryClient}>
             <BrowserRouter>

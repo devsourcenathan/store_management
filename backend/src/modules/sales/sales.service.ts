@@ -11,7 +11,20 @@ export class SalesService {
         private stockService: StockService,
     ) { }
 
-    async findAll(storeId: string, user: { id: string; role: string }, customerId?: string) {
+    // Perf Phase 1: bounded result set + lean selects to avoid overfetch.
+    // When page/limit are provided -> { data, meta } envelope.
+    // Otherwise legacy array (capped at 200) for backward compatibility.
+    async findAll(
+        storeId: string,
+        user: { id: string; role: string },
+        customerId?: string,
+        page?: number,
+        limit?: number,
+    ) {
+        const paginated = page !== undefined || limit !== undefined;
+        const take = Math.min(Math.max(limit ?? 200, 1), 200);
+        const skip = (Math.max(page ?? 1, 1) - 1) * take;
+
         const where: any = {
             storeId,
             ...(customerId && { customerId }),
@@ -22,30 +35,90 @@ export class SalesService {
             where.createdBy = user.id;
         }
 
-        return this.prisma.sale.findMany({
-            where,
-            include: {
-                customer: true,
-                items: {
-                    include: { product: true },
-                },
-                payments: true,
-                creator: {
-                    select: {
-                        firstName: true,
-                        lastName: true,
-                    },
-                },
-                creditContract: {
-                    include: {
-                        payments: {
-                            orderBy: { paidAt: 'desc' },
-                        },
+        const select = {
+            id: true,
+            storeId: true,
+            customerId: true,
+            totalAmount: true,
+            paidAmount: true,
+            discount: true,
+            hasCredit: true,
+            status: true,
+            notes: true,
+            createdBy: true,
+            createdAt: true,
+            updatedAt: true,
+            customer: {
+                select: { id: true, name: true, email: true, phone: true },
+            },
+            items: {
+                select: {
+                    id: true,
+                    productId: true,
+                    quantity: true,
+                    unitPrice: true,
+                    discount: true,
+                    total: true,
+                    product: {
+                        select: { id: true, name: true, sku: true, basePrice: true },
                     },
                 },
             },
-            orderBy: { createdAt: 'desc' },
-        });
+            payments: {
+                select: { id: true, amount: true, method: true, reference: true, notes: true, createdAt: true },
+            },
+            creator: {
+                select: {
+                    firstName: true,
+                    lastName: true,
+                },
+            },
+            creditContract: {
+                select: {
+                    id: true,
+                    totalAmount: true,
+                    paidAmount: true,
+                    remainingAmount: true,
+                    saleType: true,
+                    status: true,
+                    dueDate: true,
+                            payments: {
+                                select: { id: true, amount: true, method: true, paidAt: true },
+                                orderBy: { paidAt: 'desc' as const },
+                            },
+                },
+            },
+        };
+
+        if (!paginated) {
+            return this.prisma.sale.findMany({
+                where,
+                select,
+                orderBy: { createdAt: 'desc' },
+                take,
+            });
+        }
+
+        const [total, sales] = await Promise.all([
+            this.prisma.sale.count({ where }),
+            this.prisma.sale.findMany({
+                where,
+                select,
+                orderBy: { createdAt: 'desc' },
+                take,
+                skip,
+            }),
+        ]);
+
+        return {
+            data: sales,
+            meta: {
+                total,
+                page: Math.max(page ?? 1, 1),
+                limit: take,
+                totalPages: Math.ceil(total / take),
+            },
+        };
     }
 
     async create(data: any, userId: string) {

@@ -1,10 +1,16 @@
 import './instrument';
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
+import compression from 'compression';
+import helmet from 'helmet';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
     const app = await NestFactory.create(AppModule);
+
+    // Perf Phase 1: security headers + gzip responses
+    app.use(helmet());
+    app.use(compression());
 
     // Enable CORS
     const corsEnv = process.env.CORS_ORIGIN;

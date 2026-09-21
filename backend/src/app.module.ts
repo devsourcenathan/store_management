@@ -1,8 +1,9 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { APP_FILTER, APP_GUARD } from '@nestjs/core';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { AcceptLanguageResolver, I18nModule, QueryResolver } from 'nestjs-i18n';
 import * as path from 'path';
-import { APP_FILTER } from '@nestjs/core';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 // import { SentryGlobalFilter } from '@sentry/nestjs'; // Removed due to import issues
 import { SentryFilter } from './common/filters/sentry.filter';
@@ -44,11 +45,18 @@ import { MiscTransactionsModule } from './modules/misc-transactions/misc-transac
             isGlobal: true,
         }),
         EventEmitterModule.forRoot(),
+        // Perf Phase 1: global rate limit 100 req/min + disable i18n watch in prod
+        ThrottlerModule.forRoot([
+            {
+                ttl: 60000,
+                limit: 100,
+            },
+        ]),
         I18nModule.forRoot({
             fallbackLanguage: 'fr',
             loaderOptions: {
                 path: path.join(__dirname, '/i18n/'),
-                watch: true,
+                watch: process.env.NODE_ENV !== 'production',
             },
             resolvers: [
                 { use: QueryResolver, options: ['lang'] },
@@ -91,6 +99,10 @@ import { MiscTransactionsModule } from './modules/misc-transactions/misc-transac
         {
             provide: APP_FILTER,
             useClass: SentryFilter,
+        },
+        {
+            provide: APP_GUARD,
+            useClass: ThrottlerGuard,
         },
     ],
 })

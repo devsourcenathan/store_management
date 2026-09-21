@@ -18,9 +18,17 @@ export class SalesController {
     async findAll(
         @Query('storeId') storeId: string,
         @CurrentUser() user: any,
-        @Query('customerId') customerId?: string
+        @Query('customerId') customerId?: string,
+        @Query('page') page?: string,
+        @Query('limit') limit?: string,
     ) {
-        return this.salesService.findAll(storeId, user, customerId);
+        return this.salesService.findAll(
+            storeId,
+            user,
+            customerId,
+            page ? parseInt(page, 10) : undefined,
+            limit ? parseInt(limit, 10) : undefined,
+        );
     }
 
     @Post()

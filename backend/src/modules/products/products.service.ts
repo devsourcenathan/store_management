@@ -7,8 +7,14 @@ import { GetProductsDto } from './dto/get-products.dto';
 export class ProductsService {
     constructor(private prisma: PrismaService) { }
 
+    // Perf Phase 1: bounded result set. When page/limit are provided ->
+    // { data, meta } envelope. Otherwise legacy array (capped at 500)
+    // for backward compatibility (POS loads full catalog).
     async findAll(organizationId: string, params?: GetProductsDto, storeId?: string) {
-        const { search, categoryId, minPrice, maxPrice, sortBy = 'name', sortOrder = 'asc' } = params || {};
+        const { search, categoryId, minPrice, maxPrice, sortBy = 'name', sortOrder = 'asc', page, limit } = params || {};
+        const paginated = page !== undefined || limit !== undefined;
+        const take = Math.min(Math.max(limit ?? 500, 1), 500);
+        const skip = (Math.max(page ?? 1, 1) - 1) * take;
 
         const where: any = {
             organizationId,
@@ -44,31 +50,80 @@ export class ProductsService {
             orderBy[sortBy] = sortOrder;
         }
 
-        const products = await this.prisma.product.findMany({
-            where,
-            include: {
-                category: true,
-                pricingRules: {
-                    where: { isActive: true },
-                    orderBy: { priority: 'desc' },
+        const [total, products] = await Promise.all([
+            this.prisma.product.count({ where }),
+            this.prisma.product.findMany({
+                where,
+                // Perf Phase 1: lean selects instead of full category rows
+                select: {
+                    id: true,
+                    name: true,
+                    sku: true,
+                    description: true,
+                    categoryId: true,
+                    organizationId: true,
+                    basePrice: true,
+                    costPrice: true,
+                    minStock: true,
+                    isActive: true,
+                    createdAt: true,
+                    updatedAt: true,
+                    category: {
+                        select: { id: true, name: true },
+                    },
+                    pricingRules: {
+                        where: { isActive: true },
+                        orderBy: { priority: 'desc' },
+                    },
                 },
-            },
-            orderBy,
-        });
+                orderBy,
+                take,
+                ...(paginated ? { skip } : {}),
+            }),
+        ]);
 
         const productIds = products.map(p => p.id);
-        const media = await this.prisma.media.findMany({
-            where: {
-                organizationId,
-                entityType: MediaEntityType.PRODUCT,
-                entityId: { in: productIds },
-            },
-        });
+        const media = productIds.length
+            ? await this.prisma.media.findMany({
+                where: {
+                    organizationId,
+                    entityType: MediaEntityType.PRODUCT,
+                    entityId: { in: productIds },
+                },
+                // Perf Phase 1: only fields the frontend renders
+                select: {
+                    id: true,
+                    entityId: true,
+                    url: true,
+                    thumbnailUrl: true,
+                    filename: true,
+                },
+            })
+            : [];
 
-        return products.map(p => ({
+        const mediaByProduct = new Map<string, typeof media>();
+        for (const m of media) {
+            const list = mediaByProduct.get(m.entityId);
+            if (list) list.push(m);
+            else mediaByProduct.set(m.entityId, [m]);
+        }
+
+        const data = products.map(p => ({
             ...p,
-            media: media.filter(m => m.entityId === p.id),
+            media: mediaByProduct.get(p.id) ?? [],
         }));
+
+        if (!paginated) return data;
+
+        return {
+            data,
+            meta: {
+                total,
+                page: Math.max(page ?? 1, 1),
+                limit: take,
+                totalPages: Math.ceil(total / take),
+            },
+        };
     }
 
     async findOne(id: string, organizationId: string) {

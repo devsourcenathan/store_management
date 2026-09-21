@@ -12,6 +12,6 @@ Sentry.init({
         // I will exclude it for now to be safe, or just use the basic setup.
         // nodeProfilingIntegration(), 
     ],
-    // Performance Monitoring
-    tracesSampleRate: 1.0, // Capture 100% of the transactions
+    // Perf Phase 1: sample 100% in dev, 10% in production to cut overhead
+    tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
 });

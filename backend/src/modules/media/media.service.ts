@@ -52,11 +52,14 @@ export class MediaService {
         });
     }
 
+    // Perf Phase 1: bounded result set (cap 200) to avoid unbounded scans.
     async findAll(organizationId: string, filters?: {
         entityType?: MediaEntityType;
         entityId?: string;
         tags?: string[];
+        limit?: number;
     }) {
+        const take = Math.min(Math.max(filters?.limit ?? 200, 1), 200);
         return this.prisma.media.findMany({
             where: {
                 organizationId,
@@ -67,6 +70,7 @@ export class MediaService {
                 }),
             },
             orderBy: { createdAt: 'desc' },
+            take,
         });
     }
 

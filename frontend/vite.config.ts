@@ -41,7 +41,8 @@ export default defineConfig({
                 cleanupOutdatedCaches: true,
                 skipWaiting: false,
                 clientsClaim: true,
-                sourcemap: true,
+                // Perf Phase 1: no sourcemaps in the service worker (smaller SW, faster install)
+                sourcemap: false,
                 runtimeCaching: [
                     {
                         // API calls - Network First strategy

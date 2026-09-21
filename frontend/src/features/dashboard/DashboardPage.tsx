@@ -75,6 +75,14 @@ export function DashboardPage() {
 
     const periodLabel = getPeriodLabel();
 
+    // Perf Phase 1: 60s staleTime (backend caches 30s) + no refetch on
+    // window focus to avoid 3 parallel analytics queries on every tab switch.
+    const analyticsOptions = {
+        staleTime: 60_000,
+        gcTime: 5 * 60_000,
+        refetchOnWindowFocus: false,
+    } as const;
+
     // 1. Dashboard Key Metrics
     const { data: stats, isLoading: isLoadingStats } = useQuery({
         queryKey: ['analytics', 'dashboard', currentStore?.id, dateFilter, customStart, customEnd],
@@ -84,6 +92,7 @@ export function DashboardPage() {
             return res.data;
         },
         enabled: !!currentStore?.id,
+        ...analyticsOptions,
     });
 
     // 2. Sales Trend Chart Data
@@ -95,6 +104,7 @@ export function DashboardPage() {
             return res.data;
         },
         enabled: !!currentStore?.id,
+        ...analyticsOptions,
     });
 
     // 3. Top Products
@@ -106,6 +116,7 @@ export function DashboardPage() {
             return res.data;
         },
         enabled: !!currentStore?.id,
+        ...analyticsOptions,
     });
 
     const { stores, isLoading: isLoadingStores } = useStore();

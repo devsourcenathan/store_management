@@ -21,8 +21,15 @@ export class StockController {
     async getMovements(
         @Query('storeId') storeId: string,
         @Query('productId') productId?: string,
+        @Query('page') page?: string,
+        @Query('limit') limit?: string,
     ) {
-        return this.stockService.getMovements(storeId, productId);
+        return this.stockService.getMovements(
+            storeId,
+            productId,
+            page ? parseInt(page, 10) : undefined,
+            limit ? parseInt(limit, 10) : undefined,
+        );
     }
 
     @Post('movements')

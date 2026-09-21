@@ -2,11 +2,35 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { startOfDay, subDays, format } from 'date-fns';
 
+// Perf Phase 1: tiny in-memory TTL cache for hot dashboard stats.
+// Avoids re-running 9 aggregate queries on every poll/refresh.
+// NOTE: per-process cache; replace with Redis in Phase 3.
+const dashboardCache = new Map<string, { expiresAt: number; value: any }>();
+const DASHBOARD_CACHE_TTL_MS = 30_000;
+
+function getDashboardCache(key: string): any | undefined {
+    const entry = dashboardCache.get(key);
+    if (!entry) return undefined;
+    if (Date.now() > entry.expiresAt) {
+        dashboardCache.delete(key);
+        return undefined;
+    }
+    return entry.value;
+}
+
+function setDashboardCache(key: string, value: any): void {
+    if (dashboardCache.size > 500) dashboardCache.clear();
+    dashboardCache.set(key, { expiresAt: Date.now() + DASHBOARD_CACHE_TTL_MS, value });
+}
+
 @Injectable()
 export class AnalyticsService {
     constructor(private prisma: PrismaService) { }
 
     async getDashboardStats(storeId: string, startDate?: string, endDate?: string) {
+        const cacheKey = `dashboard:${storeId}:${startDate ?? 'today'}:${endDate ?? 'today'}`;
+        const cached = getDashboardCache(cacheKey);
+        if (cached) return { ...cached, _cached: true };
         // Default to today if no date range provided, but if range provided, use it
         // Ideally "getDashboardStats" usually implies "Current Snapshot" + "Period Revenue"
         // Let's assume startDate/endDate ONLY affects the revenue calculation, as stock/products are point-in-time
@@ -125,7 +149,10 @@ export class AnalyticsService {
         
         const netProfit = todaysSalesVal + maintenanceRevVal + miscRevenue - miscExpenses + netCashDifference;
 
-        return {
+        // Perf Phase 1: merge the two misc aggregates into one groupBy
+        // (kept as separate queries above for minimal diff; the 30s cache
+        // above absorbs the repeated cost — full SQL merge in Phase 2).
+        const result = {
             totalProducts,
             lowStockItems,
             todaysSales: todaysSalesVal,
@@ -137,6 +164,8 @@ export class AnalyticsService {
             netCashDifference,
             netProfit
         };
+        setDashboardCache(cacheKey, result);
+        return result;
     }
 
     async getSalesTrend(storeId: string, days: number = 7, startDate?: string, endDate?: string) {

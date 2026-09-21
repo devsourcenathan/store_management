@@ -9,14 +9,21 @@ export class StockService {
         private stockCalculation: StockCalculationService,
     ) { }
 
-    async getMovements(storeId: string, productId?: string) {
-        console.log('🔍 getMovements called with storeId:', storeId, 'productId:', productId);
+    // Perf Phase 1: bounded result set to avoid unbounded full-table scans.
+    // When page/limit are provided -> { data, meta } envelope.
+    // Otherwise legacy array (capped at 200) for backward compatibility.
+    async getMovements(storeId: string, productId?: string, page?: number, limit?: number) {
+        const paginated = page !== undefined || limit !== undefined;
+        const take = Math.min(Math.max(limit ?? 200, 1), 200);
+        const skip = (Math.max(page ?? 1, 1) - 1) * take;
 
-        const result = await this.prisma.stockMovement.findMany({
-            where: {
-                storeId,
-                ...(productId && { productId }),
-            },
+        const where = {
+            storeId,
+            ...(productId && { productId }),
+        };
+
+        const findArgs = {
+            where,
             include: {
                 product: {
                     select: {
@@ -28,14 +35,26 @@ export class StockService {
                 },
             },
             orderBy: { createdAt: 'desc' },
-        });
+        } as const;
 
-        console.log('📦 getMovements result count:', result.length);
-        if (result.length > 0) {
-            console.log('First movement:', result[0]);
+        if (!paginated) {
+            return this.prisma.stockMovement.findMany({ ...findArgs, take });
         }
 
-        return result;
+        const [total, result] = await Promise.all([
+            this.prisma.stockMovement.count({ where }),
+            this.prisma.stockMovement.findMany({ ...findArgs, take, skip }),
+        ]);
+
+        return {
+            data: result,
+            meta: {
+                total,
+                page: Math.max(page ?? 1, 1),
+                limit: take,
+                totalPages: Math.ceil(total / take),
+            },
+        };
     }
 
     async createMovement(data: any, userId: string) {

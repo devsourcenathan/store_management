@@ -22,13 +22,14 @@ Sentry.init({
         Sentry.browserTracingIntegration(),
         Sentry.replayIntegration(),
     ],
-    // Tracing
-    tracesSampleRate: 1.0, //  Capture 100% of the transactions
+    // Perf Phase 1: light sampling in production to cut CPU/network overhead
+    // (100% tracing + replay in dev, sampled in prod).
+    tracesSampleRate: import.meta.env.PROD ? 0.1 : 1.0,
     // Set 'tracePropagationTargets' to control for which URLs distributed tracing should be enabled
     tracePropagationTargets: ["localhost", /^https:\/\/yourserver\.io\/api/],
     // Session Replay
-    replaysSessionSampleRate: 0.1, // This sets the sample rate at 10%. You may want to change it to 100% while in development and then sample at a lower rate in production.
-    replaysOnErrorSampleRate: 1.0, // If you're not already sampling the entire session, change the sample rate to 100% when sampling sessions where errors occur.
+    replaysSessionSampleRate: import.meta.env.PROD ? 0.01 : 0.1,
+    replaysOnErrorSampleRate: import.meta.env.PROD ? 0.1 : 1.0,
 });
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
