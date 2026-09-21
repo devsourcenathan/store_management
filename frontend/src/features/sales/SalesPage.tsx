@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
+import { v4 as uuidv4 } from 'uuid';
 import { useTranslation } from 'react-i18next';
 import { printer } from '@/services/printing';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -64,6 +65,10 @@ export function SalesPage() {
     const [isDetailsOpen, setIsDetailsOpen] = useState(false);
     const [isAddPaymentModalOpen, setIsAddPaymentModalOpen] = useState(false);
 
+    // Anti-double-submit: stable id per sale attempt, replayed server-side
+    // via clientId so a retry after timeout/error cannot duplicate the sale.
+    const saleAttemptId = useRef<string>(uuidv4());
+
     // Filters
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('ALL');
@@ -118,6 +123,7 @@ export function SalesPage() {
             queryClient.invalidateQueries({ queryKey: ['sales'] });
             setIsModalOpen(false);
             setNewSale({ customerId: '', items: [], notes: '' });
+            saleAttemptId.current = uuidv4();
         },
     });
 
@@ -179,7 +185,7 @@ export function SalesPage() {
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (newSale.items.length === 0) return alert('Add at least one item');
-        createSaleMutation.mutate(newSale);
+        createSaleMutation.mutate({ ...newSale, clientId: saleAttemptId.current });
     };
 
     const handleViewDetails = (sale: Sale) => {

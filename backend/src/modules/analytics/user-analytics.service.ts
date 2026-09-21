@@ -419,7 +419,8 @@ export class UserAnalyticsService {
                     maintenanceRevenue: 0,
                     subscriptionsCount: 0,
                     subscriptionRevenue: 0,
-                    totalRevenue: (stat.totalAmount || 0) + (stat.miscRevenue || 0) - (stat.miscExpenses || 0) + (stat.cashDifference || 0)
+                    // Cash differences are informational only: excluded from revenue.
+                    totalRevenue: (stat.totalAmount || 0) + (stat.miscRevenue || 0) - (stat.miscExpenses || 0)
                 });
             });
 

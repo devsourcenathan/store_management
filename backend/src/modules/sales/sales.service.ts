@@ -122,7 +122,22 @@ export class SalesService {
     }
 
     async create(data: any, userId: string) {
-        const { storeId, customerId, items, notes, discount = 0 } = data;
+        const { storeId, customerId, items, notes, discount = 0, clientId } = data;
+
+        // Idempotency fix: a retried submission (timeout + user retry, double
+        // click) carries the same clientId. Return the existing sale instead
+        // of creating a duplicate that would skew statistics.
+        if (clientId) {
+            const existing = await this.prisma.sale.findFirst({
+                where: { clientId },
+                include: {
+                    customer: true,
+                    items: { include: { product: true } },
+                    payments: true,
+                },
+            });
+            if (existing) return existing;
+        }
 
         // Calculate items total
         const itemsTotal = items.reduce((acc: number, item: any) => {
@@ -163,6 +178,7 @@ export class SalesService {
                     notes,
                     createdBy: userId,
                     hasCredit: !!data.creditDetails,
+                    ...(clientId ? { clientId } : {}),
                     items: {
                         create: items.map((item: any) => ({
                             productId: item.productId,

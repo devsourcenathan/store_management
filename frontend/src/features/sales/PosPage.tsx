@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/services/api';
 import { Media } from '@/services/mediaService';
@@ -60,6 +60,11 @@ export function PosPage() {
     const [dueDate, setDueDate] = useState<string>('');
 
     const { t } = useTranslation();
+
+    // Anti-double-submit: one stable id per sale attempt. It is sent as
+    // `clientId` so a retry after timeout/error replays to the same sale
+    // server-side instead of creating a duplicate. Regenerated on success.
+    const saleAttemptId = useRef<string>(uuidv4());
 
     // Success Modal State
     const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -131,7 +136,7 @@ export function PosPage() {
                         createdBy: userId,
                         createdAt: new Date().toISOString(),
                         updatedAt: new Date().toISOString(),
-                        clientId: uuidv4(),
+                        clientId: saleAttemptId.current,
                         items: data.items.map((item: any) => ({
                             id: uuidv4(),
                             saleId: saleId,
@@ -177,6 +182,9 @@ export function PosPage() {
             setLastSale(response.data);
             setIsPaymentModalOpen(false);
             setShowSuccessModal(true);
+
+            // New attempt id for the next sale
+            saleAttemptId.current = uuidv4();
 
             // Clear cart immediately
             setCart([]);
@@ -279,6 +287,7 @@ export function PosPage() {
 
         const mutationData = {
             storeId: currentStore.id,
+            clientId: saleAttemptId.current,
             items: cart.map(item => ({
                 productId: item.productId,
                 quantity: item.quantity,

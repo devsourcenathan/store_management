@@ -211,7 +211,7 @@ export class ReportsService {
 
         // Total Revenue & Profit
         const totalRevenue = revenue + maintenanceRevenue + miscRevenue;
-        const totalProfit = profit + maintenanceProfit + miscRevenue - miscExpenses + cashDifference;
+        const totalProfit = profit + maintenanceProfit + miscRevenue - miscExpenses;
 
         return {
             date: yesterday.toISOString().split('T')[0],
@@ -355,7 +355,7 @@ export class ReportsService {
             miscRevenue,
             miscExpenses,
             cashDifference,
-            profit: profit + maintenanceProfit + miscRevenue - miscExpenses + cashDifference,
+            profit: profit + maintenanceProfit + miscRevenue - miscExpenses,
             salesCount: sales.length,
             maintenanceCount,
             topProducts,
@@ -460,7 +460,7 @@ export class ReportsService {
             miscRevenue,
             miscExpenses,
             cashDifference,
-            profit: profit + maintenanceProfit + miscRevenue - miscExpenses + cashDifference,
+            profit: profit + maintenanceProfit + miscRevenue - miscExpenses,
             salesCount: sales.length,
             maintenanceCount,
             categoryPerformance: Array.from(categoryRevenue.values())
@@ -544,7 +544,7 @@ export class ReportsService {
             miscRevenue,
             miscExpenses,
             cashDifference,
-            profit: profit + maintenanceProfit + miscRevenue - miscExpenses + cashDifference,
+            profit: profit + maintenanceProfit + miscRevenue - miscExpenses,
             salesCount: sales.length,
             maintenanceCount,
         };
@@ -623,7 +623,7 @@ export class ReportsService {
             miscRevenue,
             miscExpenses,
             cashDifference,
-            profit: profit + maintenanceProfit + miscRevenue - miscExpenses + cashDifference,
+            profit: profit + maintenanceProfit + miscRevenue - miscExpenses,
             salesCount: sales.length,
             maintenanceCount,
         };

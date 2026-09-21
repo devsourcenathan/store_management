@@ -147,7 +147,8 @@ export class AnalyticsService {
         const miscExpenses = miscOut._sum.amount ? Number(miscOut._sum.amount) : 0;
         const netCashDifference = cashDiffs._sum.difference ? Number(cashDiffs._sum.difference) : 0;
         
-        const netProfit = todaysSalesVal + maintenanceRevVal + miscRevenue - miscExpenses + netCashDifference;
+        // Cash differences are informational only: they must NOT affect profit.
+        const netProfit = todaysSalesVal + maintenanceRevVal + miscRevenue - miscExpenses;
 
         // Perf Phase 1: merge the two misc aggregates into one groupBy
         // (kept as separate queries above for minimal diff; the 30s cache
@@ -432,7 +433,8 @@ export class AnalyticsService {
         const netCashDifference = Number(cashDiffs._sum.difference || 0);
 
         const combinedRevenue = actualSalesRevenue + actualMaintenanceRevenue + miscRevenue;
-        const totalProfit = actualSalesRevenue - totalCostOfGoodsSold + miscRevenue - miscExpenses + netCashDifference;
+        // Cash differences are informational only: excluded from profit.
+        const totalProfit = actualSalesRevenue - totalCostOfGoodsSold + miscRevenue - miscExpenses;
 
         return {
             totalSalesRevenue: actualSalesRevenue,
