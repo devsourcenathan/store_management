@@ -80,31 +80,31 @@ export function CashAdjustmentsList() {
                 </button>
             </div>
 
-            <div className="bg-white rounded-lg shadow border overflow-hidden">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700 overflow-hidden">
                 <div className="overflow-x-auto">
                     <table className="w-full text-sm text-left">
-                        <thead className="bg-gray-50 border-b">
+                        <thead className="bg-gray-50 dark:bg-gray-700/50 border-b dark:border-gray-700">
                             <tr>
-                                <th className="px-6 py-3 font-medium text-gray-500 uppercase tracking-wider">{t('cash_adjustments.date')}</th>
-                                <th className="px-6 py-3 font-medium text-gray-500 uppercase tracking-wider">{t('cash_adjustments.user')}</th>
-                                <th className="px-6 py-3 font-medium text-gray-500 uppercase tracking-wider">{t('cash_adjustments.expected')}</th>
-                                <th className="px-6 py-3 font-medium text-gray-500 uppercase tracking-wider">{t('cash_adjustments.counted')}</th>
-                                <th className="px-6 py-3 font-medium text-gray-500 uppercase tracking-wider">{t('cash_adjustments.difference')}</th>
-                                <th className="px-6 py-3 font-medium text-gray-500 uppercase tracking-wider">{t('cash_adjustments.reason')}</th>
+                                <th className="px-6 py-3 font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('cash_adjustments.date')}</th>
+                                <th className="px-6 py-3 font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('cash_adjustments.user')}</th>
+                                <th className="px-6 py-3 font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('cash_adjustments.expected')}</th>
+                                <th className="px-6 py-3 font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('cash_adjustments.counted')}</th>
+                                <th className="px-6 py-3 font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('cash_adjustments.difference')}</th>
+                                <th className="px-6 py-3 font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('cash_adjustments.reason')}</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-gray-200">
+                        <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                             {isLoading ? (
                                 <tr>
-                                    <td colSpan={6} className="px-6 py-8 text-center text-gray-500">{t('common.loading')}</td>
+                                    <td colSpan={6} className="px-6 py-8 text-center text-gray-500 dark:text-gray-400">{t('common.loading')}</td>
                                 </tr>
                             ) : adjustments?.length === 0 ? (
                                 <tr>
-                                    <td colSpan={6} className="px-6 py-8 text-center text-gray-500">{t('cash_adjustments.no_data')}</td>
+                                    <td colSpan={6} className="px-6 py-8 text-center text-gray-500 dark:text-gray-400">{t('cash_adjustments.no_data')}</td>
                                 </tr>
                             ) : (
                                 adjustments?.map((adj) => (
-                                    <tr key={adj.id} className="hover:bg-gray-50">
+                                    <tr key={adj.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 text-gray-900 dark:text-gray-100">
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             {format(new Date(adj.createdAt), 'dd/MM/yyyy HH:mm')}
                                         </td>
@@ -113,11 +113,11 @@ export function CashAdjustmentsList() {
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">{Number(adj.expected).toFixed(2)}</td>
                                         <td className="px-6 py-4 whitespace-nowrap font-medium">{Number(adj.counted).toFixed(2)}</td>
-                                        <td className={`px-6 py-4 whitespace-nowrap font-bold ${Number(adj.difference) > 0 ? 'text-green-600' : Number(adj.difference) < 0 ? 'text-red-600' : 'text-gray-500'}`}>
+                                        <td className={`px-6 py-4 whitespace-nowrap font-bold ${Number(adj.difference) > 0 ? 'text-green-600 dark:text-green-400' : Number(adj.difference) < 0 ? 'text-red-600 dark:text-red-400' : 'text-gray-500 dark:text-gray-400'}`}>
                                             {Number(adj.difference) > 0 ? '+' : ''}{Number(adj.difference).toFixed(2)}
                                         </td>
                                         <td className="px-6 py-4">
-                                            <span className="text-gray-600 truncate block max-w-xs" title={adj.reason}>
+                                            <span className="text-gray-600 dark:text-gray-400 truncate block max-w-xs" title={adj.reason}>
                                                 {adj.reason || '-'}
                                             </span>
                                         </td>
@@ -139,7 +139,7 @@ export function CashAdjustmentsList() {
                     </SheetHeader>
                     <div className="mt-6">
                         {isLoadingExpected ? (
-                            <div className="py-8 text-center text-gray-500">
+                            <div className="py-8 text-center text-gray-500 dark:text-gray-400">
                                 {t('common.loading')}
                             </div>
                         ) : (

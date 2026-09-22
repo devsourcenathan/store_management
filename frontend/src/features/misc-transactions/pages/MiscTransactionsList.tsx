@@ -63,51 +63,51 @@ export function MiscTransactionsList() {
                 </button>
             </div>
 
-            <div className="bg-white rounded-lg shadow border overflow-hidden">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700 overflow-hidden">
                 <div className="overflow-x-auto">
                     <table className="w-full text-sm text-left">
-                        <thead className="bg-gray-50 border-b">
+                        <thead className="bg-gray-50 dark:bg-gray-700/50 border-b dark:border-gray-700">
                             <tr>
-                                <th className="px-6 py-3 font-medium text-gray-500 uppercase tracking-wider">{t('misc_transactions.date')}</th>
-                                <th className="px-6 py-3 font-medium text-gray-500 uppercase tracking-wider">{t('misc_transactions.type')}</th>
-                                <th className="px-6 py-3 font-medium text-gray-500 uppercase tracking-wider">{t('misc_transactions.amount')}</th>
-                                <th className="px-6 py-3 font-medium text-gray-500 uppercase tracking-wider">{t('misc_transactions.desc')}</th>
-                                <th className="px-6 py-3 font-medium text-gray-500 uppercase tracking-wider">{t('misc_transactions.created_by')}</th>
+                                <th className="px-6 py-3 font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('misc_transactions.date')}</th>
+                                <th className="px-6 py-3 font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('misc_transactions.type')}</th>
+                                <th className="px-6 py-3 font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('misc_transactions.amount')}</th>
+                                <th className="px-6 py-3 font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('misc_transactions.desc')}</th>
+                                <th className="px-6 py-3 font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('misc_transactions.created_by')}</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-gray-200">
+                        <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                             {isLoading ? (
                                 <tr>
-                                    <td colSpan={5} className="px-6 py-8 text-center text-gray-500">{t('common.loading')}</td>
+                                    <td colSpan={5} className="px-6 py-8 text-center text-gray-500 dark:text-gray-400">{t('common.loading')}</td>
                                 </tr>
                             ) : transactions?.length === 0 ? (
                                 <tr>
-                                    <td colSpan={5} className="px-6 py-8 text-center text-gray-500">{t('misc_transactions.no_data')}</td>
+                                    <td colSpan={5} className="px-6 py-8 text-center text-gray-500 dark:text-gray-400">{t('misc_transactions.no_data')}</td>
                                 </tr>
                             ) : (
                                 transactions?.map((tx) => (
-                                    <tr key={tx.id} className="hover:bg-gray-50">
+                                    <tr key={tx.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 text-gray-900 dark:text-gray-100">
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             {format(new Date(tx.date), 'dd/MM/yyyy HH:mm')}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                                                tx.type === 'IN' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                                                tx.type === 'IN' ? 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300' : 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300'
                                             }`}>
                                                 {tx.type === 'IN' ? t('misc_transactions.in') : t('misc_transactions.out')}
                                             </span>
                                         </td>
                                         <td className={`px-6 py-4 whitespace-nowrap font-bold ${
-                                            tx.type === 'IN' ? 'text-green-600' : 'text-red-600'
+                                            tx.type === 'IN' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
                                         }`}>
                                             {tx.type === 'IN' ? '+' : '-'}{Number(tx.amount).toFixed(2)}
                                         </td>
                                         <td className="px-6 py-4">
-                                            <span className="text-gray-900 block max-w-sm truncate" title={tx.description}>
+                                            <span className="text-gray-900 dark:text-gray-100 block max-w-sm truncate" title={tx.description}>
                                                 {tx.description}
                                             </span>
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-gray-500">
+                                        <td className="px-6 py-4 whitespace-nowrap text-gray-500 dark:text-gray-400">
                                             {tx.creator?.firstName} {tx.creator?.lastName}
                                         </td>
                                     </tr>

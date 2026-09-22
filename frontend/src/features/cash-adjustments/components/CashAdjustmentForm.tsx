@@ -85,10 +85,10 @@ export function CashAdjustmentForm({ initialExpected = 0, onSubmit, isLoading }:
                 />
             </div>
 
-            <div className="p-4 bg-gray-50 rounded-md">
+            <div className="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-md">
                 <div className="flex justify-between items-center">
-                    <span className="font-semibold text-gray-700">{t('cash_adjustments.difference')} :</span>
-                    <span className={`font-bold text-lg ${difference > 0 ? 'text-green-600' : difference < 0 ? 'text-red-600' : 'text-gray-600'}`}>
+                    <span className="font-semibold text-gray-700 dark:text-gray-300">{t('cash_adjustments.difference')} :</span>
+                    <span className={`font-bold text-lg ${difference > 0 ? 'text-green-600 dark:text-green-400' : difference < 0 ? 'text-red-600 dark:text-red-400' : 'text-gray-600 dark:text-gray-400'}`}>
                         {difference > 0 ? '+' : ''}{difference.toFixed(2)}
                     </span>
                 </div>
@@ -101,12 +101,12 @@ export function CashAdjustmentForm({ initialExpected = 0, onSubmit, isLoading }:
                         name="reason"
                         control={control}
                         render={({ field }) => (
-                            <textarea
-                                {...field}
-                                id="reason"
-                                className="w-full min-h-[80px] px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                placeholder={t('cash_adjustments.reason_placeholder')}
-                            />
+                                <textarea
+                                    {...field}
+                                    id="reason"
+                                    className="w-full min-h-[80px] px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    placeholder={t('cash_adjustments.reason_placeholder')}
+                                />
                         )}
                     />
                     {errors.reason && <p className="text-red-500 text-sm">{errors.reason.message?.toString()}</p>}
