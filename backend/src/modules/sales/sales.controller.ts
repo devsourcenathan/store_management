@@ -13,6 +13,10 @@ export class SalesController {
         private auditService: AuditService,
     ) { }
 
+    // Server-side pagination + filters for the sales history page.
+    // status is restricted to real SaleStatus values; unknown values ignored.
+    private static readonly SALE_STATUSES = ['PENDING', 'PARTIAL', 'PAID', 'CANCELLED'];
+
     @Get()
     @UseGuards(StoreAuthGuard)
     async findAll(
@@ -21,6 +25,10 @@ export class SalesController {
         @Query('customerId') customerId?: string,
         @Query('page') page?: string,
         @Query('limit') limit?: string,
+        @Query('status') status?: string,
+        @Query('startDate') startDate?: string,
+        @Query('endDate') endDate?: string,
+        @Query('search') search?: string,
     ) {
         return this.salesService.findAll(
             storeId,
@@ -28,6 +36,12 @@ export class SalesController {
             customerId,
             page ? parseInt(page, 10) : undefined,
             limit ? parseInt(limit, 10) : undefined,
+            {
+                ...(status && SalesController.SALE_STATUSES.includes(status) ? { status } : {}),
+                ...(startDate ? { startDate } : {}),
+                ...(endDate ? { endDate } : {}),
+                ...(search ? { search } : {}),
+            },
         );
     }
 

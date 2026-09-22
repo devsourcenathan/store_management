@@ -14,12 +14,15 @@ export class SalesService {
     // Perf Phase 1: bounded result set + lean selects to avoid overfetch.
     // When page/limit are provided -> { data, meta } envelope.
     // Otherwise legacy array (capped at 200) for backward compatibility.
+    // Server pagination filters: status, startDate, endDate, search
+    // (customer name or sale id).
     async findAll(
         storeId: string,
         user: { id: string; role: string },
         customerId?: string,
         page?: number,
         limit?: number,
+        filters?: { status?: string; startDate?: string; endDate?: string; search?: string },
     ) {
         const paginated = page !== undefined || limit !== undefined;
         const take = Math.min(Math.max(limit ?? 200, 1), 200);
@@ -33,6 +36,25 @@ export class SalesService {
         // If user is STAFF, they can only see their own sales
         if (user.role === UserRole.STAFF) {
             where.createdBy = user.id;
+        }
+
+        if (filters?.status) {
+            where.status = filters.status;
+        }
+
+        if (filters?.startDate || filters?.endDate) {
+            where.createdAt = {
+                ...(filters.startDate ? { gte: new Date(filters.startDate) } : {}),
+                ...(filters.endDate ? { lte: new Date(filters.endDate) } : {}),
+            };
+        }
+
+        if (filters?.search) {
+            const search = filters.search;
+            where.OR = [
+                { customer: { name: { contains: search, mode: 'insensitive' } } },
+                { id: { contains: search } },
+            ];
         }
 
         const select = {

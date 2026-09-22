@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/Sheet";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Pagination } from "@/components/ui/Pagination";
-import { usePagination } from "@/hooks/usePagination";
+import { keepPreviousData } from '@tanstack/react-query';
 import { ExportButton } from '@/components/ExportButton';
 import { StockMovementSheet } from '@/features/stock/components/StockMovementSheet';
 
@@ -77,10 +77,28 @@ export function ProductsPage() {
         }
     };
 
-    const { data: products, isLoading, isFetching, refetch } = useQuery<any[]>({
-        queryKey: ['products', currentStore?.id, activeSearchQuery, selectedCategoryId, sortBy, sortOrder],
+    // Server-side pagination: page goes to the API ({ data, meta }).
+    // Stock quantities come from the aggregated /stock/store endpoint
+    // (one SQL GROUP BY) instead of downloading every movement.
+    const [currentPage, setPage] = useState(1);
+    const PAGE_SIZE = 10;
+
+    const { data: stockLevels } = useQuery<any[]>({
+        queryKey: ['stock-levels', currentStore?.id],
         queryFn: async () => {
-            const params: any = {};
+            if (!currentStore?.id) return [];
+            const response = await api.get(`/stock/store/${currentStore.id}`);
+            return response.data;
+        },
+        enabled: !!currentStore?.id,
+    });
+
+    const stockByProduct = new Map((stockLevels ?? []).map((s: any) => [s.id, s.quantity ?? 0]));
+
+    const { data: productsPayload, isLoading, isFetching, refetch } = useQuery({
+        queryKey: ['products', currentStore?.id, activeSearchQuery, selectedCategoryId, sortBy, sortOrder, currentPage],
+        queryFn: async () => {
+            const params: any = { page: currentPage, limit: PAGE_SIZE };
             if (activeSearchQuery) params.search = activeSearchQuery;
             if (selectedCategoryId) params.categoryId = selectedCategoryId;
             params.sortBy = sortBy;
@@ -92,46 +110,20 @@ export function ProductsPage() {
             }
 
             const response = await api.get('/products', { params, headers });
-            const prods = response.data;
+            const payload = response.data;
+            const prods = Array.isArray(payload) ? payload : (payload?.data ?? []);
 
-            // Fetch stock for each product if a store is selected
-            if (currentStore?.id) {
-                // Note: storeId is automatically added by the API interceptor
-                const stockResponse = await api.get('/stock/movements');
-                const movements = stockResponse.data;
-
-                return prods.map((p: any) => {
-                    const productMovements = movements.filter((m: any) => m.productId === p.id);
-                    const quantity = productMovements.reduce((acc: number, m: any) => {
-                        // Handle ADJUST type by reading direction from notes
-                        if (m.type === 'ADJUST') {
-                            try {
-                                const meta = JSON.parse(m.notes || '{}');
-                                const direction = meta.direction || 'IN';
-                                return direction === 'IN' ? acc + m.quantity : acc - m.quantity;
-                            } catch {
-                                // Fallback for old data without JSON notes
-                                return acc + m.quantity;
-                            }
-                        }
-
-                        // Handle other movement types
-                        if (m.type === 'IN' || m.type === 'RETURN' || m.type === 'SUPPLY' || m.type === 'TRANSFER_IN') {
-                            return acc + m.quantity;
-                        } else if (m.type === 'OUT' || m.type === 'SALE' || m.type === 'TRANSFER_OUT' || m.type === 'ADJUSTMENT') {
-                            return acc - m.quantity;
-                        }
-
-                        return acc;
-                    }, 0);
-
-                    return { ...p, quantity };
-                });
-            }
-            return prods;
+            return {
+                data: prods.map((p: any) => ({ ...p, quantity: stockByProduct.get(p.id) ?? 0 })),
+                meta: Array.isArray(payload) ? undefined : payload?.meta,
+            };
         },
         enabled: !!currentStore?.id,
+        placeholderData: keepPreviousData,
     });
+
+    const products = productsPayload?.data ?? [];
+    const totalPages = productsPayload?.meta?.totalPages ?? 1;
 
     // Reset searching state when query completes
     useEffect(() => {
@@ -149,23 +141,13 @@ export function ProductsPage() {
     });
 
 
-    const {
-        currentItems,
-        currentPage,
-        totalPages,
-        goToPage: setPage,
-    } = usePagination({
-        totalItems: products?.length || 0,
-        itemsPerPage: 10,
-    });
-
-    // Reset page when filters change
+    // Reset page when filters change (server-side pagination)
     useEffect(() => {
         setPage(1);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [activeSearchQuery, selectedCategoryId, sortBy, sortOrder]);
 
-    const paginatedProducts = products && products.length > 0 ? currentItems(products) : [];
+    const paginatedProducts = products;
 
     const createProductMutation = useMutation({
         mutationFn: async (newProduct: any) => {

@@ -17,7 +17,8 @@ import { ExportButton } from '@/components/ExportButton';
 import { RefreshCw } from 'lucide-react';
 import { Skeleton } from "@/components/ui/skeleton";
 import { Pagination } from "@/components/ui/Pagination";
-import { usePagination } from "@/hooks/usePagination";
+import { useDebounce } from "@/hooks/useDebounce";
+import { keepPreviousData } from '@tanstack/react-query';
 import { CreditStatusBadge } from './components/CreditStatusBadge';
 import { CreditDetailsWidget } from './components/CreditDetailsWidget';
 import { AddPaymentModal } from './components/AddPaymentModal';
@@ -78,15 +79,72 @@ export function SalesPage() {
 
     const queryClient = useQueryClient();
 
-    const { data: sales, isLoading, isError, error, refetch, isFetching } = useQuery<Sale[]>({
-        queryKey: ['sales', currentStore?.id],
+    // Server-side pagination: page + filters go to the API, which returns
+    // { data, meta }. The search input is debounced to avoid a request
+    // per keystroke.
+    const [currentPage, setPage] = useState(1);
+    const PAGE_SIZE = 10;
+    const debouncedSearch = useDebounce(searchTerm, 400);
+
+    const getServerDateRange = () => {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        let start: Date | null = null;
+        let end: Date | null = null;
+        if (dateFilter === 'TODAY') {
+            start = today;
+        } else if (dateFilter === 'WEEK') {
+            const firstDayOfWeek = new Date(today);
+            firstDayOfWeek.setDate(today.getDate() - today.getDay());
+            start = firstDayOfWeek;
+        } else if (dateFilter === 'MONTH') {
+            start = new Date(today.getFullYear(), today.getMonth(), 1);
+        } else if (dateFilter === 'YEAR') {
+            start = new Date(today.getFullYear(), 0, 1);
+        } else if (dateFilter === 'CUSTOM') {
+            if (startDate) {
+                const s = new Date(startDate);
+                s.setHours(0, 0, 0, 0);
+                start = s;
+            }
+            if (endDate) {
+                const e = new Date(endDate);
+                e.setHours(23, 59, 59, 999);
+                end = e;
+            }
+        }
+        return {
+            startDate: start?.toISOString(),
+            endDate: end?.toISOString(),
+        };
+    };
+
+    const { startDate: serverStart, endDate: serverEnd } = getServerDateRange();
+
+    const { data: salesPayload, isLoading, isError, error, refetch, isFetching } = useQuery({
+        queryKey: ['sales', currentStore?.id, currentPage, statusFilter, dateFilter, startDate, endDate, debouncedSearch],
         queryFn: async () => {
-            if (!currentStore?.id) return [];
-            const response = await api.get('/sales');
+            if (!currentStore?.id) return { data: [], meta: { total: 0, totalPages: 0 } };
+            const params: any = { page: currentPage, limit: PAGE_SIZE };
+            if (statusFilter !== 'ALL') params.status = statusFilter;
+            if (debouncedSearch) params.search = debouncedSearch;
+            if (serverStart) params.startDate = serverStart;
+            if (serverEnd) params.endDate = serverEnd;
+            const response = await api.get('/sales', { params });
             return response.data;
         },
         enabled: !!currentStore?.id,
+        placeholderData: keepPreviousData,
     });
+
+    const sales: Sale[] = Array.isArray(salesPayload) ? salesPayload : (salesPayload?.data ?? []);
+    const totalPages = Array.isArray(salesPayload) ? 1 : (salesPayload?.meta?.totalPages ?? 0);
+
+    // Reset to first page whenever filters change
+    React.useEffect(() => {
+        setPage(1);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [statusFilter, dateFilter, startDate, endDate, debouncedSearch]);
 
     const { data: products } = useQuery<Product[]>({
         queryKey: ['products'],
@@ -204,70 +262,10 @@ export function SalesPage() {
 
     const remainingBalance = selectedSale ? selectedSale.totalAmount - selectedSale.paidAmount : 0;
 
-    // Filter Logic
-    const filteredSales = sales?.filter(sale => {
-        const matchesSearch = searchTerm === '' ||
-            sale.customer?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            sale.items?.some((item: any) => item.product?.name?.toLowerCase().includes(searchTerm.toLowerCase())) ||
-            sale.id.toLowerCase().includes(searchTerm.toLowerCase());
-
-        const matchesStatus = statusFilter === 'ALL' ||
-            (statusFilter === 'COMPLETED' && sale.status === 'COMPLETED') ||
-            (statusFilter === 'ACTIVE' && sale.status === 'PARTIAL') ||
-            (statusFilter === 'OVERDUE' && sale.creditContract?.status === 'OVERDUE');
-
-        let matchesDate = true;
-        if (dateFilter !== 'ALL') {
-            const saleDate = new Date(sale.createdAt);
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-
-            if (dateFilter === 'TODAY') {
-                matchesDate = saleDate >= today;
-            } else if (dateFilter === 'WEEK') {
-                const firstDayOfWeek = new Date(today);
-                firstDayOfWeek.setDate(today.getDate() - today.getDay());
-                matchesDate = saleDate >= firstDayOfWeek;
-            } else if (dateFilter === 'MONTH') {
-                const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-                matchesDate = saleDate >= firstDayOfMonth;
-            } else if (dateFilter === 'YEAR') {
-                const firstDayOfYear = new Date(today.getFullYear(), 0, 1);
-                matchesDate = saleDate >= firstDayOfYear;
-            } else if (dateFilter === 'CUSTOM') {
-                if (startDate) {
-                    const start = new Date(startDate);
-                    start.setHours(0, 0, 0, 0);
-                    if (saleDate < start) matchesDate = false;
-                }
-                if (endDate && matchesDate) {
-                    const end = new Date(endDate);
-                    end.setHours(23, 59, 59, 999);
-                    if (saleDate > end) matchesDate = false;
-                }
-            }
-        }
-
-        return matchesSearch && matchesStatus && matchesDate;
-    });
-
-    const {
-        currentItems,
-        currentPage,
-        totalPages,
-        goToPage: setPage,
-    } = usePagination({
-        totalItems: filteredSales?.length || 0,
-        itemsPerPage: 10,
-    });
-
-    // Reset page when filters change
-    React.useEffect(() => {
-        setPage(1);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [searchTerm, statusFilter, dateFilter, startDate, endDate]);
-
-    const paginatedSales = filteredSales && filteredSales.length > 0 ? currentItems(filteredSales) : [];
+    // Filtering + pagination are server-side now (see query above).
+    // `sales` holds the current page; Export buttons export the loaded page.
+    const filteredSales = sales;
+    const paginatedSales = sales;
 
     return (
         <div className="space-y-6">
@@ -297,9 +295,10 @@ export function SalesPage() {
                         className="w-full sm:w-auto flex-1 border border-gray-300 dark:border-gray-600 rounded-md p-2 dark:bg-gray-700 dark:text-white"
                     >
                         <option value="ALL">{t('common.all_statuses', 'All Statuses')}</option>
-                        <option value="COMPLETED">{t('credit.status_completed', 'Completed')}</option>
-                        <option value="ACTIVE">{t('credit.status_active', 'Active (Credit)')}</option>
-                        <option value="OVERDUE">{t('credit.status_overdue', 'Overdue')}</option>
+                        <option value="PAID">{t('sales.status_paid', 'Paid')}</option>
+                        <option value="PARTIAL">{t('sales.status_partial', 'Partial')}</option>
+                        <option value="PENDING">{t('sales.status_pending', 'Pending')}</option>
+                        <option value="CANCELLED">{t('sales.status_cancelled', 'Cancelled')}</option>
                     </select>
 
                     <select
