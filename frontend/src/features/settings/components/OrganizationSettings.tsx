@@ -25,6 +25,7 @@ export function OrganizationSettings() {
         website: '',
         logoUrl: '',
         footer: '',
+        cashExpectedMode: 'DAILY',
         themeConfig: {
             primaryColor: '',
             secondaryColor: '',
@@ -55,6 +56,7 @@ export function OrganizationSettings() {
                 website: org.website || '',
                 logoUrl: org.logoUrl || '',
                 footer: org.footer || '',
+                cashExpectedMode: org.cashExpectedMode || 'DAILY',
                 themeConfig: org.themeConfig || {
                     primaryColor: '',
                     secondaryColor: '',
@@ -114,7 +116,7 @@ export function OrganizationSettings() {
         }
     });
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
     };
@@ -290,6 +292,29 @@ export function OrganizationSettings() {
                             placeholder="Thank you for your business!"
                         />
                     </div>
+                </div>
+            </div>
+
+            {/* Cash Management */}
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm transition-colors">
+                <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">{t('settings.org.cash_title')}</h3>
+
+                <div className="space-y-2">
+                    <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('settings.org.cash_expected_mode')}</Label>
+                    <select
+                        name="cashExpectedMode"
+                        value={formData.cashExpectedMode}
+                        onChange={handleChange}
+                        className="w-full border border-gray-300 dark:border-gray-600 rounded-lg p-2.5 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
+                    >
+                        <option value="DAILY">{t('settings.org.cash_mode_daily')}</option>
+                        <option value="SINCE_LAST_COUNT">{t('settings.org.cash_mode_since_last')}</option>
+                    </select>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                        {formData.cashExpectedMode === 'DAILY'
+                            ? t('settings.org.cash_mode_daily_desc')
+                            : t('settings.org.cash_mode_since_last_desc')}
+                    </p>
                 </div>
             </div>
 

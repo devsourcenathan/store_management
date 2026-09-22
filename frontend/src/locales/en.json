@@ -397,7 +397,13 @@
             "saving": "Saving...",
             "save": "Save Changes",
             "success": "Organization settings updated",
-            "error": "Failed to update organization settings"
+            "error": "Failed to update organization settings",
+            "cash_title": "Cash Management",
+            "cash_expected_mode": "Expected balance calculation",
+            "cash_mode_daily": "Current day only (recommended)",
+            "cash_mode_daily_desc": "The expected balance only counts today's sales and movements. An old count no longer affects the calculation.",
+            "cash_mode_since_last": "Since last count",
+            "cash_mode_since_last_desc": "The expected balance starts from the last counted amount, whatever its date."
         },
         "stores": {
             "title": "Store Management",

@@ -31,6 +31,10 @@ model Organization {
   logoUrl     String?
   footer      String? // Default footer for invoices
   themeConfig Json? // Theme colors and branding settings
+  // Cash count mode: DAILY = expected cash resets each day (starts at 0,
+  // only today's sales/movements count). SINCE_LAST_COUNT = legacy, starts
+  // from the last counted amount whatever its date.
+  cashExpectedMode String @default("DAILY")
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 

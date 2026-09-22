@@ -16,6 +16,8 @@ export class OrganizationsService {
     }
 
     async update(id: string, data: any) {
+        // Cash count mode is restricted to known values (unknown values ignored).
+        const allowedCashModes = ['DAILY', 'SINCE_LAST_COUNT'];
         return this.prisma.organization.update({
             where: { id },
             data: {
@@ -28,6 +30,9 @@ export class OrganizationsService {
                 logoUrl: data.logoUrl,
                 footer: data.footer,
                 themeConfig: data.themeConfig,
+                ...(allowedCashModes.includes(data.cashExpectedMode)
+                    ? { cashExpectedMode: data.cashExpectedMode }
+                    : {}),
             },
         });
     }

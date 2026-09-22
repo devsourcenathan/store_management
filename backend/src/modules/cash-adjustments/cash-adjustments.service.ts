@@ -51,6 +51,21 @@ export class CashAdjustmentsService {
   }
 
   async getExpectedCash(storeId: string) {
+    const store = await this.prisma.store.findUnique({
+      where: { id: storeId },
+      select: { organizationId: true },
+    });
+
+    if (!store) {
+      throw new NotFoundException('Store not found');
+    }
+
+    const org = await this.prisma.organization.findUnique({
+      where: { id: store.organizationId },
+      select: { cashExpectedMode: true },
+    });
+    const mode = org?.cashExpectedMode === 'SINCE_LAST_COUNT' ? 'SINCE_LAST_COUNT' : 'DAILY';
+
     const lastAdjustment = await this.prisma.cashAdjustment.findFirst({
       where: { storeId },
       orderBy: { createdAt: 'desc' },
@@ -58,11 +73,22 @@ export class CashAdjustmentsService {
 
     const now = new Date();
     const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    
+
     let startDate = startOfToday;
     let startingBalance = 0;
 
-    if (lastAdjustment) {
+    if (mode === 'DAILY') {
+      // Day-based count: an old count must NOT seed today's expected amount
+      // (cash is assumed removed after counting). Only a count made today
+      // carries over; otherwise the day starts at 0 with today's sales only.
+      const lastToday =
+        lastAdjustment && lastAdjustment.createdAt > startOfToday ? lastAdjustment : null;
+      if (lastToday) {
+        startingBalance = Number(lastToday.counted);
+        startDate = lastToday.createdAt;
+      }
+    } else if (lastAdjustment) {
+      // Legacy mode: accumulate since the last count, whatever its date.
       startingBalance = Number(lastAdjustment.counted);
       if (lastAdjustment.createdAt > startOfToday) {
         startDate = lastAdjustment.createdAt;
@@ -105,6 +131,7 @@ export class CashAdjustmentsService {
 
     return {
       expected,
+      mode,
       lastAdjustmentAt: lastAdjustment ? startDate : null,
       details: {
         startingBalance,
