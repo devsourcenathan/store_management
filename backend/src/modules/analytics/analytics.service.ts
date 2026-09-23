@@ -31,6 +31,13 @@ export class AnalyticsService {
         const cacheKey = `dashboard:${storeId}:${startDate ?? 'today'}:${endDate ?? 'today'}`;
         const cached = getDashboardCache(cacheKey);
         if (cached) return { ...cached, _cached: true };
+
+        // Scope fix: organization-wide counters must not leak across orgs.
+        const store = await this.prisma.store.findUnique({
+            where: { id: storeId },
+            select: { organizationId: true },
+        });
+        const organizationId = store?.organizationId;
         // Default to today if no date range provided, but if range provided, use it
         // Ideally "getDashboardStats" usually implies "Current Snapshot" + "Period Revenue"
         // Let's assume startDate/endDate ONLY affects the revenue calculation, as stock/products are point-in-time
@@ -59,9 +66,12 @@ export class AnalyticsService {
             pendingMaintenances, maintenanceRevenue,
             miscIn, miscOut, cashDiffs
         ] = await Promise.all([
-            // Total Products (Active)
+            // Total Products (Active, scoped to the store's organization)
             this.prisma.product.count({
-                where: { isActive: true }
+                where: {
+                    isActive: true,
+                    ...(organizationId ? { organizationId } : {}),
+                }
             }),
 
             // Low Stock Items (Unresolved Alerts)
@@ -84,10 +94,11 @@ export class AnalyticsService {
                 }
             }),
 
-            // Pending Supply Orders
+            // Pending Supply Orders (scoped to the store's organization)
             this.prisma.supply.count({
                 where: {
-                    status: 'PENDING'
+                    status: 'PENDING',
+                    ...(organizationId ? { supplier: { organizationId } } : {}),
                 }
             }),
 
@@ -330,9 +341,9 @@ export class AnalyticsService {
                 }
             }),
 
-            // Total active products
+            // Total active products (scoped to the organization)
             this.prisma.product.count({
-                where: { isActive: true }
+                where: { organizationId, isActive: true }
             }),
 
             // Total customers
