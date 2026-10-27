@@ -80,14 +80,18 @@ export function PosPage() {
     });
 
     // Fetch Products
-    const { data: products } = useQuery<Product[]>({
+    const { data: products, isLoading: isLoadingProducts } = useQuery<Product[]>({
         queryKey: ['products', currentStore?.id],
         queryFn: async () => {
-            // Note: storeId is automatically added by the API interceptor
-            const response = await api.get('/products');
-            return response.data;
+            const headers: Record<string, string> = {};
+            if (currentStore?.id) {
+                headers['x-store-id'] = currentStore.id;
+            }
+            const response = await api.get('/products', { headers });
+            const payload = response.data;
+            return Array.isArray(payload) ? payload : (payload?.data ?? []);
         },
-        enabled: !!currentStore?.id || true, // Allow fetching if organization-wide (e.g. owner) but prefer store context
+        enabled: !!currentStore?.id,
     });
 
     // Fetch Categories
@@ -215,12 +219,22 @@ export function PosPage() {
 
     // Filter Products
     const filteredProducts = useMemo(() => {
-        if (!products) return [];
+        if (!products || !Array.isArray(products)) return [];
+        const cleanQuery = searchQuery.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        const queryTokens = cleanQuery.split(/\s+/).filter(Boolean);
+
         return products.filter(p => {
-            const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                p.sku.toLowerCase().includes(searchQuery.toLowerCase());
-            const matchesCategory = selectedCategory === 'all' || p.category?.id === selectedCategory;
-            return matchesSearch && matchesCategory;
+            const matchesCategory = selectedCategory === 'all' ||
+                p.category?.id === selectedCategory ||
+                (p as any).categoryId === selectedCategory;
+            if (!matchesCategory) return false;
+
+            if (queryTokens.length === 0) return true;
+
+            const nameNorm = (p.name || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+            const skuNorm = (p.sku || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+            return queryTokens.every(token => nameNorm.includes(token) || skuNorm.includes(token));
         });
     }, [products, searchQuery, selectedCategory]);
 
@@ -455,10 +469,20 @@ export function PosPage() {
 
                 {/* Product Grid */}
                 <div className="flex-1 overflow-y-auto p-3 sm:p-4 bg-gray-50 dark:bg-gray-900/50">
-                    <div className={viewMode === 'grid'
-                        ? "grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-3 sm:gap-4"
-                        : "flex flex-col gap-2"
-                    }>
+                    {isLoadingProducts ? (
+                        <div className="h-full flex items-center justify-center text-gray-400">
+                            <p>{t('common.loading', 'Chargement...')}</p>
+                        </div>
+                    ) : filteredProducts.length === 0 ? (
+                        <div className="h-full flex flex-col items-center justify-center text-gray-400 py-12">
+                            <ShoppingBag className="w-12 h-12 mb-2 stroke-1 text-gray-300 dark:text-gray-600" />
+                            <p className="text-sm font-medium">{t('pos.no_products_found', 'Aucun produit trouvé')}</p>
+                        </div>
+                    ) : (
+                        <div className={viewMode === 'grid'
+                            ? "grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-3 sm:gap-4"
+                            : "flex flex-col gap-2"
+                        }>
                         {filteredProducts.map(product => {
                             const stock = getStockLevel(product.id);
                             const isLowStock = stock <= 10;
@@ -546,6 +570,7 @@ export function PosPage() {
                             );
                         })}
                     </div>
+                    )}
                 </div>
             </div>
 

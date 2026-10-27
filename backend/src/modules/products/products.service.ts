@@ -7,14 +7,13 @@ import { GetProductsDto } from './dto/get-products.dto';
 export class ProductsService {
     constructor(private prisma: PrismaService) { }
 
-    // Perf Phase 1: bounded result set. When page/limit are provided ->
-    // { data, meta } envelope. Otherwise legacy array (capped at 500)
-    // for backward compatibility (POS loads full catalog).
+    // When page/limit are provided -> { data, meta } envelope.
+    // Otherwise full catalog array (e.g. POS loads full catalog without truncation).
     async findAll(organizationId: string, params?: GetProductsDto, storeId?: string) {
         const { search, categoryId, minPrice, maxPrice, sortBy = 'name', sortOrder = 'asc', page, limit } = params || {};
         const paginated = page !== undefined || limit !== undefined;
-        const take = Math.min(Math.max(limit ?? 500, 1), 500);
-        const skip = (Math.max(page ?? 1, 1) - 1) * take;
+        const take = paginated ? Math.min(Math.max(limit ?? 50, 1), 500) : undefined;
+        const skip = paginated ? (Math.max(page ?? 1, 1) - 1) * (take ?? 50) : undefined;
 
         const where: any = {
             organizationId,
@@ -77,8 +76,7 @@ export class ProductsService {
                     },
                 },
                 orderBy,
-                take,
-                ...(paginated ? { skip } : {}),
+                ...(paginated ? { take, skip } : {}),
             }),
         ]);
 
@@ -115,13 +113,14 @@ export class ProductsService {
 
         if (!paginated) return data;
 
+        const effectiveLimit = take ?? total;
         return {
             data,
             meta: {
                 total,
                 page: Math.max(page ?? 1, 1),
-                limit: take,
-                totalPages: Math.ceil(total / take),
+                limit: effectiveLimit,
+                totalPages: Math.ceil(total / (effectiveLimit || 1)),
             },
         };
     }
