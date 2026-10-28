@@ -17,16 +17,102 @@ export const printer = {
             <head>
                 <title>${tr('invoice.title', 'INVOICE')} #${sale.id.slice(0, 8)}</title>
                 <style>
-                    body { font-family: 'Courier New', monospace; padding: 20px; max-width: 400px; margin: 0 auto; }
-                    .header { text-align: center; margin-bottom: 20px; border-bottom: 1px dashed #000; padding-bottom: 10px; }
-                    .store-name { font-size: 18px; font-weight: bold; }
-                    .meta { font-size: 12px; margin-bottom: 5px; }
-                    .divider { border-top: 1px dashed #000; margin: 10px 0; }
-                    .item { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 5px; }
-                    .totals { margin-top: 15px; border-top: 1px dashed #000; pt-2; }
-                    .total-row { display: flex; justify-content: space-between; font-weight: bold; margin-top: 5px; }
-                    .footer { text-align: center; font-size: 10px; margin-top: 30px; }
-                    @media print { @page { margin: 0; } body { padding: 10px; } }
+                    * {
+                        box-sizing: border-box;
+                        color: #000 !important;
+                        font-weight: 700 !important;
+                    }
+                    body {
+                        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+                        font-weight: 700;
+                        font-size: 13px;
+                        line-height: 1.4;
+                        color: #000;
+                        padding: 15px;
+                        max-width: 380px;
+                        margin: 0 auto;
+                        -webkit-font-smoothing: antialiased;
+                        -moz-osx-font-smoothing: grayscale;
+                        text-rendering: optimizeLegibility;
+                    }
+                    .header {
+                        text-align: center;
+                        margin-bottom: 14px;
+                        border-bottom: 2px dashed #000;
+                        padding-bottom: 10px;
+                    }
+                    .store-name {
+                        font-size: 19px;
+                        font-weight: 900 !important;
+                        text-transform: uppercase;
+                        margin-bottom: 6px;
+                        letter-spacing: 0.5px;
+                    }
+                    .meta {
+                        font-size: 13px;
+                        font-weight: 700 !important;
+                        margin-bottom: 4px;
+                    }
+                    .divider {
+                        border-top: 2px dashed #000;
+                        margin: 10px 0;
+                    }
+                    .items {
+                        margin-bottom: 12px;
+                    }
+                    .item {
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: flex-start;
+                        font-size: 13px;
+                        font-weight: 700 !important;
+                        margin-bottom: 6px;
+                        gap: 8px;
+                    }
+                    .item-desc {
+                        flex: 1;
+                        word-break: break-word;
+                    }
+                    .item-total {
+                        white-space: nowrap;
+                        text-align: right;
+                    }
+                    .totals {
+                        margin-top: 12px;
+                        border-top: 2px dashed #000;
+                        padding-top: 8px;
+                    }
+                    .total-row {
+                        display: flex;
+                        justify-content: space-between;
+                        font-size: 16px;
+                        font-weight: 900 !important;
+                        margin-top: 6px;
+                    }
+                    .footer {
+                        text-align: center;
+                        font-size: 12px;
+                        font-weight: 700 !important;
+                        margin-top: 24px;
+                        border-top: 1.5px dashed #000;
+                        padding-top: 10px;
+                    }
+                    .footer p {
+                        margin: 4px 0;
+                    }
+                    @media print {
+                        @page {
+                            margin: 0;
+                            size: auto;
+                        }
+                        body {
+                            padding: 8px;
+                            max-width: 100%;
+                            width: 100%;
+                            -webkit-print-color-adjust: exact;
+                            print-color-adjust: exact;
+                        }
+                    }
                 </style>
             </head>
             <body>
@@ -40,30 +126,30 @@ export const printer = {
                 <div class="items">
                     ${(sale.items || []).map((item: any) => `
                         <div class="item">
-                            <span>${item.product?.name || item.name || 'Unknown Item'} x${item.quantity}</span>
-                            <span>${Number(item.total).toLocaleString()}</span>
+                            <span class="item-desc">${item.product?.name || item.name || 'Unknown Item'} x${item.quantity}</span>
+                            <span class="item-total">${Number(item.total).toLocaleString()} F</span>
                         </div>
                     `).join('')}
                 </div>
 
                 <div class="totals">
                     ${(sale.discount || 0) > 0 ? `
-                    <div class="item" style="color: #666;">
-                        <span>${tr('invoice.discount', 'Discount')}</span>
-                        <span>-${Number(sale.discount).toLocaleString()}</span>
+                    <div class="item">
+                        <span class="item-desc">${tr('invoice.discount', 'Discount')}</span>
+                        <span class="item-total">-${Number(sale.discount).toLocaleString()} F</span>
                     </div>` : ''}
                     <div class="total-row">
                         <span>${tr('invoice.total', 'TOTAL')}</span>
                         <span>${Number(sale.totalAmount).toLocaleString()} FCFA</span>
                     </div>
-                    <div class="item" style="margin-top: 5px">
-                        <span>${tr('invoice.paid', 'Paid')}</span>
-                        <span>${Number(sale.paidAmount).toLocaleString()}</span>
+                    <div class="item" style="margin-top: 6px">
+                        <span class="item-desc">${tr('invoice.paid', 'Paid')}</span>
+                        <span class="item-total">${Number(sale.paidAmount).toLocaleString()} F</span>
                     </div>
                     ${(sale.totalAmount - sale.paidAmount) > 0 ? `
-                    <div class="total-row" style="margin-top: 5px; border-top: 1px dotted #000; padding-top: 5px;">
+                    <div class="total-row" style="margin-top: 6px; border-top: 1.5px dotted #000; padding-top: 6px;">
                         <span>${tr('invoice.remaining', 'Remaining')}</span>
-                        <span>${Number(sale.totalAmount - sale.paidAmount).toLocaleString()}</span>
+                        <span>${Number(sale.totalAmount - sale.paidAmount).toLocaleString()} FCFA</span>
                     </div>` : ''}
                 </div>
 
